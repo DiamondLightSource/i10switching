@@ -189,45 +189,26 @@ class KnobsUi(object):
 
         self.setup_table()
 
-        QtCore.QObject.connect(self.ui.hbpm1_plus_button,
-                QtCore.SIGNAL('clicked()'), self.hbpm1_plus)
-        QtCore.QObject.connect(self.ui.hbpm1_minus_button,
-                QtCore.SIGNAL('clicked()'), self.hbpm1_minus)
-        QtCore.QObject.connect(self.ui.hbpm2_plus_button,
-                QtCore.SIGNAL('clicked()'), self.hbpm2_plus)
-        QtCore.QObject.connect(self.ui.hbpm2_minus_button,
-                QtCore.SIGNAL('clicked()'), self.hbpm2_minus)
-        QtCore.QObject.connect(self.ui.vbpm1_plus_button,
-                QtCore.SIGNAL('clicked()'), self.vbpm1_plus)
-        QtCore.QObject.connect(self.ui.vbpm1_minus_button,
-                QtCore.SIGNAL('clicked()'), self.vbpm1_minus)
-        QtCore.QObject.connect(self.ui.vbpm2_plus_button,
-                QtCore.SIGNAL('clicked()'), self.vbpm2_plus)
-        QtCore.QObject.connect(self.ui.vbpm2_minus_button,
-                QtCore.SIGNAL('clicked()'), self.vbpm2_minus)
-        QtCore.QObject.connect(self.ui.k3_plus_button,
-                QtCore.SIGNAL('clicked()'), self.k3_plus)
-        QtCore.QObject.connect(self.ui.k3_minus_button,
-                QtCore.SIGNAL('clicked()'), self.k3_minus)
-        QtCore.QObject.connect(self.ui.scale_plus_button,
-                QtCore.SIGNAL('clicked()'), self.scale_plus)
-        QtCore.QObject.connect(self.ui.scale_minus_button,
-                QtCore.SIGNAL('clicked()'), self.scale_minus)
-        QtCore.QObject.connect(self.ui.bump_left_plus_button,
-                QtCore.SIGNAL('clicked()'), self.bump1_plus)
-        QtCore.QObject.connect(self.ui.bump_left_minus_button,
-                QtCore.SIGNAL('clicked()'), self.bump1_minus)
-        QtCore.QObject.connect(self.ui.bump_right_plus_button,
-                QtCore.SIGNAL('clicked()'), self.bump2_plus)
-        QtCore.QObject.connect(self.ui.bump_right_minus_button,
-                QtCore.SIGNAL('clicked()'), self.bump2_minus)
+        self.ui.hbpm1_plus_button.clicked.connect(self.hbpm1_plus)
+        self.ui.hbpm1_minus_button.clicked.connect(self.hbpm1_minus)
+        self.ui.hbpm2_plus_button.clicked.connect(self.hbpm2_plus)
+        self.ui.hbpm2_minus_button.clicked.connect(self.hbpm2_minus)
+        self.ui.vbpm1_plus_button.clicked.connect(self.vbpm1_plus)
+        self.ui.vbpm1_minus_button.clicked.connect(self.vbpm1_minus)
+        self.ui.vbpm2_plus_button.clicked.connect(self.vbpm2_plus)
+        self.ui.vbpm2_minus_button.clicked.connect(self.vbpm2_minus)
+        self.ui.k3_plus_button.clicked.connect(self.k3_plus)
+        self.ui.k3_minus_button.clicked.connect(self.k3_minus)
+        self.ui.scale_plus_button.clicked.connect(self.scale_plus)
+        self.ui.scale_minus_button.clicked.connect(self.scale_minus)
+        self.ui.bump_left_plus_button.clicked.connect(self.bump1_plus)
+        self.ui.bump_left_minus_button.clicked.connect(self.bump1_minus)
+        self.ui.bump_right_plus_button.clicked.connect(self.bump2_plus)
+        self.ui.bump_right_minus_button.clicked.connect(self.bump2_minus)
 
-        QtCore.QObject.connect(self.ui.reenable_checkbox,
-                QtCore.SIGNAL('clicked()'), self.toggle_forbidden_buttons)
-        QtCore.QObject.connect(self.ui.small_correction_radiobutton,
-                QtCore.SIGNAL('clicked()'), lambda: self.set_jog_scaling(0.1))
-        QtCore.QObject.connect(self.ui.full_correcton_radiobutton,
-                QtCore.SIGNAL('clicked()'), lambda: self.set_jog_scaling(1.0))
+        self.ui.reenable_checkbox.clicked.connect(self.toggle_forbidden_buttons)
+        self.ui.small_correction_radiobutton.clicked.connect(lambda: self.set_jog_scaling(0.1))
+        self.ui.full_correcton_radiobutton.clicked.connect(lambda: self.set_jog_scaling(1.0))
 
         camonitor(self.BURT_STATUS_PV, self.update_burt_led)
         camonitor(self.MAGNET_STATUS_PV,
