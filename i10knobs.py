@@ -29,6 +29,11 @@ ALARM_COLORS = [
         ]
 
 
+class OverCurrentException(Exception):
+    def __init__(self, magnet_index):
+        self.magnet_index = magnet_index
+
+
 class Knobs(object):
 
     '''
@@ -140,10 +145,8 @@ class Knobs(object):
                 print 'Warning: Setting current value above limits:'
                 print ('%s: High: %f\tLow: %f\tMin: %f\tMax: %f\n'
                         % (pvs[n], high, low, max, min))
-                error = True
-
-        if not error:
-            caput(pvs, values)
+                raise OverCurrentException(n)
+        caput(pvs, values)
 
 
 class KnobsUi(object):
@@ -268,6 +271,30 @@ class KnobsUi(object):
         palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
         self.ui.burt_led.setPalette(palette)
 
+    def flash_table_cell(self, row, column):
+        '''Flash a cell twice, with the major alarm color'''
+        table = self.ui.table_widget
+        item = table.item(column, row)
+
+        item.setBackground(QtGui.QBrush(ALARM_COLORS[2]))
+        QtCore.QTimer.singleShot(200, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+        QtCore.QTimer.singleShot(400, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
+        QtCore.QTimer.singleShot(600, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+        QtCore.QTimer.singleShot(800, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
+        QtCore.QTimer.singleShot(900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+
+    def jog_handler(self, pvs, ofs):
+        '''
+        Wraps the Knobs.jog method to provide exception handling
+        in callbacks.
+        '''
+        try:
+            self.knobs.jog(pvs, ofs)
+        except OverCurrentException, e:
+            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
+        except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
+            print 'Cothread Exception:', e
+
     def set_jog_scaling(self, scale):
         '''Change the scaling applied to magnet corrections'''
         self.knobs.jog_scale = scale
@@ -362,75 +389,75 @@ class KnobsUi(object):
         self.ui.vbpm2_minus_button.setEnabled(enabled)
 
     def hbpm1_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], self.knobs.left)
 
     def hbpm1_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.left)
 
     def hbpm2_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], self.knobs.right)
 
     def hbpm2_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.right)
 
     def vbpm1_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                 self.knobs.trimleft)
 
     def vbpm1_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                 -self.knobs.trimleft)
 
     def vbpm2_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                self.knobs.trimright)
 
     def vbpm2_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                -self.knobs.trimright)
 
     def k3_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], self.knobs.dk3)
 
     def k3_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.dk3)
 
     def scale_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [name + ':SETWFSCA' for name in Knobs.NAMES], self.knobs.dscale)
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in Knobs.CTRLS], self.knobs.dscale)
 
     def scale_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [name + ':SETWFSCA' for name in Knobs.NAMES], -self.knobs.dscale)
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in Knobs.CTRLS], -self.knobs.dscale)
 
     def bump1_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], self.knobs.b1)
 
     def bump1_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.b1)
 
     def bump2_plus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], self.knobs.b2)
 
     def bump2_minus(self):
-        self.knobs.jog(
+        self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.b2)
 
 
