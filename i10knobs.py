@@ -67,7 +67,6 @@ class Knobs(object):
 
     def __init__(self):
         '''Setup physics values from matlab files'''
-
         S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
         # knob deltas
@@ -114,7 +113,6 @@ class Knobs(object):
         Incremeants the list of PVs by the offset.
         Errors are created when a user is likley to exceed magnet tolerances.
         '''
-
         ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
@@ -131,7 +129,6 @@ class Knobs(object):
         imins = self.get_imin()
 
         # Check errors on limits.
-        error = False;
         for n in range(len(pvs)):
             max = imaxs[n]
             min = imins[n]
@@ -172,7 +169,7 @@ class KnobsUi(object):
     def __init__(self, parent):
         '''
         Setup UI.
-        Connect components and setup all camonitors and associated callbacks
+        Connect components and setup all camonitors and associated callbacks.
         '''
         self.knobs = Knobs()
 
@@ -184,71 +181,50 @@ class KnobsUi(object):
 
         self.setup_table()
 
-        QtCore.QObject.connect(
-                self.ui.hbpm1_plus_button,
+        QtCore.QObject.connect(self.ui.hbpm1_plus_button,
                 QtCore.SIGNAL('clicked()'), self.hbpm1_plus)
-        QtCore.QObject.connect(
-                self.ui.hbpm1_minus_button,
+        QtCore.QObject.connect(self.ui.hbpm1_minus_button,
                 QtCore.SIGNAL('clicked()'), self.hbpm1_minus)
-        QtCore.QObject.connect(
-                self.ui.hbpm2_plus_button,
+        QtCore.QObject.connect(self.ui.hbpm2_plus_button,
                 QtCore.SIGNAL('clicked()'), self.hbpm2_plus)
-        QtCore.QObject.connect(
-                self.ui.hbpm2_minus_button,
+        QtCore.QObject.connect(self.ui.hbpm2_minus_button,
                 QtCore.SIGNAL('clicked()'), self.hbpm2_minus)
-        QtCore.QObject.connect(
-                self.ui.vbpm1_plus_button,
+        QtCore.QObject.connect(self.ui.vbpm1_plus_button,
                 QtCore.SIGNAL('clicked()'), self.vbpm1_plus)
-        QtCore.QObject.connect(
-                self.ui.vbpm1_minus_button,
+        QtCore.QObject.connect(self.ui.vbpm1_minus_button,
                 QtCore.SIGNAL('clicked()'), self.vbpm1_minus)
-        QtCore.QObject.connect(
-                self.ui.vbpm2_plus_button,
+        QtCore.QObject.connect(self.ui.vbpm2_plus_button,
                 QtCore.SIGNAL('clicked()'), self.vbpm2_plus)
-        QtCore.QObject.connect(
-                self.ui.vbpm2_minus_button,
+        QtCore.QObject.connect(self.ui.vbpm2_minus_button,
                 QtCore.SIGNAL('clicked()'), self.vbpm2_minus)
-        QtCore.QObject.connect(
-                self.ui.k3_plus_button,
+        QtCore.QObject.connect(self.ui.k3_plus_button,
                 QtCore.SIGNAL('clicked()'), self.k3_plus)
-        QtCore.QObject.connect(
-                self.ui.k3_minus_button,
+        QtCore.QObject.connect(self.ui.k3_minus_button,
                 QtCore.SIGNAL('clicked()'), self.k3_minus)
-        QtCore.QObject.connect(
-                self.ui.scale_plus_button,
+        QtCore.QObject.connect(self.ui.scale_plus_button,
                 QtCore.SIGNAL('clicked()'), self.scale_plus)
-        QtCore.QObject.connect(
-                self.ui.scale_minus_button,
+        QtCore.QObject.connect(self.ui.scale_minus_button,
                 QtCore.SIGNAL('clicked()'), self.scale_minus)
-        QtCore.QObject.connect(
-                self.ui.bump_left_plus_button,
+        QtCore.QObject.connect(self.ui.bump_left_plus_button,
                 QtCore.SIGNAL('clicked()'), self.bump1_plus)
-        QtCore.QObject.connect(
-                self.ui.bump_left_minus_button,
+        QtCore.QObject.connect(self.ui.bump_left_minus_button,
                 QtCore.SIGNAL('clicked()'), self.bump1_minus)
-        QtCore.QObject.connect(
-                self.ui.bump_right_plus_button,
+        QtCore.QObject.connect(self.ui.bump_right_plus_button,
                 QtCore.SIGNAL('clicked()'), self.bump2_plus)
-        QtCore.QObject.connect(
-                self.ui.bump_right_minus_button,
+        QtCore.QObject.connect(self.ui.bump_right_minus_button,
                 QtCore.SIGNAL('clicked()'), self.bump2_minus)
 
-        QtCore.QObject.connect(
-                self.ui.reenable_checkbox,
+        QtCore.QObject.connect(self.ui.reenable_checkbox,
                 QtCore.SIGNAL('clicked()'), self.toggle_forbidden_buttons)
-        QtCore.QObject.connect(
-                self.ui.small_correction_radiobutton,
+        QtCore.QObject.connect(self.ui.small_correction_radiobutton,
                 QtCore.SIGNAL('clicked()'), lambda: self.set_jog_scaling(0.1))
-        QtCore.QObject.connect(
-                self.ui.full_correcton_radiobutton,
+        QtCore.QObject.connect(self.ui.full_correcton_radiobutton,
                 QtCore.SIGNAL('clicked()'), lambda: self.set_jog_scaling(1.0))
 
         camonitor(self.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(
-                self.MAGNET_STATUS_PV,
+        camonitor(self.MAGNET_STATUS_PV,
                 self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(
-                self.CYCLING_STATUS_PV,
+        camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
     def update_cycling_textbox(self, var):
@@ -278,11 +254,16 @@ class KnobsUi(object):
         item = table.item(column, row)
 
         item.setBackground(QtGui.QBrush(ALARM_COLORS[2]))
-        QtCore.QTimer.singleShot(200, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
-        QtCore.QTimer.singleShot(400, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
-        QtCore.QTimer.singleShot(600, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
-        QtCore.QTimer.singleShot(800, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
-        QtCore.QTimer.singleShot(900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+        QtCore.QTimer.singleShot(
+                200, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+        QtCore.QTimer.singleShot(
+                400, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
+        QtCore.QTimer.singleShot(
+                600, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
+        QtCore.QTimer.singleShot(
+                800, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
+        QtCore.QTimer.singleShot(
+                900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
 
     def jog_handler(self, pvs, ofs):
         '''
@@ -294,15 +275,15 @@ class KnobsUi(object):
         except OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
+            print 'Cothread Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Cothread Exception: %s' % e)
             msgBox.exec_()
-            print 'Cothread Exception:', e
         except Exception, e:
+            print 'Unexpected Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Unexpected Exception: %s' % e)
             msgBox.exec_()
-            print 'Unexpected Exception:', e
 
     def set_jog_scaling(self, scale):
         '''Change the scaling applied to magnet corrections'''
@@ -322,8 +303,7 @@ class KnobsUi(object):
         # Fix table size and distribute rows
         table.verticalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
-        row_height = (
-                (table.height() - table.horizontalHeader().height())
+        row_height = ((table.height() - table.horizontalHeader().height())
                 / table.rowCount())
         for i in range(table.rowCount()):
             table.setRowHeight(i, row_height)
@@ -332,18 +312,16 @@ class KnobsUi(object):
         max_pvs = [name + ':IMAX' for name in Knobs.NAMES]
         min_pvs = [name + ':IMIN' for name in Knobs.NAMES]
         offset_pvs = [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS]
-        camonitor(
-                max_pvs, lambda x, i: self.update_float(x, i, self.Columns.MAX))
-        camonitor(
-                min_pvs, lambda x, i: self.update_float(x, i, self.Columns.MIN))
-        camonitor(
-                offset_pvs,
+        camonitor(max_pvs,
+                lambda x, i: self.update_float(x, i, self.Columns.MAX))
+        camonitor(min_pvs,
+                lambda x, i: self.update_float(x, i, self.Columns.MIN))
+        camonitor(offset_pvs,
                 lambda x, i: self.update_float(x, i, self.Columns.OFFSET))
 
         # Callbacks: Alarm status for each IOC
         alarm_pvs = [name + ':ERRGSTR' for name in Knobs.NAMES]
-        camonitor(
-                alarm_pvs,
+        camonitor(alarm_pvs,
                 lambda x, i: self.update_alarm(x, i, self.Columns.ERRORS),
                 format=FORMAT_TIME)
 
@@ -414,23 +392,19 @@ class KnobsUi(object):
                [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS], -self.knobs.right)
 
     def vbpm1_plus(self):
-        self.jog_handler(
-               [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                 self.knobs.trimleft)
 
     def vbpm1_minus(self):
-        self.jog_handler(
-               [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                 -self.knobs.trimleft)
 
     def vbpm2_plus(self):
-        self.jog_handler(
-               [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                self.knobs.trimright)
 
     def vbpm2_minus(self):
-        self.jog_handler(
-               [trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
                -self.knobs.trimright)
 
     def k3_plus(self):
