@@ -179,6 +179,7 @@ class KnobsUi(object):
         self.ui = Ui_i10_knobs()
         self.ui.setupUi(parent)
 
+        self.parent = parent
         parent.setFixedSize(parent.width(), parent.height())
 
         self.setup_table()
@@ -293,6 +294,9 @@ class KnobsUi(object):
         except OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
+            msgBox = QtGui.QMessageBox(self.parent)
+            msgBox.setText('Cothread Exception: %s' % e)
+            msgBox.exec_()
             print 'Cothread Exception:', e
 
     def set_jog_scaling(self, scale):
