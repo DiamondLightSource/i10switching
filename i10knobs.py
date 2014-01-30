@@ -298,6 +298,11 @@ class KnobsUi(object):
             msgBox.setText('Cothread Exception: %s' % e)
             msgBox.exec_()
             print 'Cothread Exception:', e
+        except Exception, e:
+            msgBox = QtGui.QMessageBox(self.parent)
+            msgBox.setText('Unexpected Exception: %s' % e)
+            msgBox.exec_()
+            print 'Unexpected Exception:', e
 
     def set_jog_scaling(self, scale):
         '''Change the scaling applied to magnet corrections'''
