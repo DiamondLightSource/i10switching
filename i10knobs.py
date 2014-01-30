@@ -9,6 +9,7 @@ from cothread.catools import caget, caput, camonitor, FORMAT_TIME, FORMAT_CTRL
 import numpy
 import scipy.io
 import os, sys
+import traceback
 
 from PyQt4 import QtCore
 from PyQt4 import QtGui
@@ -283,6 +284,7 @@ class KnobsUi(object):
             print 'Unexpected Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Unexpected Exception: %s' % e)
+            msgBox.setInformativeText(traceback.format_exc(3))
             msgBox.exec_()
 
     def set_jog_scaling(self, scale):
