@@ -1,5 +1,15 @@
 #!/usr/bin/env dls-python2.7
 
+
+'''
+Buttons to move I10 fast chicane magnet offsets and scales.
+
+Provides a gui to control magnet scaling and offsets
+in order to allow independant steering of photon and
+electron beams to maintain a closed bump.
+'''
+
+
 from pkg_resources import require
 require('cothread==2.10')
 require('scipy==0.10.1')
@@ -15,9 +25,6 @@ from PyQt4 import QtCore
 from PyQt4 import QtGui
 
 from i10 import Ui_i10_knobs
-
-
-# buttons to move in-chicane bpms up and down
 
 
 # Alarm colours
