@@ -288,6 +288,7 @@ class KnobsUi(object):
             for col in range(table.columnCount()):
                 item = QtGui.QTableWidgetItem(QtCore.QString('No Data'))
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
+                item.setFlags(QtCore.Qt.ItemIsEnabled)
                 table.setItem(row, col, item)
 
         # Fix table size and distribute rows
