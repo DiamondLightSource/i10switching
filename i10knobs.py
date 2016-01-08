@@ -107,9 +107,6 @@ class Knobs(object):
     def get_offset(self):
         return caget([ctrl + ':OFFSET' for ctrl in self.CTRLS])
 
-    def get_seti(self):
-        return caget([name + ':SETI' for name in self.NAMES])
-
     def get_scale(self):
         return caget([name + ':SETWFSCA' for name in self.NAMES])
 
@@ -132,7 +129,6 @@ class Knobs(object):
 
         scales = [abs(scale) for scale in self.get_scale()]
         offsets = self.get_offset()
-        setpoints = self.get_seti()
         imaxs = self.get_imax()
         imins = self.get_imin()
 
@@ -141,11 +137,10 @@ class Knobs(object):
             max = imaxs[n]
             min = imins[n]
             offset = offsets[n]
-            setpoint = setpoints[n]
             scale = scales[n]
             new_val = ofs[n]
-            high = setpoint + offset + new_val + scale
-            low  = setpoint + offset + new_val - scale
+            high = offset + new_val + scale
+            low  = offset + new_val - scale
             if(high > max or low < min):
                 print 'Warning: Setting current value above limits:'
                 print ('%s: High: %f\tLow: %f\tMin: %f\tMax: %f\n'
@@ -330,7 +325,6 @@ class KnobsUi(object):
 
         # Callbacks: High and low values store PVs in a cache for calculations
         self.cache_pvs = (
-                [name + ':SETI' for name in Knobs.NAMES] +
                 [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS] +
                 [ctrl + ':WFSCA' for ctrl in Knobs.CTRLS])
         self.cache = c = {}
@@ -361,8 +355,8 @@ class KnobsUi(object):
         ioc_2 = var.name.split(':')[1]
         c = self.cache[ioc_1]
         c[ioc_2] = var
-        high = c['SETI'] + c['OFFSET'] + c['WFSCA']
-        low = c['SETI'] + c['OFFSET'] - c['WFSCA']
+        high = c['OFFSET'] + c['WFSCA']
+        low = c['OFFSET'] - c['WFSCA']
         self.update_float(high, int(ioc_1)-1, self.Columns.HIGH)
         self.update_float(low, int(ioc_1)-1, self.Columns.LOW)
 
