@@ -161,7 +161,7 @@ class KnobsUi(object):
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
 
-    HIGHLIGHT_COLOR = QtGui.QColor(248, 248, 248) # Light grey
+    HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):
         MAX=0
