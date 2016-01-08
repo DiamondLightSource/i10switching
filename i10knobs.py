@@ -284,6 +284,9 @@ class KnobsUi(object):
 
     def setup_table(self):
         '''Initalise all values required for the currents table'''
+
+        VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
+
         table = self.ui.table_widget
 
         # Initilase items in all table cells
@@ -298,6 +301,7 @@ class KnobsUi(object):
 
         # Fix table size and distribute rows
         table.verticalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
+        table.horizontalHeader().setFixedHeight(VERTICAL_HEADER_SIZE)
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
         row_height = ((table.height() - table.horizontalHeader().height())
                 / table.rowCount())
