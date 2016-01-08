@@ -166,6 +166,8 @@ class KnobsUi(object):
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
 
+    HIGHLIGHT_COLOR = QtGui.QColor(248, 248, 248) # Light grey
+
     class Columns(object):
         MAX=0
         HIGH=1
@@ -289,6 +291,8 @@ class KnobsUi(object):
                 item = QtGui.QTableWidgetItem(QtCore.QString('No Data'))
                 item.setTextAlignment(QtCore.Qt.AlignCenter)
                 item.setFlags(QtCore.Qt.ItemIsEnabled)
+                if col in [self.Columns.MAX, self.Columns.MIN]:
+                    item.setBackground(QtGui.QBrush(self.HIGHLIGHT_COLOR))
                 table.setItem(row, col, item)
 
         # Fix table size and distribute rows
