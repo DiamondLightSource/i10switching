@@ -172,9 +172,10 @@ class KnobsUi(object):
         MAX=0
         HIGH=1
         OFFSET=2
-        LOW=3
-        MIN=4
-        ERRORS=5
+        SETI=3
+        LOW=4
+        MIN=5
+        ERRORS=6
 
     def __init__(self, parent):
         '''
@@ -307,12 +308,15 @@ class KnobsUi(object):
         max_pvs = [name + ':IMAX' for name in Knobs.NAMES]
         min_pvs = [name + ':IMIN' for name in Knobs.NAMES]
         offset_pvs = [ctrl + ':OFFSET' for ctrl in Knobs.CTRLS]
+        seti_pvs = [name + ':SETI' for name in Knobs.NAMES]
         camonitor(max_pvs,
                 lambda x, i: self.update_float(x, i, self.Columns.MAX))
         camonitor(min_pvs,
                 lambda x, i: self.update_float(x, i, self.Columns.MIN))
         camonitor(offset_pvs,
                 lambda x, i: self.update_float(x, i, self.Columns.OFFSET))
+        camonitor(seti_pvs,
+                lambda x, i: self.update_float(x, i, self.Columns.SETI))
 
         # Callbacks: Alarm status for each IOC
         alarm_pvs = [name + ':ERRGSTR' for name in Knobs.NAMES]
