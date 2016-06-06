@@ -115,7 +115,7 @@ class Knobs(object):
         S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
         # knob deltas
-        dbpm = 1e-3/10; # 1e-3 mm = 1um
+        dbpm = 1e-4  # 1e-4 mm = 100 nm
         dscale = numpy.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
         dk3 = numpy.array([0, 0, 1e-2, 0, 0])
 
