@@ -4,44 +4,66 @@ import dls_packages
 import numpy as np
 
 
-#temporary numbers
 #k = strength of kicker --> amount by which velocity is incremented by kick
 #dt = time increment of whole process
 #ds = increment for electron vector
-#a = 1 + k/x'
-ds = 3
+ds = 3 #just given it a number for now
 
 #initial position and velocity (along x axis)
-e0 = np.array([1,0])
-
+e0 = np.array([0,0])
 
 #allow electron to drift between magnets
-drift = np.array([[1,ds],
-		  [0,1]]) #this matrix is probably wrong way up to work with dot product - to sort
+class drift:
+	def __init__(self,ds,e):
+		self.ds = ds
+		self.e = e
 
-#k is the strength of the magnet and is equal to the CHANGE in velocity so v goes to v+k
+	def drift(ds, e):
+		increment = np.array([[1,ds],
+				      [0,1]])
+		return np.dot(increment,e)
 
+class kicker:
+	def __init__(self,k,e):
+		self.k = k
+		self.e = e
 
-def dipole(k,e):
-	rotate = np.array([[np.cos(k), -np.sin(k)],
-			   [np.sin(k), np.cos(k)]])
-	return np.dot(rotate,e)
+	def dipole(k, e):
+		kick = np.array([0, k])
+		return e + kick
 
-def convertfwd(e):
-	return e[0]*np.array([np.cos(e[1]), np.sin(e[1])]) #have I got columns vs rows right?
+class ID:
+	def __init__(self,e):
+		self.e = e
+	def where:
+		return e
 
-def convertbck(e):
-	return np.array([np.sqrt(e[0]**2+e[1]**2), np.arctan(e[1]/e[0])])
+'''
 
+	def dipole(k,e):
+		rotate = np.array([[np.cos(k), -np.sin(k)],
+				   [np.sin(k), np.cos(k)]])
+		return np.dot(rotate,e)
+
+#convert position/velocity vector into a form suitable for applying the dipole magnet to it, and convert back
+class convert:
+	def __init__(self,e):
+		self.e = e
+	def fwd(e):
+		return e[0]*np.array([np.cos(e[1]), np.sin(e[1])])
+
+	def bck(e):
+		return np.array([np.sqrt(e[0]**2+e[1]**2), np.arctan(e[1]/e[0])])
+'''
 #apply dipole magnet to electron vector
 
 k = np.pi/6
-fwd = convertfwd(e0)
+forwd = e0.convert
 dipole = dipole(k,e0)
-bck = convertbck(dipole)
+back = convert.bck(dipole)
 #check = convertbck(fwd)
 
-print e0[0]
+print drift(e0)
 
 
 
