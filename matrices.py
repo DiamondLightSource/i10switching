@@ -5,15 +5,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animate
 
-
-#k = strength of kicker --> amount by which velocity is incremented by kick
-#dt = time increment of whole process
-#ds = increment for electron vector
-ds = 1
-
-#initial position and velocity (along x axis)
-e0 = np.array([0,0])
-
 #allow electron to drift between magnets
 class drifting:
 	def __init__(self,ds,e):
@@ -40,69 +31,88 @@ class ID:
 	def where(self):
 		return self.e
 
-#initialise time step
-t0 = 0
-
-for dt in range(10): #while True:
+#how to include ID!
+#for dt in range(10): #while True:
 
 	#dt = t0%100
 
+
+def timestep(eBeam, dt):
+	x = [eBeam[0]]
+	ds = 1
 	#strength k of magnet varies by sin function
-	strength = [np.sin(dt*np.pi/10), -1.5*np.sin(dt*np.pi/10), 0.5, -1.5*np.sin(dt*np.pi/10+np.pi/2), np.sin(dt*np.pi/10+np.pi/2)] #currently the kicks aren't right - need to work out what to do
+	strength = [np.sin(dt*np.pi/10), -(1.5)*np.sin(dt*np.pi/10), 0.5, -(1.5)*(np.sin(dt*np.pi/10+np.pi)+1), np.sin(dt*np.pi/10+np.pi)+1]
 
-	if dt == 0:
-		e = e0
+	#path of electron beam
 
-	'''
-	path = [magnet[0].dipole(), move.increment(), move.increment(), magnet[1].dipole(), move.increment(), insertion.where(), move.increment(), magnet[2].dipole(), move.increment(), insertion.where(), move.increment(), magnet[3].dipole(), move.increment(), move.increment(), magnet[4].dipole()]
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	#first kicker
+	eBeam = drifting(ds,eBeam).increment()
+	eBeam = kicker(strength[0],eBeam).dipole()
+	x.append(eBeam[0])
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	#second kicker
+	eBeam = drifting(ds,eBeam).increment()
+	eBeam = kicker(strength[1],eBeam).dipole()
+	x.append(eBeam[0])
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0]) #ID somewhere here - to be added later
+	#third kicker
+	eBeam = drifting(ds,eBeam).increment()
+	eBeam = kicker(strength[2],eBeam).dipole()
+	x.append(eBeam[0])
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0]) #ID somewhere here - to be added later
+	#fourth kicker
+	eBeam = drifting(ds,eBeam).increment()
+	eBeam = kicker(strength[3],eBeam).dipole()
+	x.append(eBeam[0])
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	#fifth kicker
+	eBeam = drifting(ds,eBeam).increment()
+	eBeam = kicker(strength[4],eBeam).dipole()
+	x.append(eBeam[0])
+	#drift
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
+	eBeam = drifting(ds,eBeam).increment()
+	x.append(eBeam[0])
 
-	x = [e0[0]]
-	for i in range(len(path)):
-		e = path[i]
-		x.append(e[0])
-	print x
-	plt.plot(np.arange(16),x)
-#	plt.show()
-	'''
+	plt.plot(x, animated=True)
 
-	#x is velocity
-	x = [e0[1]]
-	e = kicker(strength[0],e).dipole()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = kicker(strength[1],e).dipole()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = ID(e).where()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = kicker(strength[2],e).dipole()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = ID(e).where()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = kicker(strength[3],e).dipole()
-	x.append(e[1])
-	e = drifting(ds,e).increment()
-	x.append(e[1])
-	e = kicker(strength[4],e).dipole()
-	x.append(e[1])
+	
 
-	#############
+#initialise time
+dt = 0
+#initial position and velocity (along x axis)
+eBeam = np.array([0,0])
 
-#	print x
-	plt.plot(np.arange(14),x)
-	plt.show()
+for dt in range(10):
+	#generate and show animation
+	fig = plt.figure()
+	graph = timestep(eBeam,dt)	
+	ani = animate.FuncAnimation(fig, graph, interval=500, blit=True)
 
-	dt += 1
+ani.show()
 
-#problem with the kick strengths currently - not getting beam correctly back on track, but at least the beam is following instructions, even if they're wrong! :)
+
+
 
 
 
