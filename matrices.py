@@ -1,11 +1,15 @@
-#matrices
+# matrices.py
+# animated simulation of chicane magnets
+
+# import libraries
 
 import dls_packages
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
-#allow electron to drift between magnets
+# define matrices to modify the electron beam vector - drift and kicker magnets
+
 class drifting:
 	def __init__(self,ds,e):
 		self.ds = ds
@@ -25,80 +29,82 @@ class kicker:
 		kick = np.array([0, self.k])
 		return self.e + kick
 
+# define the insertion device - this isn't currently used and needs to be added
+
 class ID:
 	def __init__(self,e):
 		self.e = e
 	def where(self):
 		return self.e
 
-#how to include ID!
-#for dt in range(10): #while True:
+# send electron vector through chicane magnets at time t
 
-	#dt = t0%100
-
-
-def timestep(dt):
+def timestep(t):
+	# initialise electron beam
 	eBeam = np.array([0,0])
-	x = [eBeam[0]]
+	eP = [eBeam[0]]
+
+	# set size of step through chicane
 	ds = 1
-	#strength k of magnet varies by sin function
-	strength = [np.sin(dt*np.pi/10)+1, -(1.5)*(np.sin(dt*np.pi/10)+1), 1, -(1.5)*(np.sin(dt*np.pi/10+np.pi)+1), np.sin(dt*np.pi/10+np.pi)+1]
 
-	#path of electron beam
+	# strength k of magnets vary by sin function
+	strength = [np.sin(t*np.pi/100)+1, -(1.5)*(np.sin(t*np.pi/100)+1), 1, -(1.5)*(np.sin(t*np.pi/100+np.pi)+1), np.sin(t*np.pi/100+np.pi)+1]
+	
+	# path of electron beam through chicane magnets
 
-	#drift
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
-	#first kicker
+	eP.append(eBeam[0])
+	# first kicker
 	eBeam = drifting(ds,eBeam).increment()
 	eBeam = kicker(strength[0],eBeam).dipole()
-	x.append(eBeam[0])
-	#drift
+	eP.append(eBeam[0])
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
-	#second kicker
+	eP.append(eBeam[0])
+	# second kicker
 	eBeam = drifting(ds,eBeam).increment()
 	eBeam = kicker(strength[1],eBeam).dipole()
-	x.append(eBeam[0])
-	#drift
+	eP.append(eBeam[0])
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0])
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0]) # insertion device here - to be added later
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0]) #ID somewhere here - to be added later
-	#third kicker
+	eP.append(eBeam[0])
+	# third kicker
 	eBeam = drifting(ds,eBeam).increment()
 	eBeam = kicker(strength[2],eBeam).dipole()
-	x.append(eBeam[0])
-	#drift
+	eP.append(eBeam[0])
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0])
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0]) # insertion device here - to be added later
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0]) #ID somewhere here - to be added later
-	#fourth kicker
+	eP.append(eBeam[0])
+	# fourth kicker
 	eBeam = drifting(ds,eBeam).increment()
 	eBeam = kicker(strength[3],eBeam).dipole()
-	x.append(eBeam[0])
-	#drift
+	eP.append(eBeam[0])
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
-	#fifth kicker
+	eP.append(eBeam[0])
+	# fifth kicker
 	eBeam = drifting(ds,eBeam).increment()
 	eBeam = kicker(strength[4],eBeam).dipole()
-	x.append(eBeam[0])
-	#drift
+	eP.append(eBeam[0])
+	# drift
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0])
 	eBeam = drifting(ds,eBeam).increment()
-	x.append(eBeam[0])
+	eP.append(eBeam[0])
 
-	return x
+	return eP
 
 
-# First set up the figure, the axis, and the plot element we want to animate
+# set up figure, axis and plot element to be animated
 fig = plt.figure()
 ax = plt.axes(xlim=(0, 16), ylim=(-2, 5))
 line, = ax.plot([], [], lw=2)
@@ -108,16 +114,16 @@ def init():
     line.set_data([], [])
     return line,
 
-# animation function.  This is called sequentially
+# animation function
 def animate(t):
-    x = np.arange(0, 17)
+    x = np.arange(0, 17) # currently just plotting position of electron beam against integers - to be modified
     y = timestep(t)
     line.set_data(x, y)
     return line,
 
 # call the animator.  blit=True means only re-draw the parts that have changed.
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=200, interval=70, blit=True)
+                               frames=200, interval=10, blit=True)
 
 plt.show()
 
