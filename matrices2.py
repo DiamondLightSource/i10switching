@@ -1,4 +1,4 @@
-#matrices
+#matrices2 - plots static graphs
 
 import dls_packages
 import numpy as np
@@ -116,8 +116,6 @@ for dt in range(10): #while True:
 	plt.plot((14,14), (-5, 5), 'k--')
 	plt.plot((6,8), (x[6],x[8]), 'r-')
 	plt.plot((10,12), (x[10],x[12]), 'r-')
-
-
 
 	plt.show()
 
