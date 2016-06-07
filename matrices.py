@@ -3,7 +3,7 @@
 import dls_packages
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.animation as animate
+import matplotlib.animation as animation
 
 #allow electron to drift between magnets
 class drifting:
@@ -37,11 +37,12 @@ class ID:
 	#dt = t0%100
 
 
-def timestep(eBeam, dt):
+def timestep(dt):
+	eBeam = np.array([0,0])
 	x = [eBeam[0]]
 	ds = 1
 	#strength k of magnet varies by sin function
-	strength = [np.sin(dt*np.pi/10), -(1.5)*np.sin(dt*np.pi/10), 0.5, -(1.5)*(np.sin(dt*np.pi/10+np.pi)+1), np.sin(dt*np.pi/10+np.pi)+1]
+	strength = [np.sin(dt*np.pi/10)+1, -(1.5)*(np.sin(dt*np.pi/10)+1), 1, -(1.5)*(np.sin(dt*np.pi/10+np.pi)+1), np.sin(dt*np.pi/10+np.pi)+1]
 
 	#path of electron beam
 
@@ -94,22 +95,31 @@ def timestep(eBeam, dt):
 	eBeam = drifting(ds,eBeam).increment()
 	x.append(eBeam[0])
 
-	plt.plot(x, animated=True)
+	return x
 
-	
 
-#initialise time
-dt = 0
-#initial position and velocity (along x axis)
-eBeam = np.array([0,0])
+# First set up the figure, the axis, and the plot element we want to animate
+fig = plt.figure()
+ax = plt.axes(xlim=(0, 16), ylim=(-2, 5))
+line, = ax.plot([], [], lw=2)
 
-for dt in range(10):
-	#generate and show animation
-	fig = plt.figure()
-	graph = timestep(eBeam,dt)	
-	ani = animate.FuncAnimation(fig, graph, interval=500, blit=True)
+# initialization function: plot the background of each frame
+def init():
+    line.set_data([], [])
+    return line,
 
-ani.show()
+# animation function.  This is called sequentially
+def animate(t):
+    x = np.arange(0, 17)
+    y = timestep(t)
+    line.set_data(x, y)
+    return line,
+
+# call the animator.  blit=True means only re-draw the parts that have changed.
+anim = animation.FuncAnimation(fig, animate, init_func=init,
+                               frames=200, interval=70, blit=True)
+
+plt.show()
 
 
 
