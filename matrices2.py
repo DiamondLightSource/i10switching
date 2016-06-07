@@ -107,6 +107,18 @@ for dt in range(10): #while True:
 	x.append(eBeam[0])
 
 	plt.plot(x)
+	plt.plot((2,2), (-5, 5), 'k--')
+	plt.plot((4,4), (-5, 5), 'k--')
+	plt.plot((6,6), (0, 0), 'r.')
+	plt.plot((8,8), (-5, 5), 'k--')
+	plt.plot((10,10), (0, 0), 'r.')
+	plt.plot((12,12), (-5, 5), 'k--')
+	plt.plot((14,14), (-5, 5), 'k--')
+	plt.plot((6,8), (x[6],x[8]), 'r-')
+	plt.plot((10,12), (x[10],x[12]), 'r-')
+
+
+
 	plt.show()
 
 	dt += 1
