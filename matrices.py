@@ -37,6 +37,9 @@ class Kicker:
         kick = np.array([0, self.k])
         return self.e + kick
 
+#    def locate(self):
+#        return ???
+
 
 # Define the insertion device - needs to be added.
 
@@ -47,17 +50,18 @@ class InsertionDevice:
     def __init__(self,e):
         self.e = e
 
-    def where(self):
-        return self.e
+#    def where(self):
+#        return ???
 
 
 # Send electron vector through chicane magnets at time t.
 
 def timestep(t):
 
-    # Initialise electron beam
+    # Initialise electron beam and position within system
     e_beam = np.array([0,0])
     e_pos = [e_beam[0]]
+    s = 0
 
     # Set size of step through chicane
     STEP = 1
@@ -71,7 +75,7 @@ def timestep(t):
 	
     # Path of electron beam through chicane magnets:
     # Drift
-    e_beam = Drifting(STEP,e_beam).increment()
+    e_beam = Drifting(STEP,e_beam).increment() #want to increase s by STEP each time # maybe have an overall class that you can call to increment s, apply drift or kicker, add on position...
     e_pos.append(e_beam[0])
     # First kicker
     e_beam = Drifting(STEP,e_beam).increment()
@@ -134,8 +138,8 @@ def init():
 
 # Animation function
 def animate(t):
-    x = np.arange(0, 17)  # currently just plotting position of electron beam against integers - to be modified
     y = timestep(t)
+    x = np.arange(len(y))  # currently just plotting position of electron beam against integers - to be modified
     line.set_data(x, y)
     return line,
 
