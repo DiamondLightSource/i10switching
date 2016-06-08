@@ -78,10 +78,13 @@ def timestep(t):
     e_pos = [e_beam[0]]
     where = 0
     s = [where]
+    # Initialise photon beam and position within system
+    p_beam = []
     sp = []
+    # Initialise locations of insertion devices and kickers
     idloc = []
     kickerloc = []
-    p_beam = []
+
 
     # Set size of step through chicane
     STEP = 1
@@ -94,6 +97,7 @@ def timestep(t):
         np.sin(t*np.pi/100 + np.pi) + 1
         ])
 
+    # Define path through the chicane
     path = [
         Drifting(STEP),Kicker(strength[0],STEP),
         Drifting(STEP),Kicker(strength[1],STEP),
@@ -105,6 +109,7 @@ def timestep(t):
         Drifting(STEP),Drifting(STEP)
         ]
 
+    # Calculate positions of electron beam, photon beam, kickers and insertion devices
     for p in range(len(path)):
         obj = path[p].type()
         if obj == 'id':
@@ -125,37 +130,37 @@ def timestep(t):
             p_beam.append(e_beam[0])
             sp.append(where)
 
-    return s, e_pos, idloc, kickerloc, sp, p_beam #also want to return specifically the locations of the magnets and IDs to be plotted :)
+    return s, e_pos, idloc, kickerloc, sp, p_beam
 
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
 ax = plt.axes(xlim=(0, 16), ylim=(-2, 5))
-line, = ax.plot([], [], lw=1)
+e_line, = ax.plot([], [], lw=1)
 idwhere, = ax.plot([], [], 'r.')
-pline, = ax.plot([], [], 'r.')
+p_line, = ax.plot([], [], 'r.')
 
 # Initialisation function: plot the background of each frame.
 def init():
-    line.set_data([], [])
+
+    e_line.set_data([], [])
     idwhere.set_data([], [])
-    pline.set_data([],[])
-    return line, idwhere, pline,
+    p_line.set_data([],[])
+    return e_line, idwhere, p_line,
 
 # Animation function
 def animate(t):
-    x = timestep(t)[0]
-    y = timestep(t)[1]
-    id = timestep(t)[2]
-    line.set_data(x, y)
-    idwhere.set_data(id, [0,0])
-    pline.set_data(timestep(t)[4], timestep(t)[5]) # Currently marking photon beams by 3 points per beam as a starting point
+
+    e_line.set_data(timestep(t)[0], timestep(t)[1])
+    idwhere.set_data(timestep(t)[2], [0,0])
     k1 = plt.axvline(x=timestep(t)[3][0], color='k', linestyle='dashed')
     k2 = plt.axvline(x=timestep(t)[3][1], color='k', linestyle='dashed')
     k3 = plt.axvline(x=timestep(t)[3][2], color='k', linestyle='dashed')
     k4 = plt.axvline(x=timestep(t)[3][3], color='k', linestyle='dashed')
     k5 = plt.axvline(x=timestep(t)[3][4], color='k', linestyle='dashed') # Must be a nicer way...
-    return line, idwhere, k1, k2, k3, k4, k5, pline, 
+    p_line.set_data(timestep(t)[4], timestep(t)[5]) # Currently marking photon beams by 3 points per beam as a starting point
+
+    return e_line, idwhere, k1, k2, k3, k4, k5, p_line, 
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
