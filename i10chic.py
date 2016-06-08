@@ -27,6 +27,9 @@ class Drifting:
     def locate(self,where):
         return where + self.STEP
 
+    def type(self):
+        return 'drift'
+
 class Kicker:
 
 
@@ -42,6 +45,9 @@ class Kicker:
 
     def locate(self,where):
         return where + self.STEP
+
+    def type(self):
+        return 'kicker'
 
 
 # Define the insertion device - needs to be added.
@@ -60,6 +66,8 @@ class InsertionDevice:
     def locate(self,where):
         return where + self.STEP
 
+    def type(self):
+        return 'id'
 
 # Send electron vector through chicane magnets at time t.
 
@@ -70,6 +78,7 @@ def timestep(t):
     e_pos = [e_beam[0]]
     where = 0
     s = [where]
+    idloc = []
 
     # Set size of step through chicane
     STEP = 1
@@ -93,40 +102,54 @@ def timestep(t):
         ]
 
     for p in path:
+        obj = p.type()
+        if obj == 'id':
+            idloc.append(p.locate(where))
         e_beam = p.increment(e_beam)
         e_pos.append(e_beam[0])
         where = p.locate(where)
         s.append(where)
 
-    return s, e_pos
+
+    return s, e_pos, idloc #also want to return specifically the locations of the magnets and IDs to be plotted :)
+
+f = timestep(1)
+print f[2][0]
+
+
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
 ax = plt.axes(xlim=(0, 16), ylim=(-2, 5))
-line, = ax.plot([], [], lw=2)
+line, = ax.plot([], [], lw=1)
+idwhere, = ax.plot([], [], 'r.')
+kickerwhere, = ax.plot([], [], 'k.')
 
+'''
 # Plot locations of magnets etc
 plt.axvline(x=2,color='k',linestyle='dashed')
 plt.axvline(x=4,color='k',linestyle='dashed')
 plt.axvline(x=8,color='k',linestyle='dashed')
 plt.axvline(x=12,color='k',linestyle='dashed')
 plt.axvline(x=14,color='k',linestyle='dashed')
-plt.plot((6,6), (0, 0), 'r.')
-plt.plot((10,10), (0, 0), 'r.')
+'''
 
 # Initialisation function: plot the background of each frame.
 def init():
     line.set_data([], [])
-    return line,
+    idwhere.set_data([], [])
+    kickerwhere.set_data([], [])
+    return line, idwhere, kickerwhere,
 
 # Animation function
 def animate(t):
-#    y = timestep(t)
-#    x = np.arange(len(y))  # currently just plotting position of electron beam against integers - to be modified
     x = timestep(t)[0]
     y = timestep(t)[1]
+    id = timestep(t)[2]
     line.set_data(x, y)
-    return line,
+    idwhere.set_data(id, [0,0])
+    kickerwhere.set_data([2,4,8,12,14], [0,0,0,0,0])
+    return line, idwhere, kickerwhere,
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
