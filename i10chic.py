@@ -79,6 +79,7 @@ def timestep(t):
     where = 0
     s = [where]
     idloc = []
+    kickerloc = []
 
     # Set size of step through chicane
     STEP = 1
@@ -105,17 +106,15 @@ def timestep(t):
         obj = p.type()
         if obj == 'id':
             idloc.append(p.locate(where))
+        if obj == 'kicker':
+            kickerloc.append(p.locate(where))
         e_beam = p.increment(e_beam)
         e_pos.append(e_beam[0])
         where = p.locate(where)
         s.append(where)
 
 
-    return s, e_pos, idloc #also want to return specifically the locations of the magnets and IDs to be plotted :)
-
-f = timestep(1)
-print f[2][0]
-
+    return s, e_pos, idloc, kickerloc #also want to return specifically the locations of the magnets and IDs to be plotted :)
 
 
 # Set up figure, axis and plot element to be animated.
@@ -123,23 +122,12 @@ fig = plt.figure()
 ax = plt.axes(xlim=(0, 16), ylim=(-2, 5))
 line, = ax.plot([], [], lw=1)
 idwhere, = ax.plot([], [], 'r.')
-kickerwhere, = ax.plot([], [], 'k.')
-
-'''
-# Plot locations of magnets etc
-plt.axvline(x=2,color='k',linestyle='dashed')
-plt.axvline(x=4,color='k',linestyle='dashed')
-plt.axvline(x=8,color='k',linestyle='dashed')
-plt.axvline(x=12,color='k',linestyle='dashed')
-plt.axvline(x=14,color='k',linestyle='dashed')
-'''
 
 # Initialisation function: plot the background of each frame.
 def init():
     line.set_data([], [])
     idwhere.set_data([], [])
-    kickerwhere.set_data([], [])
-    return line, idwhere, kickerwhere,
+    return line, idwhere,
 
 # Animation function
 def animate(t):
@@ -148,8 +136,12 @@ def animate(t):
     id = timestep(t)[2]
     line.set_data(x, y)
     idwhere.set_data(id, [0,0])
-    kickerwhere.set_data([2,4,8,12,14], [0,0,0,0,0])
-    return line, idwhere, kickerwhere,
+    k1 = plt.axvline(x=timestep(t)[3][0], color='k', linestyle='dashed')
+    k2 = plt.axvline(x=timestep(t)[3][1], color='k', linestyle='dashed')
+    k3 = plt.axvline(x=timestep(t)[3][2], color='k', linestyle='dashed')
+    k4 = plt.axvline(x=timestep(t)[3][3], color='k', linestyle='dashed')
+    k5 = plt.axvline(x=timestep(t)[3][4], color='k', linestyle='dashed') # Must be a nicer way...
+    return line, idwhere, k1, k2, k3, k4, k5
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
