@@ -24,8 +24,8 @@ class Drifting:
                           [0,1]])
         return np.dot(drift,e)
 
-    def locate(self,e):
-        return e
+    def locate(self,where):
+        return where + self.STEP
 
 class Kicker:
 
@@ -40,8 +40,8 @@ class Kicker:
                           [0,1]])
         return np.dot(drift,e) + kick
 
-    def locate(self,e):
-        return e
+    def locate(self,where):
+        return where + self.STEP
 
 
 # Define the insertion device - needs to be added.
@@ -57,8 +57,8 @@ class InsertionDevice:
                           [0,1]])
         return np.dot(drift,e)
 
-    def locate(self,e):
-        return e #TO WORK OUT HOW TO GET LOCATIONS... NEEDS THINKING ABOUT
+    def locate(self,where):
+        return where + self.STEP
 
 
 # Send electron vector through chicane magnets at time t.
@@ -68,7 +68,8 @@ def timestep(t):
     # Initialise electron beam and position within system
     e_beam = np.array([0,0])
     e_pos = [e_beam[0]]
-#    s = 0
+    where = 0
+    s = [where]
 
     # Set size of step through chicane
     STEP = 1
@@ -94,8 +95,10 @@ def timestep(t):
     for p in path:
         e_beam = p.increment(e_beam)
         e_pos.append(e_beam[0])
+        where = p.locate(where)
+        s.append(where)
 
-    return e_pos
+    return s, e_pos
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
@@ -111,19 +114,21 @@ plt.axvline(x=14,color='k',linestyle='dashed')
 plt.plot((6,6), (0, 0), 'r.')
 plt.plot((10,10), (0, 0), 'r.')
 
-# Initialization function: plot the background of each frame.
+# Initialisation function: plot the background of each frame.
 def init():
     line.set_data([], [])
     return line,
 
 # Animation function
 def animate(t):
-    y = timestep(t)
-    x = np.arange(len(y))  # currently just plotting position of electron beam against integers - to be modified
+#    y = timestep(t)
+#    x = np.arange(len(y))  # currently just plotting position of electron beam against integers - to be modified
+    x = timestep(t)[0]
+    y = timestep(t)[1]
     line.set_data(x, y)
     return line,
 
-# Call the animator.
+# Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=200, interval=10, blit=True)
 
