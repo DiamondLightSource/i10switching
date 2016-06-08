@@ -19,21 +19,24 @@ class Drifting:
     def __init__(self,STEP):
         self.STEP = STEP
 
-    def increment(self):
+    def increment(self, e):
         drift = np.array([[1,self.STEP],
                           [0,1]])
-        return drift #np.dot(drift,self.e)
+        return np.dot(drift,e)
 
 
 class Kicker:
 
 
-    def __init__(self,k):
+    def __init__(self,k,STEP):
         self.k = k
+        self.STEP = STEP
 
-    def increment(self):
+    def increment(self, e):
         kick = np.array([0, self.k])
-        return kick #self.e + kick
+        drift = np.array([[1,self.STEP],
+                          [0,1]])
+        return np.dot(drift,e) + kick
 
 #    def locate(self):
 #        return ???
@@ -73,13 +76,10 @@ def timestep(t):
 
 
 
-    path = [Drifting(STEP),Drifting(STEP),Kicker(strength[0]),Drifting(STEP),Drifting(STEP),Kicker(strength[1]),Drifting(STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[2]),Drifting(STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[3]),Drifting(STEP),Drifting(STEP),Kicker(strength[4]),Drifting(STEP),Drifting(STEP)]
+    path = [Drifting(STEP),Kicker(strength[0],STEP),Drifting(STEP),Kicker(strength[1],STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[2],STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[3],STEP),Drifting(STEP),Kicker(strength[4],STEP),Drifting(STEP),Drifting(STEP)]
 
-    for i in range(len(path)):
-        if path[i] == Drifting(STEP): #THIS LINE DOESN'T WORK!!!
-            e_beam = np.dot(path[i].increment(), e_beam)
-        else:
-            e_beam = e_beam + path[i].increment()
+    for p in path:
+        e_beam = p.increment(e_beam)
         e_pos.append(e_beam[0])
 
     '''
