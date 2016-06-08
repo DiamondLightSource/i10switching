@@ -16,26 +16,24 @@ import matplotlib.animation as animation
 class Drifting:
 
 
-    def __init__(self,STEP,e):
+    def __init__(self,STEP):
         self.STEP = STEP
-        self.e = e
 
     def increment(self):
         drift = np.array([[1,self.STEP],
                           [0,1]])
-        return np.dot(drift,self.e)
+        return drift #np.dot(drift,self.e)
 
 
 class Kicker:
 
 
-    def __init__(self,k,e):
+    def __init__(self,k):
         self.k = k
-        self.e = e
 
-    def dipole(self):
+    def increment(self):
         kick = np.array([0, self.k])
-        return self.e + kick
+        return kick #self.e + kick
 
 #    def locate(self):
 #        return ???
@@ -72,7 +70,19 @@ def timestep(t):
         1, -(1.5)*(np.sin(t*np.pi/100 + np.pi) + 1), 
         np.sin(t*np.pi/100 + np.pi) + 1
         ]
-	
+
+
+
+    path = [Drifting(STEP),Drifting(STEP),Kicker(strength[0]),Drifting(STEP),Drifting(STEP),Kicker(strength[1]),Drifting(STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[2]),Drifting(STEP),Drifting(STEP),Drifting(STEP),Drifting(STEP),Kicker(strength[3]),Drifting(STEP),Drifting(STEP),Kicker(strength[4]),Drifting(STEP),Drifting(STEP)]
+
+    for i in range(len(path)):
+        if path[i] == Drifting(STEP): #THIS LINE DOESN'T WORK!!!
+            e_beam = np.dot(path[i].increment(), e_beam)
+        else:
+            e_beam = e_beam + path[i].increment()
+        e_pos.append(e_beam[0])
+
+    '''
     # Path of electron beam through chicane magnets:
     # Drift
     e_beam = Drifting(STEP,e_beam).increment() #want to increase s by STEP each time # maybe have an overall class that you can call to increment s, apply drift or kicker, add on position...
@@ -122,9 +132,8 @@ def timestep(t):
     e_pos.append(e_beam[0])
     e_beam = Drifting(STEP,e_beam).increment()
     e_pos.append(e_beam[0])
-
+    '''
     return e_pos
-
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
@@ -148,7 +157,6 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=200, interval=10, blit=True)
 
 plt.show()
-
 
 
 
