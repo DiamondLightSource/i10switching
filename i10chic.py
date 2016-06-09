@@ -56,7 +56,7 @@ class InsertionDevice:
 
 
 # Define positions of stuff in system
-length = [2,2,6,6,6,6,2,2] #lengths to drift between kickers and ids, must be symmetric about centre magnet
+length = [2,2,6,6,6,6,2,2] # lengths to drift between kickers and ids, currently must be symmetric about centre magnet
 p = 0
 pos = [p]
 for L in length:
@@ -70,7 +70,7 @@ p_pos = [[pos[3], pos[3]+30],[pos[5],pos[5]+30]]
 # Define magnet strength factors (dependent on relative positions and time)
 len1 = pos[2] - pos[1]
 len2 = pos[4] - pos[2]
-stren = np.array([1, 1 + float(len1)/float(len2), 2*float(len1)/float(len2), 1 + float(len1)/float(len2), 1])
+stren = np.array([1, 1 + float(len1)/float(len2), 2*float(len1)/float(len2), 1 + float(len1)/float(len2), 1]) # it's actually more complicated than this
 
 
 def strength(t):
@@ -99,7 +99,7 @@ def get_elements(t):
         Drifting(length[7])
         ]
 
-    return path
+    return path #THIS SHOULDN'T BE IN A FUNCTION AND KICKER STRENGTHS SHOULDN'T BE TIME DEPENDENT HERE - NEEDS SORTING
 
 
 # Send electron vector through chicane magnets at time t.
@@ -132,6 +132,7 @@ print f[:,0][0]
 '''
 
 def photon(t):
+
     p1 = timestep(t)[1][0]
     p2 = timestep(t)[1][1]
     p1loc = [p1[0]]
@@ -140,6 +141,7 @@ def photon(t):
     p2 = Drifting(p_pos[1][1]-p_pos[1][0]).increment(p2)
     p1loc.append(p1[0])
     p2loc.append(p2[0])
+
     return p1loc, p2loc #should be able to combine this into a list so I don't have to repeat all the commands
 
 
