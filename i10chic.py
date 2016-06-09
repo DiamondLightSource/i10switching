@@ -56,7 +56,7 @@ class InsertionDevice:
 
 
 # Define positions of stuff in system
-length = [2,2,6,6,6,6,2,2] # lengths to drift between kickers and ids, currently must be symmetric about centre magnet
+length = [2,2,6,6,6,6,2,2] # lengths to drift between kickers and ids
 p = 0
 pos = [p]
 for L in length:
@@ -70,7 +70,11 @@ p_pos = [[pos[3], pos[3]+30],[pos[5],pos[5]+30]]
 # Define magnet strength factors (dependent on relative positions and time)
 len1 = pos[2] - pos[1]
 len2 = pos[4] - pos[2]
-stren = np.array([1, 1 + float(len1)/float(len2), 2*float(len1)/float(len2), 1 + float(len1)/float(len2), 1]) # it's actually more complicated than this
+len3 = pos[6] - pos[4]
+len4 = pos[7] - pos[6]
+stren = np.array([1, 1 + float(len1)/float(len2), 2*float(len1)/float(len2), 
+                  float(len1)/float(len2)*(1 + float(len3)/float(len4)), 
+                  (float(len1)/float(len2))*(float(len3)/float(len4))])
 
 
 def strength(t):
