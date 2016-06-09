@@ -33,18 +33,15 @@ class Drifting:
 class Kicker:
 
 
-    def __init__(self, which, STEP):
+    def __init__(self, which):
         self.which = which
-        self.STEP = STEP
 
     def increment(self, e):
         kick = np.array([0, self.which])
-        #drift = np.array([[1,self.STEP],
-        #                  [0,1]])
-        return e + kick #+ np.dot(drift,e)
+        return e + kick
 
     def locate(self,where):
-        return where# + self.STEP
+        return where
 
     def type(self):
         return 'kicker'
@@ -55,16 +52,14 @@ class Kicker:
 class InsertionDevice:
 
 
-    def __init__(self, STEP):
-        self.STEP = STEP
+    def __init__(self):
+        pass
 
     def increment(self, e):
-        #drift = np.array([[1,self.STEP],
-        #                  [0,1]])
-        return e #np.dot(drift,e)
+        return e
 
     def locate(self,where):
-        return where# + self.STEP
+        return where
 
     def type(self):
         return 'id'
@@ -99,17 +94,17 @@ def timestep(t):
 
     # Define path through the chicane
     path = [
-        Drifting(STEP),Kicker(strength[0],STEP),Drifting(STEP),
-        Drifting(STEP),Kicker(strength[1],STEP),Drifting(STEP),
-        Drifting(STEP),InsertionDevice(STEP),Drifting(STEP),
-        Drifting(STEP),Kicker(strength[2],STEP),Drifting(STEP),
-        Drifting(STEP),InsertionDevice(STEP),Drifting(STEP),
-        Drifting(STEP),Kicker(strength[3],STEP),Drifting(STEP),
-        Drifting(STEP),Kicker(strength[4],STEP),Drifting(STEP),
+        Drifting(STEP),Drifting(STEP),Kicker(strength[0]),
+        Drifting(STEP),Drifting(STEP),Kicker(strength[1]),
+        Drifting(STEP),Drifting(STEP),InsertionDevice(),
+        Drifting(STEP),Drifting(STEP),Kicker(strength[2]),
+        Drifting(STEP),Drifting(STEP),InsertionDevice(),
+        Drifting(STEP),Drifting(STEP),Kicker(strength[3]),
+        Drifting(STEP),Drifting(STEP),Kicker(strength[4]),
         Drifting(STEP),Drifting(STEP)
         ]
 
-    # Calculate positions of electron beam, photon beam, kickers and insertion devices
+    # Calculate positions of electron beam, photon beam, kickers and insertion devices.
     for p in range(len(path)):
         obj = path[p].type()
         if obj == 'id':
@@ -133,6 +128,9 @@ def timestep(t):
             p_beam.append(e_beam[0])
             sp.append(where)
 
+
+
+    # Photon beam plotting stuff
     px1 = sp[:len(sp)/2]
     py1 = p_beam[:len(p_beam)/2]
     px2 = sp[len(sp)/2:]
@@ -195,20 +193,22 @@ def init():
     p_line2.set_data([],[])
     return e_line, idwhere, p_line, p_line2,
 
+import gc  # This can't stay here!
 # Animation function
 def animate(t):
+    data = timestep(t)
+    e_line.set_data(data[0], data[1])
+    idwhere.set_data(data[2], [0,0])
+    k1 = plt.axvline(x=data[3][0], color='k', linestyle='dashed')
+    k2 = plt.axvline(x=data[3][1], color='k', linestyle='dashed')
+    k3 = plt.axvline(x=data[3][2], color='k', linestyle='dashed')
+    k4 = plt.axvline(x=data[3][3], color='k', linestyle='dashed')
+    k5 = plt.axvline(x=data[3][4], color='k', linestyle='dashed') # Must be a nicer way...
+    p_line.set_data(data[4], data[5])
+    p_line2.set_data(data[6], data[7])
 
-    e_line.set_data(timestep(t)[0], timestep(t)[1])
-    idwhere.set_data(timestep(t)[2], [0,0])
-    k1 = plt.axvline(x=timestep(t)[3][0], color='k', linestyle='dashed')
-    k2 = plt.axvline(x=timestep(t)[3][1], color='k', linestyle='dashed')
-    k3 = plt.axvline(x=timestep(t)[3][2], color='k', linestyle='dashed')
-    k4 = plt.axvline(x=timestep(t)[3][3], color='k', linestyle='dashed')
-    k5 = plt.axvline(x=timestep(t)[3][4], color='k', linestyle='dashed') # Must be a nicer way...
-    p_line.set_data(timestep(t)[4], timestep(t)[5])
-    p_line2.set_data(timestep(t)[6], timestep(t)[7])
-
-
+    k = [k1, k2, k3, k4, k5]
+    gc.collect(0)
     return e_line, idwhere, k1, k2, k3, k4, k5, p_line, p_line2,
 
 # Call the animator
