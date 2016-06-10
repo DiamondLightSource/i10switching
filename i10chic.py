@@ -17,7 +17,7 @@ class Drifting:
 
 
     def __init__(self):
-        pass
+        pass # Do I want to have a value of step in here? Apparently yes but couldn't get code to work when I tried to put it in so leaving it for now
         #self.step = None
 
     def set_length(self, step):
@@ -134,7 +134,7 @@ def timestep(t):
          if p.get_type() == 'id':
             p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
 
-    return e_vector, p_vector, # returns positions and locations
+    return e_vector, p_vector, # returns positions and velocities of electrons and photons
 
 '''
 #columns testing
@@ -154,9 +154,6 @@ def e_plot(t):
 # Photon beam data: returns list of beam vector positions and velocity directions
 def photon(t):
 
-#    photon_plot = np.array(timestep(t)[1])[:,0] 
-#    photon_plot = photon_plot.reshape((2,1)).tolist() # how to use...
-
     photon_beam = timestep(t)[1]
     # Allow photon vector to drift over large distance (ie off the graph)
     # and add the vector describing its new position and velocity to the 
@@ -166,6 +163,17 @@ def photon(t):
     travel.set_length(p_pos[0][1]-p_pos[0][0])
     for vector in photon_beam:
         vector.extend(travel.increment(vector))
+
+#    Alternative method TO BE TESTED
+#    photon_plot = np.array(timestep(t)[1])[:,0] 
+#######    photon_plot = photon_plot.reshape((2,1)).tolist() # how to use...
+#    newpoints = []
+#    for vector in photon_beam:
+#        vector = travel.increment(vector)
+#        newpoints.append(vector[0])
+#    photonplots = zip(photon_plot, newpoints)
+#    # This should give a nice little list like this: [(x1,x1*),(x2,x2*)] where * delineates the new points
+#    # This should be very plottable but no time to test now!
 
     return photon_beam
 
