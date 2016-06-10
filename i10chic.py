@@ -35,8 +35,7 @@ class Kicker:
         self.which = which
 
     def identify(self):
-        i = self.which
-        return i
+        return self.which
 
     def increment(self, e, k):
         kick = np.array([0, k])
@@ -100,10 +99,6 @@ path = [
     Drifting(length[7])
     ]
 
-# to get strength associated with kicker
-# for Kicker(i) use strength(t)[i]
-# for p in path ... if p.type() == 'kicker' p.increment(e_beam,strength(t)[p.identify()]) else p.increment(e_beam)
-
 
 # Send electron vector through chicane magnets at time t.
 def timestep(t):
@@ -120,16 +115,16 @@ def timestep(t):
     kick = strength(t)
     for p in path:
         if p.type() == 'kicker':
-            e_beam = p.increment(e_beam,kick[p.identify()])
+            e_beam = p.increment(e_beam,kick[p.identify()])  # Apply kick to electron beam
         elif p.type() == 'drift':
             e_beam = p.increment(e_beam)
             e_loc.append(e_beam[0])
-            e_vector.append([e_beam[0],e_beam[1]]) #must be a nicer way to append this data...
+            e_vector.append([e_beam[0],e_beam[1]])  # Allow electron vector to drift and append its new location and velocity to vector collecting the data #must be a nicer way to append this data...
         elif p.type() == 'id':
             e_beam = p.increment(e_beam)
-            p_vector.append([e_beam[0],e_beam[1]])
+            p_vector.append([e_beam[0],e_beam[1]])  # Electron vector passes through insertion device, photon vector created
     
-    return e_vector, p_vector, e_loc  # returns positions and locations but currently just using positions
+    return e_vector, p_vector, e_loc  # returns positions and locations but currently just using positions STILL NEEDS SOME TIDYING
 '''
 #columns testing
 f = np.array(timestep(3)[1])
@@ -142,6 +137,9 @@ print f[:,0][0]
 def photon(t):
 
     photon_beam = timestep(t)[1]
+    # Allow photon vector to drift over large distance (ie off the graph)
+    # and add the vector describing its new position and velocity to the 
+    # information of its original position. For both beams simultaneously.
     for vector in photon_beam:
         vector.extend(Drifting(p_pos[0][1]-p_pos[0][0]).increment(vector))
 
@@ -149,7 +147,7 @@ def photon(t):
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
-ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
+ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 3))
 e_line, = ax.plot([], [], lw=1)
 p_beam1, = ax.plot([], [], 'r-')
 p_beam2, = ax.plot([], [], 'r-')
@@ -164,14 +162,17 @@ def init():
     return e_line, p_beam1, p_beam2,
 
 import gc  # This can't stay here! This is garbage collection
+
 # Animation function
 def animate(t):
+
     e_data = timestep(t)[2] # NEEDS SORTING OUT
     p_data = photon(t)
     e_line.set_data(pos, e_data)
     p_beam1.set_data(p_pos[0],[p_data[0][0],p_data[0][2]])
     p_beam2.set_data(p_pos[1],[p_data[1][0],p_data[1][2]]) # I'm resetting the data each time but not sure I can do a multiple plot thing with the way the photon data is currently set up...
     gc.collect(0)
+
     return e_line, p_beam1, p_beam2,
 
 # Call the animator
