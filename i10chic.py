@@ -98,7 +98,25 @@ path = [
     Drifting(length[6]),Kicker(4),
     Drifting(length[7])
     ]
+#function that returns all items in order of particular type so don't have to check if it's a kicker when going through
 
+def get_elements(path):
+    drifts = []
+    kickers = []
+    ids = []
+    for p in path:
+        which = p.type()
+        if which == 'drift':
+            drifts.append(p)
+        elif which == 'kicker':
+            kickers.append(p)
+        elif which == 'id':
+            ids.append(p)
+    return drifts, kickers, ids # This doesn't do what I want it to do yet. What do I want it to do?
+
+print get_elements(path)[0][0].type()
+
+# Take path element, find out what element it is, apply relevant action
 
 # Send electron vector through chicane magnets at time t.
 def timestep(t):
