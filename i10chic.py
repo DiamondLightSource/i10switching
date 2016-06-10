@@ -83,7 +83,7 @@ def strength(t):
         ])
 
     return kick
-
+'''
 # Define path through magnet
 def get_elements(t):
 
@@ -100,6 +100,18 @@ def get_elements(t):
         ]
 
     return path #THIS SHOULDN'T BE IN A FUNCTION AND KICKER STRENGTHS SHOULDN'T BE TIME DEPENDENT HERE - NEEDS SORTING
+'''
+path = [
+    Drifting(length[0]),Kicker(0),
+    Drifting(length[1]),Kicker(1),
+    Drifting(length[2]),InsertionDevice(),
+    Drifting(length[3]),Kicker(2),
+    Drifting(length[4]),InsertionDevice(),
+    Drifting(length[5]),Kicker(3),
+    Drifting(length[6]),Kicker(4),
+    Drifting(length[7])
+    ]
+
 
 
 # Send electron vector through chicane magnets at time t.
@@ -144,7 +156,6 @@ def photon(t):
 fig = plt.figure()
 ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
 e_line, = ax.plot([], [], lw=1)
-idwhere, = ax.plot([], [], 'r.')
 p_beam1, = ax.plot([], [], 'r-')
 p_beam2, = ax.plot([], [], 'r-')
 
@@ -152,12 +163,10 @@ p_beam2, = ax.plot([], [], 'r-')
 def init():
 
     e_line.set_data([], [])
-    idwhere.set_data([], [])
     p_beam1.set_data([], [])
     p_beam2.set_data([], [])
-
-    return e_line, idwhere, p_beam1, p_beam2,
-
+    
+    return e_line, p_beam1, p_beam2,
 
 import gc  # This can't stay here! This is garbage collection
 # Animation function
@@ -165,25 +174,21 @@ def animate(t):
     e_data = timestep(t)[2] # NEEDS SORTING OUT
     p_data = photon(t)
     e_line.set_data(pos, e_data)
-    idwhere.set_data(id_pos, [0,0])
-    k1 = plt.axvline(x=kicker_pos[0], color='k', linestyle='dashed')
-    k2 = plt.axvline(x=kicker_pos[1], color='k', linestyle='dashed')
-    k3 = plt.axvline(x=kicker_pos[2], color='k', linestyle='dashed')
-    k4 = plt.axvline(x=kicker_pos[3], color='k', linestyle='dashed')
-    k5 = plt.axvline(x=kicker_pos[4], color='k', linestyle='dashed') # Must be a nicer way...
     p_beam1.set_data(p_pos[0],[p_data[0][0],p_data[0][2]])
-    p_beam2.set_data(p_pos[1],[p_data[1][0],p_data[1][2]])
-
+    p_beam2.set_data(p_pos[1],[p_data[1][0],p_data[1][2]]) # I'm resetting the data each time but not sure I can do a multiple plot thing with the way the photon data is currently set up...
     gc.collect(0)
-    return e_line, idwhere, k1, k2, k3, k4, k5, p_beam1, p_beam2,
-
+    return e_line, p_beam1, p_beam2,
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=200, interval=10, blit=True)
 
+# Plot positions of kickers and IDs
+for i in kicker_pos:
+    plt.axvline(x=i, color='k', linestyle='dashed')
+plt.plot(id_pos, [0,0], 'r.')
+
+
 plt.show()
-
-
 
 
