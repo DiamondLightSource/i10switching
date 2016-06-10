@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 
 
 # Define matrices to modify the electron beam vector:
-# drift and kicker magnets.
+# drift, kicker magnets, insertion devices.
 
 
 class Drifting:
@@ -56,37 +56,33 @@ class InsertionDevice:
 
 
 # Define positions of stuff in system
-length = [2,2,6,6,6,6,2,2] # lengths to drift between kickers and ids
-p = 0
-pos = [p]
-for L in length:
-    p += L
-    pos.append(p)
-# Positions of kickers, ids, on axis photon beam points
+length = [2,1,8,6,4,9,3,7] # lengths to drift between kickers and IDs
+pos = [0]
+pos.extend(np.cumsum(length))
+
+# Positions of kickers, IDs and 'on axis' photon beam points for plotting purposes.
 kicker_pos = [pos[1],pos[2],pos[4],pos[6],pos[7]]
-id_pos = [pos[3],pos[5]] #is there a nicer way of doing this?
+id_pos = [pos[3],pos[5]]
 p_pos = [[pos[3], pos[3]+30],[pos[5],pos[5]+30]]
 
 # Define magnet strength factors (dependent on relative positions and time)
 len1 = pos[2] - pos[1]
 len2 = pos[4] - pos[2]
+d12 = float(len1)/float(len2)
 len3 = pos[6] - pos[4]
 len4 = pos[7] - pos[6]
-stren = np.array([1, 1 + float(len1)/float(len2), 2*float(len1)/float(len2), 
-                  float(len1)/float(len2)*(1 + float(len3)/float(len4)), 
-                  (float(len1)/float(len2))*(float(len3)/float(len4))])
-
+d34 = float(len3)/float(len4)
+stren = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
 
 def strength(t):
 
     kick = stren*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-        1, -(np.sin(t*np.pi/100 + np.pi) + 1), 
-        np.sin(t*np.pi/100 + np.pi) + 1
+        1, np.sin(t*np.pi/100) - 1,
+        -np.sin(t*np.pi/100) + 1
         ])
 
     return kick
-
 
 # Define path through magnet
 def get_elements(t):
@@ -135,19 +131,14 @@ print f[:,0]
 print f[:,0][0]
 '''
 
+# Photon beam data: returns list of beam vector positions and velocity directions
 def photon(t):
 
-    p1 = timestep(t)[1][0]
-    p2 = timestep(t)[1][1]
-    p1loc = [p1[0]]
-    p2loc = [p2[0]]
-    p1 = Drifting(p_pos[0][1]-p_pos[0][0]).increment(p1)
-    p2 = Drifting(p_pos[1][1]-p_pos[1][0]).increment(p2)
-    p1loc.append(p1[0])
-    p2loc.append(p2[0])
+    photon_beam = timestep(t)[1]
+    for vector in photon_beam:
+        vector.extend(Drifting(p_pos[0][1]-p_pos[0][0]).increment(vector))
 
-    return p1loc, p2loc #should be able to combine this into a list so I don't have to repeat all the commands
-
+    return photon_beam
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
@@ -156,7 +147,6 @@ e_line, = ax.plot([], [], lw=1)
 idwhere, = ax.plot([], [], 'r.')
 p_beam1, = ax.plot([], [], 'r-')
 p_beam2, = ax.plot([], [], 'r-')
-
 
 # Initialisation function: plot the background of each frame.
 def init():
@@ -181,8 +171,8 @@ def animate(t):
     k3 = plt.axvline(x=kicker_pos[2], color='k', linestyle='dashed')
     k4 = plt.axvline(x=kicker_pos[3], color='k', linestyle='dashed')
     k5 = plt.axvline(x=kicker_pos[4], color='k', linestyle='dashed') # Must be a nicer way...
-    p_beam1.set_data(p_pos[0],p_data[0])
-    p_beam2.set_data(p_pos[1],p_data[1])
+    p_beam1.set_data(p_pos[0],[p_data[0][0],p_data[0][2]])
+    p_beam2.set_data(p_pos[1],[p_data[1][0],p_data[1][2]])
 
     gc.collect(0)
     return e_line, idwhere, k1, k2, k3, k4, k5, p_beam1, p_beam2,
