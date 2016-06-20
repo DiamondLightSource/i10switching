@@ -80,11 +80,12 @@ d12 = float(len1)/float(len2)
 len3 = kicker_pos[3] - kicker_pos[2]
 len4 = kicker_pos[4] - kicker_pos[3]
 d34 = float(len3)/float(len4)
-stren = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
+max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
 
+# Define time-varying strengths of kicker magnets.
 def calculate_strengths(t):
 
-    kick = stren*np.array([
+    kick = max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
         1, np.sin(t*np.pi/100) - 1,
         -np.sin(t*np.pi/100) + 1
@@ -117,7 +118,7 @@ def timestep(t):
 
     # Initialise electron beam
     e_beam = np.array([0,0])
-    e_vector = [e_beam.tolist()]
+    e_vector = [[0,0]] #[e_beam.tolist()]
 
     # Initialise photon beam
     p_vector = []
@@ -144,62 +145,62 @@ print f[:,0]
 print f[:,0][0]
 '''
 
-# Electron beam positions for plotting.
+# Extract electron beam positions for plotting.
 def e_plot(t):
 
-    positions = np.array(timestep(t)[0])[:,0].tolist()
+    e_positions = np.array(timestep(t)[0])[:,0].tolist()
 
-    return positions
+    return e_positions
 
-# Photon beam data: returns list of beam vector positions and velocity directions
-def photon(t):
+# Allow the two photon vectors to drift over large distance 
+# (ie off the graph) and add the vector for new position and 
+# velocity to original vector to create beam for plotting.
+def p_plot(t):
     
-    photon_beam = timestep(t)[1]
-    # Allow photon vector to drift over large distance (ie off the graph)
-    # and add the vector describing its new position and velocity to the 
-    # information of its original position. For both beams simultaneously.
-    
+    p_beam = timestep(t)[1]
     travel = Drifting()
     travel.set_length(p_pos[0][1]-p_pos[0][0])
-    for vector in photon_beam:
+
+    for vector in p_beam:
         vector.extend(travel.increment(vector))
 
-    photon_beam_array = np.array(photon_beam)
-    photon_positions = photon_beam_array[:,[0,2]]
+    p_beam_array = np.array(p_beam)
+    p_positions = p_beam_array[:,[0,2]]
 
-    return photon_positions
-
+    return p_positions
 
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
 ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 3))
-e_line, = ax.plot([], [], lw=1)
-p_beam1, = ax.plot([], [], 'r-')
-p_beam2, = ax.plot([], [], 'r-')
+#e_line, = ax.plot([], [], lw=1)
+p_beam = [plt.plot([], [], 'r-')[0] for j in range(2)]
 
 # Initialisation function: plot the background of each frame.
 def init():
 
-    e_line.set_data([], [])
-    p_beam1.set_data([], [])
-    p_beam2.set_data([], [])
+#    e_line.set_data([], [])
+    for line in p_beam:
+        line.set_data([], [])
     
-    return e_line, p_beam1, p_beam2,
+    return p_beam #e_line, 
 
 import gc  # This can't stay here! This is garbage collection
 
 # Animation function
 def animate(t):
 
-    e_data = e_plot(t)
-    p_data = photon(t)
-    e_line.set_data(pos, e_data)
-    p_beam1.set_data(p_pos[0],p_data[0])
-    p_beam2.set_data(p_pos[1],p_data[1]) # I'm resetting the data each time but not sure I can do a multiple plot thing with the way the photon data is currently set up...
+#    e_data = e_plot(t)
+    p_data = p_plot(t)
+#    e_line.set_data(pos, e_data)
+    for line, x, y in zip(p_beam, p_pos, p_data):
+        line.set_data(x,y)
+#    p_beam.set_data([p_pos[0],p_pos[1]],[p_data[0],p_data[1]])
+
     gc.collect(0)
 
-    return e_line, p_beam1, p_beam2,
+    return p_beam #e_line, #WORKED OUT HOW TO PLOT BOTH PHOTON LINES IN A LIST, NOW ADD ELECTRON BEAM DATA TO THAT LIST TOO...
+
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
