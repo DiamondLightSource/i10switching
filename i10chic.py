@@ -155,7 +155,7 @@ def p_plot(t):
     
     p_beam = timestep(t)[1]
     travel = Drifting()
-    travel.set_length(p_pos[0][1]-p_pos[0][0])
+    travel.set_length(p_pos[0][1]-p_pos[0][0]) # actually want them to drift to detector ie. different distances bc different starting points
 
     for vector in p_beam:
         vector.extend(travel.increment(vector))
@@ -205,6 +205,33 @@ for i in kicker_pos:
     plt.axvline(x=i, color='k', linestyle='dashed')
 for i in id_pos:
     plt.axvline(x=i, color='r', linestyle='dashed')
+
+
+# Plot photon points at detector (actual number needs changing...)
+# THIS WORKS FOR A SINGLE POINT IN TIME - HOW TO ANIMATE IT...
+fig2 = plt.figure()
+
+p_points = p_plot(2)[:,1]
+plt.plot(p_points,[2%100,2%100],'r.')
+
+
+'''
+fig2 = plt.figure()
+ax2 = plt.axes(xlim=(-10,10), ylim=(0,10))
+points = ax2.plot([],[])[0]
+
+def init2():
+    points.set_data([],[])
+    return points
+
+def ani(t):
+    p_points = p_plot(t)[:,1]
+    points.set_data([p_points,t%100])
+    return points
+
+anim2 = animation.FuncAnimation(fig2, ani, init_func=init2, frames=200, interval=10, blit=True)
+'''
+
 
 plt.show()
 
