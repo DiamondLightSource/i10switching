@@ -63,7 +63,7 @@ class InsertionDevice:
         return 'id'
 
 
-# Define positions of stuff in system
+# Define positions of devices in system
 length = [2,1,8,6,4,9,3,7] # lengths to drift between kickers and IDs
 pos = [0]
 pos.extend(np.cumsum(length))
@@ -116,14 +116,14 @@ def get_elements(path, which):
 # Send electron vector through chicane magnets at time t.
 def timestep(t):
 
-    # Initialise electron beam
+    # Initialise electron beam position and velocity
     e_beam = np.array([0,0])
-    e_vector = [[0,0]] #[e_beam.tolist()]
+    e_vector = [[0,0]]
 
     # Initialise photon beam
     p_vector = []
 
-    # Calculate positions of electron beam and photon beam relative to main axis
+    # Calculate positions of electron beam and photon beam relative to main axis.
     for kicker, strength in zip(get_elements(path, 'kicker'), calculate_strengths(t)):
          kicker.set_strength(strength)
     for drift, dist in zip(get_elements(path, 'drift'), length):
@@ -173,33 +173,32 @@ def p_plot(t):
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
 ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 3))
-#e_line, = ax.plot([], [], lw=1)
-p_beam = [plt.plot([], [], 'r-')[0] for j in range(2)]
+beams = [plt.plot([], [])[0], plt.plot([], [], 'r')[0], plt.plot([], [], 'r')[0]]
 
 # Initialisation function: plot the background of each frame.
 def init():
 
-#    e_line.set_data([], [])
-    for line in p_beam:
+    for line in beams:
         line.set_data([], [])
     
-    return p_beam #e_line, 
+    return beams
 
 import gc  # This can't stay here! This is garbage collection
 
 # Animation function
 def animate(t):
 
-#    e_data = e_plot(t)
+    e_data = e_plot(t)
     p_data = p_plot(t)
-#    e_line.set_data(pos, e_data)
-    for line, x, y in zip(p_beam, p_pos, p_data):
+    # Set data for electron beam.
+    beams[0].set_data(pos, e_data)
+    # Set data for two photon beams.
+    for line, x, y in zip([beams[1],beams[2]], p_pos, p_data):
         line.set_data(x,y)
-#    p_beam.set_data([p_pos[0],p_pos[1]],[p_data[0],p_data[1]])
 
     gc.collect(0)
 
-    return p_beam #e_line, #WORKED OUT HOW TO PLOT BOTH PHOTON LINES IN A LIST, NOW ADD ELECTRON BEAM DATA TO THAT LIST TOO...
+    return beams
 
 
 # Call the animator
@@ -209,8 +208,8 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 # Plot positions of kickers and IDs
 for i in kicker_pos:
     plt.axvline(x=i, color='k', linestyle='dashed')
-plt.plot(id_pos, [0,0], 'r.')
-
+for i in id_pos:
+    plt.axvline(x=i, color='r', linestyle='dashed')
 
 plt.show()
 
