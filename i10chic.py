@@ -64,7 +64,7 @@ class InsertionDevice:
 
 
 # Define positions of devices in system
-length = [2,1,8,6,4,9,3,7] # lengths to drift between kickers and IDs
+length = [2,2,4,4,4,4,2,2] # lengths to drift between kickers and IDs
 pos = [0]
 pos.extend(np.cumsum(length))
 
@@ -80,16 +80,16 @@ d12 = float(len1)/float(len2)
 len3 = kicker_pos[3] - kicker_pos[2]
 len4 = kicker_pos[4] - kicker_pos[3]
 d34 = float(len3)/float(len4)
-max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
+max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
 
 # Define time-varying strengths of kicker magnets.
 def calculate_strengths(t):
 
-    kick = max_kick*np.array([
+    kick = 0.5*max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
         1, np.sin(t*np.pi/100) - 1,
         -np.sin(t*np.pi/100) + 1
-        ])
+        ]) # Factor 0.5 so that maximum kick applied = 1.
 
     return kick
 
@@ -105,13 +105,17 @@ path = [
     Drifting()
     ]
 
-# Function that returns all objects of a particular type.
+# Function that returns all objects of a particular type from path.
 def get_elements(path, which):
     objects = []
     for p in path:
         if p.get_type() == which:
             objects.append(p)
     return objects
+
+# Set drift distances (time independent).
+for drift, dist in zip(get_elements(path, 'drift'), length):
+    drift.set_length(dist)
 
 # Send electron vector through chicane magnets at time t.
 def timestep(t):
@@ -126,29 +130,21 @@ def timestep(t):
     # Calculate positions of electron beam and photon beam relative to main axis.
     for kicker, strength in zip(get_elements(path, 'kicker'), calculate_strengths(t)):
          kicker.set_strength(strength)
-    for drift, dist in zip(get_elements(path, 'drift'), length):
-         drift.set_length(dist)
     for p in path:
          e_beam = p.increment(e_beam)
-         if p.get_type() == 'drift':  # Better way of doing this??
+         device = p.get_type()
+         if device == 'drift':  # Better way of doing this??
              e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
-         if p.get_type() == 'id':
+         elif device == 'id':
             p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
 
-    return e_vector, p_vector, # returns positions and velocities of electrons and photons
+    return e_vector, p_vector # returns positions and velocities of electrons and photons
 
-'''
-#columns testing
-f = np.array(timestep(3)[1])
-print f
-print f[:,0]
-print f[:,0][0]
-'''
 
 # Extract electron beam positions for plotting.
 def e_plot(t):
 
-    e_positions = np.array(timestep(t)[0])[:,0].tolist()
+    e_positions = np.array(timestep(t)[0])[:,0]
 
     return e_positions
 
@@ -164,15 +160,14 @@ def p_plot(t):
     for vector in p_beam:
         vector.extend(travel.increment(vector))
 
-    p_beam_array = np.array(p_beam)
-    p_positions = p_beam_array[:,[0,2]]
+    p_positions = np.array(p_beam)[:,[0,2]]
 
     return p_positions
 
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
-ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 3))
+ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
 beams = [plt.plot([], [])[0], plt.plot([], [], 'r')[0], plt.plot([], [], 'r')[0]]
 
 # Initialisation function: plot the background of each frame.
@@ -187,7 +182,7 @@ import gc  # This can't stay here! This is garbage collection
 
 # Animation function
 def animate(t):
-
+    # Obtain data for plotting.
     e_data = e_plot(t)
     p_data = p_plot(t)
     # Set data for electron beam.
@@ -205,7 +200,7 @@ def animate(t):
 anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=200, interval=10, blit=True)
 
-# Plot positions of kickers and IDs
+# Plot positions of kickers and IDs.
 for i in kicker_pos:
     plt.axvline(x=i, color='k', linestyle='dashed')
 for i in id_pos:
