@@ -68,10 +68,11 @@ length = [2,2,4,4,4,4,2,2] # lengths to drift between kickers and IDs
 pos = [0]
 pos.extend(np.cumsum(length))
 
-# Positions of kickers, IDs and 'on axis' photon beam points for plotting purposes.
+# Positions of kickers, IDs, detector and 'on axis' photon beam points for plotting purposes.
 kicker_pos = [pos[1],pos[2],pos[4],pos[6],pos[7]]
 id_pos = [pos[3],pos[5]]
-p_pos = [[pos[3], pos[3]+30],[pos[5],pos[5]+30]]
+detector_pos = 40
+p_pos = [[pos[3], detector_pos],[pos[5],detector_pos]]
 
 # Define magnet strength factors (dependent on relative positions and time).
 len1 = kicker_pos[1] - kicker_pos[0]
@@ -154,28 +155,37 @@ def e_plot(t):
 def p_plot(t):
     
     p_beam = timestep(t)[1]
-    travel = Drifting()
-    travel.set_length(p_pos[0][1]-p_pos[0][0]) # actually want them to drift to detector ie. different distances bc different starting points
-
-    for vector in p_beam:
-        vector.extend(travel.increment(vector))
+    travel = [Drifting(),Drifting()]
+    for i in range(2):
+        travel[i].set_length(p_pos[i][1]-p_pos[i][0])
+        p_beam[i].extend(travel[i].increment(p_beam[i]))
 
     p_positions = np.array(p_beam)[:,[0,2]]
 
     return p_positions
 
+########################################################
+
+
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
-ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
-beams = [plt.plot([], [])[0], plt.plot([], [], 'r')[0], plt.plot([], [], 'r')[0]]
+ax1 = fig.add_subplot(2, 1, 1)
+ax1.set_xlim(0, sum(length))
+ax1.set_ylim(-2, 5)
+ax3 = fig.add_subplot(2, 2, 4)
+ax3.set_xlim(-10, 10)
+ax3.set_ylim(0, 2)
+#ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
+beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], ax3.plot([], [], 'r.')[0]]
+
 
 # Initialisation function: plot the background of each frame.
 def init():
 
     for line in beams:
         line.set_data([], [])
-    
+
     return beams
 
 import gc  # This can't stay here! This is garbage collection
@@ -191,6 +201,9 @@ def animate(t):
     for line, x, y in zip([beams[1],beams[2]], p_pos, p_data):
         line.set_data(x,y)
 
+    # Set data for photon beam at detector.
+    beams[3].set_data(p_plot(t)[:,1], [1,1]) # need to adjust plot and also change data slightly but it works now!
+
     gc.collect(0)
 
     return beams
@@ -202,9 +215,20 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
 
 # Plot positions of kickers and IDs.
 for i in kicker_pos:
-    plt.axvline(x=i, color='k', linestyle='dashed')
+    ax1.axvline(x=i, color='k', linestyle='dashed')
 for i in id_pos:
-    plt.axvline(x=i, color='r', linestyle='dashed')
+    ax1.axvline(x=i, color='r', linestyle='dashed')
+
+
+#############
+
+ax2 = fig.add_subplot(2, 2, 3)
+ax2.set_xlim(-10, 10)
+ax2.set_ylim(0, 10)
+
+#############
+
+
 
 plt.show()
 
