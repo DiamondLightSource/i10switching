@@ -202,7 +202,9 @@ def animate(t):
         line.set_data(x,y)
 
     # Set data for photon beam at detector.
-    beams[3].set_data(p_plot(t)[:,1], [1,1]) # need to adjust plot and also change data slightly but it works now!
+    beams[3].set_data(p_plot(t)[:,1], [1,1])
+
+    # HOW TO ANIMATE A MOVING WAVE LIKE IN THE MATLAB PLOT??
 
     gc.collect(0)
 
