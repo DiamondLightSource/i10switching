@@ -74,11 +74,11 @@ id_pos = [pos[3],pos[5]]
 p_pos = [[pos[3], pos[3]+30],[pos[5],pos[5]+30]]
 
 # Define magnet strength factors (dependent on relative positions and time).
-len1 = pos[2] - pos[1]
-len2 = pos[4] - pos[2]
+len1 = kicker_pos[1] - kicker_pos[0]
+len2 = kicker_pos[2] - kicker_pos[1]
 d12 = float(len1)/float(len2)
-len3 = pos[6] - pos[4]
-len4 = pos[7] - pos[6]
+len3 = kicker_pos[3] - kicker_pos[2]
+len4 = kicker_pos[4] - kicker_pos[3]
 d34 = float(len3)/float(len4)
 stren = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
 
@@ -153,7 +153,7 @@ def e_plot(t):
 
 # Photon beam data: returns list of beam vector positions and velocity directions
 def photon(t):
-
+    
     photon_beam = timestep(t)[1]
     # Allow photon vector to drift over large distance (ie off the graph)
     # and add the vector describing its new position and velocity to the 
@@ -164,18 +164,11 @@ def photon(t):
     for vector in photon_beam:
         vector.extend(travel.increment(vector))
 
-#    Alternative method TO BE TESTED
-#    photon_plot = np.array(timestep(t)[1])[:,0] 
-#######    photon_plot = photon_plot.reshape((2,1)).tolist() # how to use...
-#    newpoints = []
-#    for vector in photon_beam:
-#        vector = travel.increment(vector)
-#        newpoints.append(vector[0])
-#    photonplots = zip(photon_plot, newpoints)
-#    # This should give a nice little list like this: [(x1,x1*),(x2,x2*)] where * delineates the new points
-#    # This should be very plottable but no time to test now!
+    photon_beam_array = np.array(photon_beam)
+    photon_positions = photon_beam_array[:,[0,2]]
 
-    return photon_beam
+    return photon_positions
+
 
 
 # Set up figure, axis and plot element to be animated.
@@ -199,11 +192,11 @@ import gc  # This can't stay here! This is garbage collection
 # Animation function
 def animate(t):
 
-    e_data = e_plot(t) #timestep(t)[2] # NEEDS SORTING OUT
+    e_data = e_plot(t)
     p_data = photon(t)
-    e_line.set_data(pos, e_data) # currently plotting against integers because e_data has excess values that I need to get rid of...
-    p_beam1.set_data(p_pos[0],[p_data[0][0],p_data[0][2]])
-    p_beam2.set_data(p_pos[1],[p_data[1][0],p_data[1][2]]) # I'm resetting the data each time but not sure I can do a multiple plot thing with the way the photon data is currently set up...
+    e_line.set_data(pos, e_data)
+    p_beam1.set_data(p_pos[0],p_data[0])
+    p_beam2.set_data(p_pos[1],p_data[1]) # I'm resetting the data each time but not sure I can do a multiple plot thing with the way the photon data is currently set up...
     gc.collect(0)
 
     return e_line, p_beam1, p_beam2,
