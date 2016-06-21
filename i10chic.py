@@ -175,9 +175,9 @@ ax1.set_xlim(0, sum(length))
 ax1.set_ylim(-2, 5)
 ax3 = fig.add_subplot(2, 2, 4)
 ax3.set_xlim(-10, 10)
-ax3.set_ylim(0, 2)
+ax3.set_ylim(0, 1000)
 #ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
-beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], ax3.plot([], [], 'r.')[0]]
+beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0]]
 
 
 # Initialisation function: plot the background of each frame.
@@ -190,19 +190,39 @@ def init():
 
 import gc  # This can't stay here! This is garbage collection
 
+flash = []
+ftime = []
+
 # Animation function
 def animate(t):
+
     # Obtain data for plotting.
     e_data = e_plot(t)
     p_data = p_plot(t)
+    d_data = p_data[:,1].tolist()
+    if t < 1000:
+        if d_data[0] == 0:
+            flash.append(d_data[0])
+            ftime.append(t)
+        elif d_data[1] == 0:
+            flash.append(d_data[1])
+            ftime.append(t) # IS THERE A WAY OF SHIFTING THEM UP OFF THE GRAPH AND NO LONGER PLOTTING THEM??
+#    elif t > 1000:
+#        flash == [0]
+#        ftime == [0] #this is dodgy and probably wrong
+    time = [t,t]
+
     # Set data for electron beam.
     beams[0].set_data(pos, e_data)
+
     # Set data for two photon beams.
     for line, x, y in zip([beams[1],beams[2]], p_pos, p_data):
         line.set_data(x,y)
 
     # Set data for photon beam at detector.
-    beams[3].set_data(p_plot(t)[:,1], [1,1])
+    beams[3].set_data(d_data, [10,10])
+    beams[4].set_data(d_data, time)
+    beams[5].set_data(flash, ftime)
 
     # HOW TO ANIMATE A MOVING WAVE LIKE IN THE MATLAB PLOT??
 
@@ -213,7 +233,7 @@ def animate(t):
 
 # Call the animator
 anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=200, interval=10, blit=True)
+                               frames=1000, interval=20, blit=True)
 
 # Plot positions of kickers and IDs.
 for i in kicker_pos:
