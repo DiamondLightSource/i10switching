@@ -62,9 +62,10 @@ class InsertionDevice:
     def get_type(self):
         return 'id'
 
+k3 = 1
 
 # Define positions of devices in system
-length = [2,2,4,4,4,4,2,2] # lengths to drift between kickers and IDs
+length = [2,2,4,4,4,4,2,20] # lengths to drift between kickers and IDs
 pos = [0]
 pos.extend(np.cumsum(length))
 
@@ -88,7 +89,7 @@ def calculate_strengths(t):
 
     kick = 0.5*max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-        1, np.sin(t*np.pi/100) - 1,
+        k3, np.sin(t*np.pi/100) - 1,
         -np.sin(t*np.pi/100) + 1
         ]) # Factor 0.5 so that maximum kick applied = 1.
 
@@ -177,7 +178,8 @@ ax3 = fig.add_subplot(2, 2, 4)
 ax3.set_xlim(-10, 10)
 ax3.set_ylim(0, 1000)
 #ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
-beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0]]
+beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], 
+         ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0]]
 
 
 # Initialisation function: plot the background of each frame.
