@@ -15,9 +15,9 @@ import matplotlib.animation as animation
 class Drifting:
 
 
-    def __init__(self):
-        pass # Do I want to have a value of step in here? Apparently yes but couldn't get code to work when I tried to put it in so leaving it for now
-        #self.step = None
+    def __init__(self, step=0):
+#        pass # Do I want to have a value of step in here? Apparently yes but couldn't get code to work when I tried to put it in so leaving it for now
+        self.step = step
 
     def set_length(self, step):
         self.step = step
@@ -31,12 +31,12 @@ class Drifting:
         return 'drift'
 
 
+
 class Kicker:
 
 
-    def __init__(self):
-        pass
-        #self.k = None
+    def __init__(self, k=0):
+        self.k = k
 
     def set_strength(self, k):
         self.k = k
@@ -86,7 +86,8 @@ kicker3 = 1
 # Define time-varying strengths of kicker magnets.
 def calculate_strengths(t):
 
-    kick = 0.5*max_kick*np.array([
+    graphscale = 0.5
+    kick = graphscale*max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
         kicker3, np.sin(t*np.pi/100) - 1,
         -np.sin(t*np.pi/100) + 1
@@ -134,7 +135,7 @@ def timestep(t):
     for p in path:
          e_beam = p.increment(e_beam)
          device = p.get_type()
-         if device == 'drift':  # Better way of doing this??
+         if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after
              e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
          elif device == 'id':
             p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
