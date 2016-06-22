@@ -178,19 +178,17 @@ def timestep(t):
 
 
 # Extract electron beam positions for plotting.
-def e_plot(t):
+def e_plot(e_beam):
 
-    e_beam = np.array(timestep(t)[0])
-    e_positions = e_beam[:,0]
+    e_positions = np.array(e_beam)[:,0]
 
     return e_positions
 
 # Allow the two photon vectors to drift over large distance 
 # and add the vector for new position and velocity to 
 # original vector to create beam for plotting.
-def p_plot(t):
+def p_plot(p_beam):
     
-    p_beam = timestep(t)[1]
     travel = [Drifting(),Drifting()]
     p_pos = Locate(lengths).locate_photonbeam()
     for i in range(2):
@@ -246,8 +244,9 @@ ftime2 = []
 def animate(t):
 
     # Obtain data for plotting.
-    e_data = e_plot(t) #HAVE IT SO YOU'RE ONLY CALLING TIMESTEP ONCE TO MINIMISE TIME CALLS
-    p_data = p_plot(t)
+    data = timestep(t)
+    e_data = e_plot(data[0])
+    p_data = p_plot(data[1])
     detector_data = p_data[:,1].tolist()
     if t < 1000:
         if detector_data[0] == 0:
@@ -255,12 +254,12 @@ def animate(t):
             detector_flash_time.append(t)
         elif detector_data[1] == 0:
             detector_flash.append(detector_data[1])
-            detector_flash_time.append(t) # IS THERE A WAY OF SHIFTING THEM UP OFF THE GRAPH?
+            detector_flash_time.append(t)
     time = [t,t]
 
     if t < 1000 and t % 10 == 0:
         flash2.append(detector_data)
-        ftime2.append(time) ##
+        ftime2.append(time)
 
     # Set data for electron beam.
     beams[0].set_data(Locate(lengths).locate_devices(), e_data)
@@ -274,8 +273,6 @@ def animate(t):
     beams[4].set_data(detector_data, time)
     beams[5].set_data(flash2, ftime2) # Some extra plotting as a guide to the eye.
     beams[6].set_data(detector_flash, detector_flash_time)
-
-    # HOW TO ANIMATE A MOVING WAVE LIKE IN THE MATLAB PLOT??
 
     gc.collect(0)
 
