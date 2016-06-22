@@ -204,6 +204,47 @@ def p_plot(p_beam):
 ####################
 # PUT THIS ALL INTO A CLASS
 
+'''
+class Plotting:
+
+    def __init__(self):
+        pass
+
+    def fig(self):
+    
+        fig = plt.figure()
+        ax1 = fig.add#....
+        #etc
+
+    def init():
+
+        for line in beams:
+            line.set_data([], [])
+
+        return beams #where do we get beams from??
+
+    def animate(data):
+
+        # put whole animate function in here
+        # but where call t? pass t to animate??
+        # no actually pass data to animate where data = timestep(t) has already been done...
+
+
+# do some stuff here to work out
+
+#eventually call animate something like this:
+
+anim = animation.FuncAnimation(Plotting().fig(), Plotting().animate(data), init_func=Plotting().init(),
+                               frames=1000, interval=20, blit=True)
+
+#have a function which calls timestep(t) to get data and then uses this in anim
+
+def do_the_animation():
+    data = timestep(t) #BUT WHERE DOES T COME FROM? NEEDS A BIT MORE THOUGHT
+
+
+'''
+
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
 
