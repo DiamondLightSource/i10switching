@@ -16,7 +16,6 @@ class Drifting:
 
 
     def __init__(self, step=0):
-#        pass # Do I want to have a value of step in here? Apparently yes but couldn't get code to work when I tried to put it in so leaving it for now
         self.step = step
 
     def set_length(self, step):
@@ -64,28 +63,63 @@ class InsertionDevice:
 
 # Define positions of devices in system
 lengths = [2,2,4,4,4,4,2,20] # lengths to drift between kickers and IDs
-positions = [0]
-positions.extend(np.cumsum(lengths))
+kicker3 = 1
 
-# Positions of kickers, IDs, detector and 'on axis' photon beam points for plotting purposes.
-kicker_pos = [positions[1],positions[2],positions[4],positions[6],positions[7]]
-id_pos = [positions[3],positions[5]]
-detector_pos = 40
-p_pos = [[positions[3], detector_pos],[positions[5],detector_pos]]
+
+class Locate:
+
+
+    def __init__(self, lengths):
+        self.lengths = lengths
+
+    def locate_devices(self):
+        
+        positions = [0]
+        positions.extend(np.cumsum(self.lengths))
+    
+        return positions
+
+    def locate_kicker(self):
+
+        kicker_pos = [self.locate_devices()[1],self.locate_devices()[2],self.locate_devices()[4],self.locate_devices()[6],self.locate_devices()[7]]
+
+        return kicker_pos
+
+    def locate_id(self):
+
+        id_pos = [self.locate_devices()[3],self.locate_devices()[5]]
+
+        return id_pos
+
+    def locate_detector(self):
+
+        return self.locate_devices()[8]
+
+    def locate_photonbeam(self):
+
+        p_pos = [[self.locate_id()[0], self.locate_detector()],[self.locate_id()[1],self.locate_detector()]]
+
+        return p_pos
+
 
 # Define magnet strength factors (dependent on relative positions and time).
-len1 = kicker_pos[1] - kicker_pos[0]
-len2 = kicker_pos[2] - kicker_pos[1]
-d12 = float(len1)/float(len2)
-len3 = kicker_pos[3] - kicker_pos[2]
-len4 = kicker_pos[4] - kicker_pos[3]
-d34 = float(len3)/float(len4)
-max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
-kicker3 = 1
+def max_magnet_strengths():
+
+    kicker_pos = Locate(lengths).locate_kicker()
+    len1 = kicker_pos[1] - kicker_pos[0]
+    len2 = kicker_pos[2] - kicker_pos[1]
+    d12 = float(len1)/float(len2)
+    len3 = kicker_pos[3] - kicker_pos[2]
+    len4 = kicker_pos[4] - kicker_pos[3]
+    d34 = float(len3)/float(len4)
+    max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
+
+    return max_kick
 
 # Define time-varying strengths of kicker magnets.
 def calculate_strengths(t):
 
+    max_kick = max_magnet_strengths()
     graphscale = 0.5
     kick = graphscale*max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
@@ -158,6 +192,7 @@ def p_plot(t):
     
     p_beam = timestep(t)[1]
     travel = [Drifting(),Drifting()]
+    p_pos = Locate(lengths).locate_photonbeam()
     for i in range(2):
         travel[i].set_length(p_pos[i][1]-p_pos[i][0])
         p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -169,6 +204,7 @@ def p_plot(t):
 ####################
 ## Graph plotting ##
 ####################
+# PUT THIS ALL INTO A CLASS
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
@@ -210,7 +246,7 @@ ftime2 = []
 def animate(t):
 
     # Obtain data for plotting.
-    e_data = e_plot(t)
+    e_data = e_plot(t) #HAVE IT SO YOU'RE ONLY CALLING TIMESTEP ONCE TO MINIMISE TIME CALLS
     p_data = p_plot(t)
     detector_data = p_data[:,1].tolist()
     if t < 1000:
@@ -227,10 +263,10 @@ def animate(t):
         ftime2.append(time) ##
 
     # Set data for electron beam.
-    beams[0].set_data(positions, e_data)
+    beams[0].set_data(Locate(lengths).locate_devices(), e_data)
 
     # Set data for two photon beams.
-    for line, x, y in zip([beams[1],beams[2]], p_pos, p_data):
+    for line, x, y in zip([beams[1],beams[2]], Locate(lengths).locate_photonbeam(), p_data):
         line.set_data(x,y)
 
     # Set data for photon beam at detector.
@@ -251,9 +287,9 @@ anim = animation.FuncAnimation(fig, animate, init_func=init,
                                frames=1000, interval=20, blit=True)
 
 # Plot positions of kickers and IDs.
-for i in kicker_pos:
+for i in Locate(lengths).locate_kicker():
     ax1.axvline(x=i, color='k', linestyle='dashed')
-for i in id_pos:
+for i in Locate(lengths).locate_id():
     ax1.axvline(x=i, color='r', linestyle='dashed')
 
 
