@@ -60,7 +60,7 @@ class InsertionDevice:
     def get_type(self):
         return 'id'
 
-
+# TO GO INTO FUNCTION
 # Define positions of devices in system
 lengths = [2,2,4,4,4,4,2,20] # lengths to drift between kickers and IDs
 kicker3 = 1
@@ -81,7 +81,11 @@ class Locate:
 
     def locate_kicker(self):
 
-        kicker_pos = [self.locate_devices()[1],self.locate_devices()[2],self.locate_devices()[4],self.locate_devices()[6],self.locate_devices()[7]]
+        kicker_pos = [self.locate_devices()[1],
+                      self.locate_devices()[2],
+                      self.locate_devices()[4],
+                      self.locate_devices()[6],
+                      self.locate_devices()[7]]
 
         return kicker_pos
 
@@ -97,7 +101,8 @@ class Locate:
 
     def locate_photonbeam(self):
 
-        p_pos = [[self.locate_id()[0], self.locate_detector()],[self.locate_id()[1],self.locate_detector()]]
+        p_pos = [[self.locate_id()[0], self.locate_detector()],
+                 [self.locate_id()[1], self.locate_detector()]]
 
         return p_pos
 
@@ -149,6 +154,8 @@ def get_elements(path, which):
             list_objects.append(p)
     return list_objects
 
+
+#PUT THIS IN A FUNCTION? OR CLASS?
 # Set drift distances (time independent).
 for drift, distance in zip(get_elements(path, 'drift'), lengths):
     drift.set_length(distance)
@@ -169,7 +176,7 @@ def timestep(t):
     for p in path:
          e_beam = p.increment(e_beam)
          device = p.get_type()
-         if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after
+         if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after #TO DO ########################################################
              e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
          elif device == 'id':
             p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
