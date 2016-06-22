@@ -179,7 +179,7 @@ ax3.set_xlim(-10, 10)
 ax3.set_ylim(0, 1000)
 #ax = plt.axes(xlim=(0, sum(length)), ylim=(-2, 5))
 beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], ax1.plot([], [], 'r')[0], 
-         ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0]]
+         ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0], ax3.plot([], [], 'ro')[0]]
 
 
 # Initialisation function: plot the background of each frame.
@@ -194,6 +194,8 @@ import gc  # This can't stay here! This is garbage collection
 
 flash = []
 ftime = []
+flash2 = []
+ftime2 = []
 
 # Animation function
 def animate(t):
@@ -208,11 +210,12 @@ def animate(t):
             ftime.append(t)
         elif d_data[1] == 0:
             flash.append(d_data[1])
-            ftime.append(t) # IS THERE A WAY OF SHIFTING THEM UP OFF THE GRAPH AND NO LONGER PLOTTING THEM??
-#    elif t > 1000:
-#        flash == [0]
-#        ftime == [0] #this is dodgy and probably wrong
+            ftime.append(t) # IS THERE A WAY OF SHIFTING THEM UP OFF THE GRAPH?
     time = [t,t]
+
+    if t < 1000 and t % 10 == 0:
+        flash2.append(d_data)
+        ftime2.append([t,t])
 
     # Set data for electron beam.
     beams[0].set_data(pos, e_data)
@@ -224,7 +227,8 @@ def animate(t):
     # Set data for photon beam at detector.
     beams[3].set_data(d_data, [10,10])
     beams[4].set_data(d_data, time)
-    beams[5].set_data(flash, ftime)
+    beams[5].set_data(flash2, ftime2) # Some extra plotting as a guide to the eye.
+    beams[6].set_data(flash, ftime)
 
     # HOW TO ANIMATE A MOVING WAVE LIKE IN THE MATLAB PLOT??
 
