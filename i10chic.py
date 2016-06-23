@@ -60,10 +60,20 @@ class InsertionDevice:
     def get_type(self):
         return 'id'
 
-# TO GO INTO FUNCTION
-# Define positions of devices in system
-lengths = [2,2,4,4,4,4,2,20] # lengths to drift between kickers and IDs
-kicker3 = 1
+
+class Constants:
+
+    def __init__(self):
+        self.length_list = [2,2,4,4,4,4,2,20]
+        self.kicker3_strength = 1
+
+    def lengths(self):
+
+        return self.length_list
+
+    def kicker3(self):
+
+        return self.kicker3_strength
 
 
 class Locate:
@@ -97,7 +107,9 @@ class Locate:
 
     def locate_detector(self):
 
-        return self.locate_devices()[8]
+        d_pos = self.locate_devices()[8]
+
+        return d_pos
 
     def locate_photonbeam(self):
 
@@ -107,10 +119,148 @@ class Locate:
         return p_pos
 
 
+class Collect_data:
+
+    def __init__(self):
+        self.path = [
+                    Drifting(),Kicker(),
+                    Drifting(),Kicker(),
+                    Drifting(),InsertionDevice(),
+                    Drifting(),Kicker(),
+                    Drifting(),InsertionDevice(),
+                    Drifting(),Kicker(),
+                    Drifting(),Kicker(),
+                    Drifting()
+                    ]
+    #PUT THIS IN A FUNCTION? OR CLASS?
+    # Set drift distances (time independent).
+        for drift, distance in zip(self.get_elements('drift'), Constants().lengths()):
+            drift.set_length(distance)
+
+
+    # Define magnet strength factors (dependent on relative positions and time).
+    def max_magnet_strengths(self):
+
+        kicker_pos = Locate(Constants().lengths()).locate_kicker()
+        len1 = kicker_pos[1] - kicker_pos[0]
+        len2 = kicker_pos[2] - kicker_pos[1]
+        d12 = float(len1)/float(len2)
+        len3 = kicker_pos[3] - kicker_pos[2]
+        len4 = kicker_pos[4] - kicker_pos[3]
+        d34 = float(len3)/float(len4)
+        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
+    
+        return max_kick
+    
+    # Define time-varying strengths of kicker magnets.
+    def calculate_strengths(self,t):
+    
+        max_kick = self.max_magnet_strengths()
+        graphscale = 0.5
+        kicker3 = Constants().kicker3()
+        kick = graphscale*max_kick*np.array([
+            np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
+            kicker3, np.sin(t*np.pi/100) - 1,
+            -np.sin(t*np.pi/100) + 1
+            ])
+    
+        return kick
+    
+    # Define path through system.
+
+    '''
+    def path(): ###################################
+    
+        return [
+        Drifting(),Kicker(),
+        Drifting(),Kicker(),
+        Drifting(),InsertionDevice(),
+        Drifting(),Kicker(),
+        Drifting(),InsertionDevice(),
+        Drifting(),Kicker(),
+        Drifting(),Kicker(),
+        Drifting()
+        ]
+    '''
+    # Function that returns all objects of a particular type from path.
+    def get_elements(self, which):
+        list_objects = []
+        for p in self.path:
+            if p.get_type() == which:
+                list_objects.append(p)
+        return list_objects
+    
+    ###################################
+
+    ###################################
+    
+    # Send electron vector through chicane magnets at time t.
+    def timestep(self,t):
+    
+        # Initialise electron beam position and velocity
+        e_beam = np.array([0,0])
+        e_vector = [[0,0]]
+    
+        # Initialise photon beam position and velocity
+        p_vector = []
+    
+        # Calculate positions of electron beam and photon beam relative to main axis.
+        for kicker, strength in zip(self.get_elements('kicker'), self.calculate_strengths(t)):
+             kicker.set_strength(strength)
+        for p in self.path:
+             e_beam = p.increment(e_beam)
+             device = p.get_type()
+             if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after #TO DO ########################################################
+                 e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
+             elif device == 'id':
+                p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
+    
+        return e_vector, p_vector # returns positions and velocities of electrons and photons
+    
+    
+    # Extract electron beam positions for plotting.
+    def e_plot(self,e_beam):
+    
+        e_positions = np.array(e_beam)[:,0]
+    
+        return e_positions
+    
+    # Allow the two photon vectors to drift over large distance 
+    # and add the vector for new position and velocity to 
+    # original vector to create beam for plotting.
+    def p_plot(self,p_beam):
+        
+        travel = [Drifting(),Drifting()]
+        p_pos = Locate(Constants().lengths()).locate_photonbeam()
+        for i in range(2):
+            travel[i].set_length(p_pos[i][1]-p_pos[i][0])
+            p_beam[i].extend(travel[i].increment(p_beam[i]))
+    
+        p_positions = np.array(p_beam)[:,[0,2]]
+    
+        return p_positions
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+############################
+'''
 # Define magnet strength factors (dependent on relative positions and time).
 def max_magnet_strengths():
 
-    kicker_pos = Locate(lengths).locate_kicker()
+    kicker_pos = Locate(Constants().lengths()).locate_kicker()
     len1 = kicker_pos[1] - kicker_pos[0]
     len2 = kicker_pos[2] - kicker_pos[1]
     d12 = float(len1)/float(len2)
@@ -126,11 +276,12 @@ def calculate_strengths(t):
 
     max_kick = max_magnet_strengths()
     graphscale = 0.5
+    kicker3 = Constants().kicker3()
     kick = graphscale*max_kick*np.array([
         np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
         kicker3, np.sin(t*np.pi/100) - 1,
         -np.sin(t*np.pi/100) + 1
-        ]) # Factor 0.5 so that maximum kick applied = 1.
+        ])
 
     return kick
 
@@ -145,7 +296,22 @@ path = [
     Drifting(),Kicker(),
     Drifting()
     ]
+'''
+'''
+def path(): ###################################
 
+    return [
+    Drifting(),Kicker(),
+    Drifting(),Kicker(),
+    Drifting(),InsertionDevice(),
+    Drifting(),Kicker(),
+    Drifting(),InsertionDevice(),
+    Drifting(),Kicker(),
+    Drifting(),Kicker(),
+    Drifting()
+    ]
+'''
+'''
 # Function that returns all objects of a particular type from path.
 def get_elements(path, which):
     list_objects = []
@@ -154,11 +320,12 @@ def get_elements(path, which):
             list_objects.append(p)
     return list_objects
 
-
+###################################
 #PUT THIS IN A FUNCTION? OR CLASS?
 # Set drift distances (time independent).
-for drift, distance in zip(get_elements(path, 'drift'), lengths):
+for drift, distance in zip(get_elements(path, 'drift'), Constants().lengths()):
     drift.set_length(distance)
+###################################
 
 # Send electron vector through chicane magnets at time t.
 def timestep(t):
@@ -197,7 +364,7 @@ def e_plot(e_beam):
 def p_plot(p_beam):
     
     travel = [Drifting(),Drifting()]
-    p_pos = Locate(lengths).locate_photonbeam()
+    p_pos = Locate(Constants().lengths()).locate_photonbeam()
     for i in range(2):
         travel[i].set_length(p_pos[i][1]-p_pos[i][0])
         p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -205,7 +372,7 @@ def p_plot(p_beam):
     p_positions = np.array(p_beam)[:,[0,2]]
 
     return p_positions
-
+'''
 ####################
 ## Graph plotting ##
 ####################
@@ -219,7 +386,7 @@ class Plot_setup:
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, sum(lengths))
+        ax1.set_xlim(0, sum(Constants().lengths()))
         ax1.set_ylim(-2, 5)
     
         ax2 = self.fig.add_subplot(2, 2, 3)
@@ -247,8 +414,9 @@ class Plot_setup:
 class Plotting:
 
 
-    def __init__(self,beams):
+    def __init__(self,beams,other):
         self.beams = beams
+        self.other = other
 
     def init_data(self):
 
@@ -261,105 +429,73 @@ class Plotting:
     def animate(self, t):
 
         # Obtain data for plotting.
-        data = timestep(t)
-        e_data = e_plot(data[0])
-        p_data = p_plot(data[1])
+        information = Collect_data()
+        data = information.timestep(t)
+        e_data = information.e_plot(data[0])
+        p_data = information.p_plot(data[1])
         detector_data = p_data[:,1].tolist()
+        time = [t,t]
 
         if t < 1000:
             if detector_data[0] == 0:
-                detector_flash.append(detector_data[0])
-                detector_flash_time.append(t)
+                self.other[0].append(detector_data[0])
+                self.other[1].append(t)
             elif detector_data[1] == 0:
-                detector_flash.append(detector_data[1])
-                detector_flash_time.append(t)
-        time = [t,t]
+                self.other[0].append(detector_data[1])
+                self.other[1].append(t)
     
         if t < 1000 and t % 10 == 0:
-            flash2.append(detector_data)
-            ftime2.append(time)
-        
+            self.other[2].append(detector_data)
+            self.other[3].append(time)
+
         beams = self.init_data()
         # Set data for electron beam.
-        beams[0].set_data(Locate(lengths).locate_devices(), e_data)
+        beams[0].set_data(Locate(Constants().lengths()).locate_devices(), e_data) #prob only want to call classes once
     
         # Set data for two photon beams.
-        for line, x, y in zip([beams[1],beams[2]], Locate(lengths).locate_photonbeam(), p_data):
+        for line, x, y in zip([beams[1],beams[2]], Locate(Constants().lengths()).locate_photonbeam(), p_data):
             line.set_data(x,y)
 
         # Set data for photon beam at detector.
         beams[3].set_data(detector_data, [10,10])
         beams[4].set_data(detector_data, time)
-        beams[5].set_data(flash2, ftime2) # Some extra plotting as a guide to the eye.
-        beams[6].set_data(detector_flash, detector_flash_time)
+        beams[5].set_data(self.other[2], self.other[3]) # Some extra plotting as a guide to the eye.
+        beams[6].set_data(self.other[0], self.other[1])
     
     
         return beams
 
 
-# Initialise the figure, axes and data
-fig = plt.figure()
-
-detector_flash = []
-detector_flash_time = []
-flash2 = []
-ftime2 = []
-
-axes = Plot_setup(fig).fig_setup()
-data = Plot_setup(fig).data_setup()
-init = Plotting(data).init_data
-
-# Call the animator
-anim = animation.FuncAnimation(fig, Plotting(data).animate, init_func=init,
-                               frames=1000, interval=20, blit=True)
-
-# Plot positions of kickers and IDs.
-for i in Locate(lengths).locate_kicker():
-    axes[0].axvline(x=i, color='k', linestyle='dashed')
-for i in Locate(lengths).locate_id():
-    axes[0].axvline(x=i, color='r', linestyle='dashed')
-
-plt.show()
-'''
-
-class Create_plots(Plot_setup, Plotting):
+class Create_plots(object):
 
 
-    def __init__(self, fig=plt.figure(), beams=0):
-        Plot_setup.__init__(self, fig)
-        Plotting.__init__(self, beams)
+    def __init__(self): 
 
-    def initPlot(self):
+        self.fig = plt.figure()
+        self.other_data = [[],[],[],[]]
 
-        fig = plt.figure()
-
-        detector_flash = []
-        detector_flash_time = []
-        flash2 = []
-        ftime2 = []
-
-        axes = Plot_setup(fig).fig_setup()
-        data = Plot_setup(fig).data_setup()
-        init = Plotting(data).init_data
+        setup = Plot_setup(self.fig)
+        self.axes = setup.fig_setup()
+        self.data = setup.data_setup()
+        self.init = Plotting(self.data, self.other_data).init_data
         
-        # Call the animator
-        anim = animation.FuncAnimation(fig, Plotting(data).animate, init_func=init,
+    def show_plot(self):
+
+        # Create animations
+        anim = animation.FuncAnimation(self.fig, Plotting(self.data, self.other_data).animate, init_func=self.init,
                                        frames=1000, interval=20, blit=True)
-        
         # Plot positions of kickers and IDs.
-        for i in Locate(lengths).locate_kicker():
-            axes[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in Locate(lengths).locate_id():
-            axes[0].axvline(x=i, color='r', linestyle='dashed')
-        
+        for i in Locate(Constants().lengths()).locate_kicker():
+            self.axes[0].axvline(x=i, color='k', linestyle='dashed')
+        for i in Locate(Constants().lengths()).locate_id():
+            self.axes[0].axvline(x=i, color='r', linestyle='dashed')
+
         plt.show()
 
 
-
-
 if __name__ == '__main__':
-    Create_plots()
-'''
+    Create_plots().show_plot()
+
 
 
 
