@@ -12,7 +12,7 @@ import matplotlib.animation as animation
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
-class Drifting:
+class Drifting(object):
 
 
     def __init__(self, step=0):
@@ -31,7 +31,7 @@ class Drifting:
 
 
 
-class Kicker:
+class Kicker(object):
 
 
     def __init__(self, k=0):
@@ -48,7 +48,7 @@ class Kicker:
         return 'kicker'
 
 
-class InsertionDevice:
+class InsertionDevice(object):
 
 
     def __init__(self):
@@ -63,7 +63,7 @@ class InsertionDevice:
 # Assign the values of constants in the system:
 # distances between devices and strength of 3rd kicker.
 
-class Constants:
+class Constants(object):
 
     def __init__(self):
         self.length_list = [2,2,4,4,4,4,2,20]
@@ -79,7 +79,7 @@ class Constants:
 
 # Assign locations of devices along the axis of the system.
 
-class Locate:
+class Locate(object):
 
 
     def __init__(self, lengths):
@@ -123,7 +123,8 @@ class Locate:
 
 # Collect data on electron and photon beams at time t.
 
-class Collect_data:
+class Collect_data(object):
+
 
     def __init__(self):
         self.path = [
@@ -228,7 +229,7 @@ class Collect_data:
 ## Graph plotting ##
 ####################
 
-class Plot_setup:
+class Plot_setup(object):
 
 
     def __init__(self, fig):
@@ -262,7 +263,7 @@ class Plot_setup:
         return beams
 
 
-class Plotting:
+class Plotting(object):
 
 
     def __init__(self,beams,other):
@@ -345,10 +346,46 @@ class Create_plots(object):
         plt.show()
 
 
+#if __name__ == '__main__':
+#    Create_plots().show_plot()
+
+# Initial attempt at adding GUI to control the simulation.
+
+import sys
+from PyQt4 import QtGui, QtCore
+
+class Control(QtGui.QMainWindow):
+
+    def __init__(self):
+        super(Control, self).__init__()
+        self.initUI()
+
+    def initUI(self):
+
+        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+
+        btn = QtGui.QPushButton("Plot",self)
+        btn.clicked.connect(self.plotgraphs)
+        # then add extra buttons to adjust things
+
+        self.setGeometry(300, 300, 250, 150)
+        self.setWindowTitle('i10chic GUI')    
+        self.resize(250, 150)
+        self.show()
+
+    def plotgraphs(self):
+        return Create_plots().show_plot()
+
+
+def main():
+    
+    app = QtGui.QApplication(sys.argv)
+    ex = Control()
+    sys.exit(app.exec_())
+
+
 if __name__ == '__main__':
-    Create_plots().show_plot()
-
-
+    main()
 
 
 

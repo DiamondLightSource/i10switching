@@ -15,7 +15,7 @@ class Control(QtGui.QMainWindow):
         QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
 
         btn = QtGui.QPushButton("Plot",self)
-#        btn.clicked.connect(self.plot)
+        btn.clicked.connect(self.plotgraphs)
         # this will eventually make the animation happen!
         # then add extra buttons to adjust things
 
@@ -24,6 +24,11 @@ class Control(QtGui.QMainWindow):
         self.setWindowTitle('i10chic GUI')    
         self.resize(250, 150)
         self.show()
+
+    def plotgraphs(self):
+        return Create_plots().show_plot()
+
+
 
 def main():
     
