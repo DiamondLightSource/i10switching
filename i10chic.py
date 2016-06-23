@@ -211,46 +211,132 @@ def p_plot(p_beam):
 ####################
 # PUT THIS ALL INTO A CLASS
 
-'''
+
+
+
+
+detector_flash = []
+detector_flash_time = []
+flash2 = [] # Extra - to be tidied up
+ftime2 = []
+
+
+class Plot_setup:
+
+
+    def __init__(self, fig):
+        self.fig = fig
+
+    def fig_setup(self):
+
+        ax1 = self.fig.add_subplot(2, 1, 1)
+        ax1.set_xlim(0, sum(lengths))
+        ax1.set_ylim(-2, 5)
+    
+        ax2 = self.fig.add_subplot(2, 2, 3)
+        ax2.set_xlim(-10, 10)
+        ax2.set_ylim(0, 10)
+        
+        ax3 = self.fig.add_subplot(2, 2, 4)
+        ax3.set_xlim(-10, 10)
+        ax3.set_ylim(0, 1000)
+
+        return ax1, ax2, ax3
+
+    def data_setup(self):
+
+        axes = self.fig_setup()
+
+        beams = [axes[0].plot([], [])[0], axes[0].plot([], [], 'r')[0], 
+                 axes[0].plot([], [], 'r')[0], axes[2].plot([], [], 'r.')[0], 
+                 axes[2].plot([], [], 'r.')[0], axes[2].plot([], [], 'y.')[0], 
+                 axes[2].plot([], [], 'ro')[0]]
+
+        return beams
+
+
 class Plotting:
 
-    def __init__(self):
-        pass
 
-    def fig(self):
-    
-        fig = plt.figure()
-        ax1 = fig.add#....
-        #etc
+    def __init__(self,beams):
+        self.beams = beams
 
-    def init():
+    def init_data(self):
 
-        for line in beams:
+        for line in self.beams:
             line.set_data([], [])
 
-        return beams #where do we get beams from??
+        return self.beams
 
-    def animate(data):
+    # Animation function
+    def animate(self, t):
 
-        # put whole animate function in here
-        # but where call t? pass t to animate??
-        # no actually pass data to animate where data = timestep(t) has already been done...
+        # Obtain data for plotting.
+        data = timestep(t)
+        e_data = e_plot(data[0])
+        p_data = p_plot(data[1])
+        detector_data = p_data[:,1].tolist()
+        if t < 1000:
+            if detector_data[0] == 0:
+                detector_flash.append(detector_data[0])
+                detector_flash_time.append(t)
+            elif detector_data[1] == 0:
+                detector_flash.append(detector_data[1])
+                detector_flash_time.append(t)
+        time = [t,t]
+    
+        if t < 1000 and t % 10 == 0:
+            flash2.append(detector_data)
+            ftime2.append(time)
+        
+        beams = self.init_data()
+        # Set data for electron beam.
+        beams[0].set_data(Locate(lengths).locate_devices(), e_data)
+    
+        # Set data for two photon beams.
+        for line, x, y in zip([beams[1],beams[2]], Locate(lengths).locate_photonbeam(), p_data):
+            line.set_data(x,y)
 
+        # Set data for photon beam at detector.
+        beams[3].set_data(detector_data, [10,10])
+        beams[4].set_data(detector_data, time)
+        beams[5].set_data(flash2, ftime2) # Some extra plotting as a guide to the eye.
+        beams[6].set_data(detector_flash, detector_flash_time)
+    
+    
+        return beams
 
-# do some stuff here to work out
+fig = plt.figure()
 
-#eventually call animate something like this:
-
-anim = animation.FuncAnimation(Plotting().fig(), Plotting().animate(data), init_func=Plotting().init(),
+axes = Plot_setup(fig).fig_setup()
+data = Plot_setup(fig).data_setup()
+init = Plotting(data).init_data
+anim = animation.FuncAnimation(fig, Plotting(data).animate, init_func=init,
                                frames=1000, interval=20, blit=True)
+# Plot positions of kickers and IDs.
+for i in Locate(lengths).locate_kicker():
+    axes[0].axvline(x=i, color='k', linestyle='dashed')
+for i in Locate(lengths).locate_id():
+    axes[0].axvline(x=i, color='r', linestyle='dashed')
 
-#have a function which calls timestep(t) to get data and then uses this in anim
 
-def do_the_animation():
-    data = timestep(t) #BUT WHERE DOES T COME FROM? NEEDS A BIT MORE THOUGHT
+
+plt.show()
+
+
+
+
+
+
+
+
 
 
 '''
+
+
+
+#############################################################
 
 # Set up figure, axis and plot element to be animated.
 fig = plt.figure()
@@ -338,8 +424,6 @@ for i in Locate(lengths).locate_id():
     ax1.axvline(x=i, color='r', linestyle='dashed')
 
 
-
-
-plt.show()
+'''
 
 
