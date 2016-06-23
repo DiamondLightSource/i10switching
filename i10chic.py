@@ -60,6 +60,8 @@ class InsertionDevice:
     def get_type(self):
         return 'id'
 
+# Assign the values of constants in the system:
+# distances between devices and strength of 3rd kicker.
 
 class Constants:
 
@@ -75,6 +77,7 @@ class Constants:
 
         return self.kicker3_strength
 
+# Assign locations of devices along the axis of the system.
 
 class Locate:
 
@@ -118,6 +121,7 @@ class Locate:
 
         return p_pos
 
+# Collect data on electron and photon beams at time t.
 
 class Collect_data:
 
@@ -136,7 +140,6 @@ class Collect_data:
     # Set drift distances (time independent).
         for drift, distance in zip(self.get_elements('drift'), Constants().lengths()):
             drift.set_length(distance)
-
 
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
@@ -165,23 +168,7 @@ class Collect_data:
             ])
     
         return kick
-    
-    # Define path through system.
 
-    '''
-    def path(): ###################################
-    
-        return [
-        Drifting(),Kicker(),
-        Drifting(),Kicker(),
-        Drifting(),InsertionDevice(),
-        Drifting(),Kicker(),
-        Drifting(),InsertionDevice(),
-        Drifting(),Kicker(),
-        Drifting(),Kicker(),
-        Drifting()
-        ]
-    '''
     # Function that returns all objects of a particular type from path.
     def get_elements(self, which):
         list_objects = []
@@ -189,10 +176,6 @@ class Collect_data:
             if p.get_type() == which:
                 list_objects.append(p)
         return list_objects
-    
-    ###################################
-
-    ###################################
     
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -241,138 +224,6 @@ class Collect_data:
         return p_positions
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-############################
-'''
-# Define magnet strength factors (dependent on relative positions and time).
-def max_magnet_strengths():
-
-    kicker_pos = Locate(Constants().lengths()).locate_kicker()
-    len1 = kicker_pos[1] - kicker_pos[0]
-    len2 = kicker_pos[2] - kicker_pos[1]
-    d12 = float(len1)/float(len2)
-    len3 = kicker_pos[3] - kicker_pos[2]
-    len4 = kicker_pos[4] - kicker_pos[3]
-    d34 = float(len3)/float(len4)
-    max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
-
-    return max_kick
-
-# Define time-varying strengths of kicker magnets.
-def calculate_strengths(t):
-
-    max_kick = max_magnet_strengths()
-    graphscale = 0.5
-    kicker3 = Constants().kicker3()
-    kick = graphscale*max_kick*np.array([
-        np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-        kicker3, np.sin(t*np.pi/100) - 1,
-        -np.sin(t*np.pi/100) + 1
-        ])
-
-    return kick
-
-# Define path through system.
-path = [
-    Drifting(),Kicker(),
-    Drifting(),Kicker(),
-    Drifting(),InsertionDevice(),
-    Drifting(),Kicker(),
-    Drifting(),InsertionDevice(),
-    Drifting(),Kicker(),
-    Drifting(),Kicker(),
-    Drifting()
-    ]
-'''
-'''
-def path(): ###################################
-
-    return [
-    Drifting(),Kicker(),
-    Drifting(),Kicker(),
-    Drifting(),InsertionDevice(),
-    Drifting(),Kicker(),
-    Drifting(),InsertionDevice(),
-    Drifting(),Kicker(),
-    Drifting(),Kicker(),
-    Drifting()
-    ]
-'''
-'''
-# Function that returns all objects of a particular type from path.
-def get_elements(path, which):
-    list_objects = []
-    for p in path:
-        if p.get_type() == which:
-            list_objects.append(p)
-    return list_objects
-
-###################################
-#PUT THIS IN A FUNCTION? OR CLASS?
-# Set drift distances (time independent).
-for drift, distance in zip(get_elements(path, 'drift'), Constants().lengths()):
-    drift.set_length(distance)
-###################################
-
-# Send electron vector through chicane magnets at time t.
-def timestep(t):
-
-    # Initialise electron beam position and velocity
-    e_beam = np.array([0,0])
-    e_vector = [[0,0]]
-
-    # Initialise photon beam position and velocity
-    p_vector = []
-
-    # Calculate positions of electron beam and photon beam relative to main axis.
-    for kicker, strength in zip(get_elements(path, 'kicker'), calculate_strengths(t)):
-         kicker.set_strength(strength)
-    for p in path:
-         e_beam = p.increment(e_beam)
-         device = p.get_type()
-         if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after #TO DO ########################################################
-             e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
-         elif device == 'id':
-            p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
-
-    return e_vector, p_vector # returns positions and velocities of electrons and photons
-
-
-# Extract electron beam positions for plotting.
-def e_plot(e_beam):
-
-    e_positions = np.array(e_beam)[:,0]
-
-    return e_positions
-
-# Allow the two photon vectors to drift over large distance 
-# and add the vector for new position and velocity to 
-# original vector to create beam for plotting.
-def p_plot(p_beam):
-    
-    travel = [Drifting(),Drifting()]
-    p_pos = Locate(Constants().lengths()).locate_photonbeam()
-    for i in range(2):
-        travel[i].set_length(p_pos[i][1]-p_pos[i][0])
-        p_beam[i].extend(travel[i].increment(p_beam[i]))
-
-    p_positions = np.array(p_beam)[:,[0,2]]
-
-    return p_positions
-'''
 ####################
 ## Graph plotting ##
 ####################
@@ -449,11 +300,12 @@ class Plotting:
             self.other[3].append(time)
 
         beams = self.init_data()
+        positions = Locate(Constants().lengths())
         # Set data for electron beam.
-        beams[0].set_data(Locate(Constants().lengths()).locate_devices(), e_data) #prob only want to call classes once
+        beams[0].set_data(positions.locate_devices(), e_data) #prob only want to call classes once
     
         # Set data for two photon beams.
-        for line, x, y in zip([beams[1],beams[2]], Locate(Constants().lengths()).locate_photonbeam(), p_data):
+        for line, x, y in zip([beams[1],beams[2]], positions.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
         # Set data for photon beam at detector.
