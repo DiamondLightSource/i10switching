@@ -67,7 +67,7 @@ class Constants(object):
 
     def __init__(self):
         self.length_list = [2,2,4,4,4,4,2,20]
-        self.kicker3_strength = 1
+        self.kicker3_strength = Control().k3()
 
     def lengths(self):
 
@@ -239,26 +239,30 @@ class Plot_setup(object):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.set_xlim(0, sum(Constants().lengths()))
+        ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
+
     
-        ax2 = self.fig.add_subplot(2, 2, 3)
-        ax2.set_xlim(-10, 10)
-        ax2.set_ylim(0, 10)
+#        ax2 = self.fig.add_subplot(2, 2, 3)
+#        ax2.get_xaxis().set_visible(False)        
+#        ax2.get_yaxis().set_visible(False)
         
         ax3 = self.fig.add_subplot(2, 2, 4)
         ax3.set_xlim(-10, 10)
         ax3.set_ylim(0, 1000)
+        ax3.get_xaxis().set_visible(False)        
+        ax3.get_yaxis().set_visible(False)
 
-        return ax1, ax2, ax3
+        return ax1, ax3
 
     def data_setup(self):
 
         axes = self.fig_setup()
 
         beams = [axes[0].plot([], [])[0], axes[0].plot([], [], 'r')[0], 
-                 axes[0].plot([], [], 'r')[0], axes[2].plot([], [], 'r.')[0], 
-                 axes[2].plot([], [], 'r.')[0], axes[2].plot([], [], 'y.')[0], 
-                 axes[2].plot([], [], 'ro')[0]]
+                 axes[0].plot([], [], 'r')[0], axes[1].plot([], [], 'r.')[0], 
+                 axes[1].plot([], [], 'r.')[0], axes[1].plot([], [], 'y.')[0], 
+                 axes[1].plot([], [], 'ro')[0]]
 
         return beams
 
@@ -303,7 +307,7 @@ class Plotting(object):
         beams = self.init_data()
         positions = Locate(Constants().lengths())
         # Set data for electron beam.
-        beams[0].set_data(positions.locate_devices(), e_data) #prob only want to call classes once
+        beams[0].set_data(positions.locate_devices(), e_data)
     
         # Set data for two photon beams.
         for line, x, y in zip([beams[1],beams[2]], positions.locate_photonbeam(), p_data):
@@ -312,7 +316,7 @@ class Plotting(object):
         # Set data for photon beam at detector.
         beams[3].set_data(detector_data, [10,10])
         beams[4].set_data(detector_data, time)
-        beams[5].set_data(self.other[2], self.other[3]) # Some extra plotting as a guide to the eye.
+        beams[5].set_data(self.other[2], self.other[3])
         beams[6].set_data(self.other[0], self.other[1])
     
     
@@ -343,6 +347,7 @@ class Create_plots(object):
         for i in Locate(Constants().lengths()).locate_id():
             self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
+
         plt.show()
 
 
@@ -359,6 +364,7 @@ class Control(QtGui.QMainWindow):
     def __init__(self):
         super(Control, self).__init__()
         self.initUI()
+        self.k3strength = 1
 
     def initUI(self):
 
@@ -368,13 +374,36 @@ class Control(QtGui.QMainWindow):
         btn.clicked.connect(self.plotgraphs)
         # then add extra buttons to adjust things
 
+        k3Button = QtGui.QPushButton("K3 +",self) # NOT CURRENTLY WORKING
+        k3Button.clicked.connect(self.k3plus)
+        k3Button.move(100, 30)
+
+        quitButton = QtGui.QPushButton("Quit",self)
+        quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        quitButton.move(0, 30)
+
         self.setGeometry(300, 300, 250, 150)
         self.setWindowTitle('i10chic GUI')    
         self.resize(250, 150)
+        self.centre()
         self.show()
 
     def plotgraphs(self):
         return Create_plots().show_plot()
+
+    def k3(self):
+        return self.k3strength
+
+    def k3plus(self):
+        self.k3strength += 1
+        return self.k3strength
+
+    def centre(self):
+        
+        qr = self.frameGeometry()
+        cp = QtGui.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
 
 
 def main():
