@@ -209,17 +209,6 @@ def p_plot(p_beam):
 ####################
 ## Graph plotting ##
 ####################
-# PUT THIS ALL INTO A CLASS
-
-
-
-
-
-detector_flash = []
-detector_flash_time = []
-flash2 = [] # Extra - to be tidied up
-ftime2 = []
-
 
 class Plot_setup:
 
@@ -276,6 +265,7 @@ class Plotting:
         e_data = e_plot(data[0])
         p_data = p_plot(data[1])
         detector_data = p_data[:,1].tolist()
+
         if t < 1000:
             if detector_data[0] == 0:
                 detector_flash.append(detector_data[0])
@@ -306,124 +296,74 @@ class Plotting:
     
         return beams
 
+
+# Initialise the figure, axes and data
 fig = plt.figure()
+
+detector_flash = []
+detector_flash_time = []
+flash2 = []
+ftime2 = []
 
 axes = Plot_setup(fig).fig_setup()
 data = Plot_setup(fig).data_setup()
 init = Plotting(data).init_data
+
+# Call the animator
 anim = animation.FuncAnimation(fig, Plotting(data).animate, init_func=init,
                                frames=1000, interval=20, blit=True)
+
 # Plot positions of kickers and IDs.
 for i in Locate(lengths).locate_kicker():
     axes[0].axvline(x=i, color='k', linestyle='dashed')
 for i in Locate(lengths).locate_id():
     axes[0].axvline(x=i, color='r', linestyle='dashed')
 
-
-
 plt.show()
+'''
+
+class Create_plots(Plot_setup, Plotting):
+
+
+    def __init__(self, fig=plt.figure(), beams=0):
+        Plot_setup.__init__(self, fig)
+        Plotting.__init__(self, beams)
+
+    def initPlot(self):
+
+        fig = plt.figure()
+
+        detector_flash = []
+        detector_flash_time = []
+        flash2 = []
+        ftime2 = []
+
+        axes = Plot_setup(fig).fig_setup()
+        data = Plot_setup(fig).data_setup()
+        init = Plotting(data).init_data
+        
+        # Call the animator
+        anim = animation.FuncAnimation(fig, Plotting(data).animate, init_func=init,
+                                       frames=1000, interval=20, blit=True)
+        
+        # Plot positions of kickers and IDs.
+        for i in Locate(lengths).locate_kicker():
+            axes[0].axvline(x=i, color='k', linestyle='dashed')
+        for i in Locate(lengths).locate_id():
+            axes[0].axvline(x=i, color='r', linestyle='dashed')
+        
+        plt.show()
 
 
 
 
-
-
-
-
-
-
+if __name__ == '__main__':
+    Create_plots()
 '''
 
 
 
-#############################################################
-
-# Set up figure, axis and plot element to be animated.
-fig = plt.figure()
-
-ax1 = fig.add_subplot(2, 1, 1)
-ax1.set_xlim(0, sum(lengths))
-ax1.set_ylim(-2, 5)
-
-ax2 = fig.add_subplot(2, 2, 3)
-ax2.set_xlim(-10, 10)
-ax2.set_ylim(0, 10)
-
-ax3 = fig.add_subplot(2, 2, 4)
-ax3.set_xlim(-10, 10)
-ax3.set_ylim(0, 1000)
-
-beams = [ax1.plot([], [])[0], ax1.plot([], [], 'r')[0], 
-         ax1.plot([], [], 'r')[0], ax3.plot([], [], 'r.')[0], 
-         ax3.plot([], [], 'r.')[0], ax3.plot([], [], 'y.')[0], 
-         ax3.plot([], [], 'ro')[0]]
 
 
-# Initialisation function: plot the background of each frame.
-def init():
-
-    for line in beams:
-        line.set_data([], [])
-
-    return beams
-
-import gc  # This can't stay here! This is garbage collection
-
-detector_flash = []
-detector_flash_time = []
-flash2 = [] # Extra - to be tidied up
-ftime2 = []
-
-# Animation function
-def animate(t):
-
-    # Obtain data for plotting.
-    data = timestep(t)
-    e_data = e_plot(data[0])
-    p_data = p_plot(data[1])
-    detector_data = p_data[:,1].tolist()
-    if t < 1000:
-        if detector_data[0] == 0:
-            detector_flash.append(detector_data[0])
-            detector_flash_time.append(t)
-        elif detector_data[1] == 0:
-            detector_flash.append(detector_data[1])
-            detector_flash_time.append(t)
-    time = [t,t]
-
-    if t < 1000 and t % 10 == 0:
-        flash2.append(detector_data)
-        ftime2.append(time)
-
-    # Set data for electron beam.
-    beams[0].set_data(Locate(lengths).locate_devices(), e_data)
-
-    # Set data for two photon beams.
-    for line, x, y in zip([beams[1],beams[2]], Locate(lengths).locate_photonbeam(), p_data):
-        line.set_data(x,y)
-
-    # Set data for photon beam at detector.
-    beams[3].set_data(detector_data, [10,10])
-    beams[4].set_data(detector_data, time)
-    beams[5].set_data(flash2, ftime2) # Some extra plotting as a guide to the eye.
-    beams[6].set_data(detector_flash, detector_flash_time)
-
-    gc.collect(0)
-
-    return beams
-
-
-# Call the animator
-anim = animation.FuncAnimation(fig, animate, init_func=init,
-                               frames=1000, interval=20, blit=True)
-
-# Plot positions of kickers and IDs.
-for i in Locate(lengths).locate_kicker():
-    ax1.axvline(x=i, color='k', linestyle='dashed')
-for i in Locate(lengths).locate_id():
-    ax1.axvline(x=i, color='r', linestyle='dashed')
-
-
-'''
 
 
