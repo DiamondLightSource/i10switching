@@ -7,6 +7,8 @@ import dls_packages
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+import sys
+from PyQt4 import QtGui, QtCore
 
 
 
@@ -46,7 +48,7 @@ class Kicker(object):
         return e + kick
 
     def set_position(self, where):
-        self.where = where
+        return where
 
     def get_type(self):
         return 'kicker'
@@ -62,7 +64,7 @@ class InsertionDevice(object):
         return e
 
     def set_position(self, where):
-        self.where = where
+        return where
 
     def get_type(self):
         return 'id'
@@ -104,13 +106,6 @@ class Locate(object):
     
         return pos
 
-#    def locate_devices(self):
-#        self.drift_elements = Collect_data().get_elements('drift')
-#        self.devices = [x for x in self.path if x not in self.drift_elements]
-#        self.device_positions = self.locate_devices[1:len(self.positions)-1]
-#        for device, where in zip(self.devices, self.device_positions):
-#            device.set_position(where) #gaaaaaargh
-        
 
     
     def locate_kicker(self):
@@ -138,6 +133,15 @@ class Locate(object):
         return [[self.locate_id()[0], self.locate_detector()],
                 [self.locate_id()[1], self.locate_detector()]]
 
+    def get_elements2(self, which):
+        list_objects = []
+        pathway = self.path()
+        for p in pathway:
+            if p.get_type() == which:
+                list_objects.append(p)
+        return list_objects # Doesn't work???????????????????????????????????
+
+
 # Collect data on electron and photon beams at time t.
 
 class Magnet_strengths(object):
@@ -145,12 +149,12 @@ class Magnet_strengths(object):
 
     def __init__(self):
         self.numbers = Constants()
-        self.positions = Locate()
+        self.pos = Locate()
 
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
 
-        kicker_pos = self.positions.locate_kicker()
+        kicker_pos = self.pos.locate_kicker()
         len1 = kicker_pos[1] - kicker_pos[0]
         len2 = kicker_pos[2] - kicker_pos[1]
         d12 = float(len1)/float(len2)
@@ -183,15 +187,16 @@ class Collect_data(object):
     def __init__(self):
 
         self.numbers = Constants()
-        self.positions = Locate()
-        self.path = self.positions.path()
+        self.pos = Locate()
+        self.path = self.pos.path()
 #        self.e_vector = [[0,0]]
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
-        for drift, distance in zip(self.get_elements('drift'), Constants().LENGTHS):
+        for drift, distance in zip(self.get_elements('drift'), self.numbers.LENGTHS):
             drift.set_length(distance)
-
+########################################################################
+    # Want to put this into Locate class but for some reason it won't currently work...
     # Function that returns all objects of a particular type from path.
     def get_elements(self, which):
         list_objects = []
@@ -199,6 +204,22 @@ class Collect_data(object):
             if p.get_type() == which:
                 list_objects.append(p)
         return list_objects
+#########################################################################
+    # Gives correct coordinates but not currently used because in the wrong class
+    def locate_devices(self):
+        kpos = []
+        idpos = []
+        self.drift_elements = self.get_elements('drift')
+        self.devices = [x for x in self.path if x not in self.drift_elements]
+        self.device_positions = self.pos.positions()[1:]
+        for device, where in zip(self.devices, self.device_positions):
+            place = device.set_position(where) # Need to rename variables so it's less confusing.
+            if device.get_type() == 'kicker':
+                kpos.append(place)
+            elif device.get_type() == 'id':
+                idpos.append(place)
+        return kpos, idpos
+#########################################################################
     
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -242,7 +263,7 @@ class Collect_data(object):
     def p_plot(self, p_beam):
         
         travel = [Drifting(),Drifting()]
-        p_pos = self.positions.locate_photonbeam() ########################
+        p_pos = self.pos.locate_photonbeam()
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
             p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -251,7 +272,7 @@ class Collect_data(object):
     
         return p_positions
 
-
+print Collect_data().locate_devices()
 ####################
 ## Graph plotting ##
 ####################
@@ -376,8 +397,6 @@ class Plot(object):
 
 # Initial attempt at adding GUI to control the simulation.
 
-import sys
-from PyQt4 import QtGui, QtCore
 
 class Control(QtGui.QMainWindow):
 
