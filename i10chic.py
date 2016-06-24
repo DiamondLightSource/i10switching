@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 
 
+
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
@@ -67,7 +68,8 @@ class Constants(object):
 
     def __init__(self):
         self.length_list = [2,2,4,4,4,4,2,20]
-        self.kicker3_strength = Control().k3()
+        self.kicker3_strength = 1.5
+        # self.kicker3_strength = Control().k3()
 
     def lengths(self):
 
@@ -137,6 +139,10 @@ class Collect_data(object):
                     Drifting(),Kicker(),
                     Drifting()
                     ]
+        self.numbers = Constants()
+        self.positions = Locate(self.numbers.lengths())
+#        self.e_vector = [[0,0]]
+#        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
         for drift, distance in zip(self.get_elements('drift'), Constants().lengths()):
@@ -145,7 +151,7 @@ class Collect_data(object):
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
 
-        kicker_pos = Locate(Constants().lengths()).locate_kicker()
+        kicker_pos = self.positions.locate_kicker()
         len1 = kicker_pos[1] - kicker_pos[0]
         len2 = kicker_pos[2] - kicker_pos[1]
         d12 = float(len1)/float(len2)
@@ -161,7 +167,7 @@ class Collect_data(object):
     
         max_kick = self.max_magnet_strengths()
         graphscale = 0.5
-        kicker3 = Constants().kicker3()
+        kicker3 = self.numbers.kicker3()
         kick = graphscale*max_kick*np.array([
             np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
             kicker3, np.sin(t*np.pi/100) - 1,
@@ -192,30 +198,34 @@ class Collect_data(object):
         for kicker, strength in zip(self.get_elements('kicker'), self.calculate_strengths(t)):
              kicker.set_strength(strength)
         for p in self.path:
-             e_beam = p.increment(e_beam)
-             device = p.get_type()
-             if device == 'drift':  # Better way of doing this?? # list for x and y positions then can remove duplicates after #TO DO ########################################################
-                 e_vector.append(e_beam.tolist())  # Allow electron vector to drift and append its new location and velocity to vector collecting the data
-             elif device == 'id':
+            e_beam = p.increment(e_beam)
+            device = p.get_type()
+            e_vector.append(e_beam.tolist())
+            if device == 'id':
                 p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
-    
-        return e_vector, p_vector # returns positions and velocities of electrons and photons
+
+#        return p_vector    
+        return e_vector, p_vector # Returns positions and velocities of electrons and photons.
     
     
     # Extract electron beam positions for plotting.
-    def e_plot(self,e_beam):
+    def e_plot(self, e_beam):
     
-        e_positions = np.array(e_beam)[:,0]
-    
+        e_positions = np.array(e_beam)[:,0].tolist()
+        # Remove duplicates in data.
+        for i in range(len(self.get_elements('drift'))):
+            if e_positions[i] == e_positions[i+1]:
+                e_positions.pop(i+1)
+        
         return e_positions
     
     # Allow the two photon vectors to drift over large distance 
     # and add the vector for new position and velocity to 
     # original vector to create beam for plotting.
-    def p_plot(self,p_beam):
+    def p_plot(self, p_beam):
         
         travel = [Drifting(),Drifting()]
-        p_pos = Locate(Constants().lengths()).locate_photonbeam()
+        p_pos = self.positions.locate_photonbeam()
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
             p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -234,26 +244,27 @@ class Plot_setup(object):
 
     def __init__(self, fig):
         self.fig = fig
+        self.x_max = Constants().lengths()
 
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, sum(Constants().lengths()))
+        ax1.set_xlim(0, sum(self.x_max))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
-
-    
-#        ax2 = self.fig.add_subplot(2, 2, 3)
-#        ax2.get_xaxis().set_visible(False)        
-#        ax2.get_yaxis().set_visible(False)
         
-        ax3 = self.fig.add_subplot(2, 2, 4)
-        ax3.set_xlim(-10, 10)
-        ax3.set_ylim(0, 1000)
-        ax3.get_xaxis().set_visible(False)        
-        ax3.get_yaxis().set_visible(False)
+        ax2 = self.fig.add_subplot(2, 2, 4)
+        ax2.set_xlim(-10, 10)
+        ax2.set_ylim(0, 1000)
+        ax2.get_xaxis().set_visible(False)        
+        ax2.get_yaxis().set_visible(False)
+    
+#        ax3 = self.fig.add_subplot(2, 2, 3)
+#        ax3.set_xlim(0, 15)
+#        ax3.get_yaxis().set_visible(False)
+#        ax3.set_ylim(-2, 5)
 
-        return ax1, ax3
+        return ax1, ax2
 
     def data_setup(self):
 
@@ -273,6 +284,7 @@ class Plotting(object):
     def __init__(self,beams,other):
         self.beams = beams
         self.other = other
+        self.information = Collect_data()
 
     def init_data(self):
 
@@ -285,10 +297,11 @@ class Plotting(object):
     def animate(self, t):
 
         # Obtain data for plotting.
-        information = Collect_data()
-        data = information.timestep(t)
-        e_data = information.e_plot(data[0])
-        p_data = information.p_plot(data[1])
+
+        positions = Locate(Constants().lengths())
+        data = self.information.timestep(t)
+        e_data = self.information.e_plot(data[0])
+        p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
         detector_data = p_data[:,1].tolist()
         time = [t,t]
 
@@ -305,7 +318,6 @@ class Plotting(object):
             self.other[3].append(time)
 
         beams = self.init_data()
-        positions = Locate(Constants().lengths())
         # Set data for electron beam.
         beams[0].set_data(positions.locate_devices(), e_data)
     
@@ -334,17 +346,18 @@ class Create_plots(object):
         setup = Plot_setup(self.fig)
         self.axes = setup.fig_setup()
         self.data = setup.data_setup()
-        self.init = Plotting(self.data, self.other_data).init_data
+        self.plotting = Plotting(self.data, self.other_data)
+        self.positions = Locate(Constants().lengths())
         
     def show_plot(self):
 
         # Create animations
-        anim = animation.FuncAnimation(self.fig, Plotting(self.data, self.other_data).animate, init_func=self.init,
+        anim = animation.FuncAnimation(self.fig, self.plotting.animate, init_func=self.plotting.init_data,
                                        frames=1000, interval=20, blit=True)
         # Plot positions of kickers and IDs.
-        for i in Locate(Constants().lengths()).locate_kicker():
+        for i in self.positions.locate_kicker():
             self.axes[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in Locate(Constants().lengths()).locate_id():
+        for i in self.positions.locate_id():
             self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
 
@@ -353,6 +366,7 @@ class Create_plots(object):
 
 #if __name__ == '__main__':
 #    Create_plots().show_plot()
+
 
 # Initial attempt at adding GUI to control the simulation.
 
@@ -364,7 +378,8 @@ class Control(QtGui.QMainWindow):
     def __init__(self):
         super(Control, self).__init__()
         self.initUI()
-        self.k3strength = 1
+        self.k3strength = 3
+        self.plots = Create_plots()
 
     def initUI(self):
 
@@ -389,12 +404,13 @@ class Control(QtGui.QMainWindow):
         self.show()
 
     def plotgraphs(self):
-        return Create_plots().show_plot()
+        return self.plots.show_plot()
 
     def k3(self):
         return self.k3strength
 
     def k3plus(self):
+        print 'Updating k3'
         self.k3strength += 1
         return self.k3strength
 
@@ -415,9 +431,5 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-
-
 
 
