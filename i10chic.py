@@ -239,17 +239,31 @@ class Collect_data(object):
 ## Graph plotting ##
 ####################
 
-class Plot_setup(object):
+class Plot(object):
 
 
-    def __init__(self, fig):
-        self.fig = fig
-        self.x_max = Constants().lengths()
+    def __init__(self):
+#        self.fig = fig
+        self.lengths = Constants().lengths()
+        self.positions = Locate(self.lengths)
+
+#        self.beams = beams
+#        self.other = other
+        self.information = Collect_data()
+
+        self.fig = plt.figure()
+        self.other_data = [[],[],[],[]]
+
+#        setup = Plot_setup(self.fig)
+        self.axes = self.fig_setup()
+        self.beams = self.data_setup()
+#        self.plotting = Plotting(self.data, self.other_data)
+
 
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, sum(self.x_max))
+        ax1.set_xlim(0, sum(self.lengths))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
         
@@ -268,25 +282,24 @@ class Plot_setup(object):
 
     def data_setup(self):
 
-        axes = self.fig_setup()
-
-        beams = [axes[0].plot([], [])[0], axes[0].plot([], [], 'r')[0], 
-                 axes[0].plot([], [], 'r')[0], axes[1].plot([], [], 'r.')[0], 
-                 axes[1].plot([], [], 'r.')[0], axes[1].plot([], [], 'y.')[0], 
-                 axes[1].plot([], [], 'ro')[0]]
+        beams = [self.axes[0].plot([], [])[0], self.axes[0].plot([], [], 'r')[0], 
+                 self.axes[0].plot([], [], 'r')[0], self.axes[1].plot([], [], 'r.')[0], 
+                 self.axes[1].plot([], [], 'r.')[0], self.axes[1].plot([], [], 'y.')[0], 
+                 self.axes[1].plot([], [], 'ro')[0]]
 
         return beams
 
 
-class Plotting(object):
+#class Plotting(object):
 
 
-    def __init__(self,beams,other):
-        self.beams = beams
-        self.other = other
-        self.information = Collect_data()
+#    def __init__(self,beams,other):
+#        self.beams = beams
+#        self.other = other
+#        self.information = Collect_data()
 
     def init_data(self):
+
 
         for line in self.beams:
             line.set_data([], [])
@@ -298,7 +311,7 @@ class Plotting(object):
 
         # Obtain data for plotting.
 
-        positions = Locate(Constants().lengths())
+#        positions = Locate(Constants().lengths())
         data = self.information.timestep(t)
         e_data = self.information.e_plot(data[0])
         p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
@@ -307,58 +320,58 @@ class Plotting(object):
 
         if t < 1000:
             if detector_data[0] == 0:
-                self.other[0].append(detector_data[0])
-                self.other[1].append(t)
+                self.other_data[0].append(detector_data[0])
+                self.other_data[1].append(t)
             elif detector_data[1] == 0:
-                self.other[0].append(detector_data[1])
-                self.other[1].append(t)
+                self.other_data[0].append(detector_data[1])
+                self.other_data[1].append(t)
     
         if t < 1000 and t % 10 == 0:
-            self.other[2].append(detector_data)
-            self.other[3].append(time)
+            self.other_data[2].append(detector_data)
+            self.other_data[3].append(time)
 
         beams = self.init_data()
         # Set data for electron beam.
-        beams[0].set_data(positions.locate_devices(), e_data)
+        beams[0].set_data(self.positions.locate_devices(), e_data)
     
         # Set data for two photon beams.
-        for line, x, y in zip([beams[1],beams[2]], positions.locate_photonbeam(), p_data):
+        for line, x, y in zip([beams[1],beams[2]], self.positions.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
         # Set data for photon beam at detector.
         beams[3].set_data(detector_data, [10,10])
         beams[4].set_data(detector_data, time)
-        beams[5].set_data(self.other[2], self.other[3])
-        beams[6].set_data(self.other[0], self.other[1])
+        beams[5].set_data(self.other_data[2], self.other_data[3])
+        beams[6].set_data(self.other_data[0], self.other_data[1])
     
     
         return beams
 
 
-class Create_plots(object):
+#class Create_plots(object):
 
 
-    def __init__(self): 
+#    def __init__(self): 
 
-        self.fig = plt.figure()
-        self.other_data = [[],[],[],[]]
+#        self.fig = plt.figure()
+#        self.other_data = [[],[],[],[]]
 
-        setup = Plot_setup(self.fig)
-        self.axes = setup.fig_setup()
-        self.data = setup.data_setup()
-        self.plotting = Plotting(self.data, self.other_data)
-        self.positions = Locate(Constants().lengths())
+#        setup = Plot_setup(self.fig)
+#        self.axes = setup.fig_setup()
+#        self.data = setup.data_setup()
+#        self.plotting = Plotting(self.data, self.other_data)
+#        self.positions = Locate(Constants().lengths())
         
     def show_plot(self):
 
         # Create animations
-        anim = animation.FuncAnimation(self.fig, self.plotting.animate, init_func=self.plotting.init_data,
+        anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data,
                                        frames=1000, interval=20, blit=True)
         # Plot positions of kickers and IDs.
         for i in self.positions.locate_kicker():
-            self.axes[0].axvline(x=i, color='k', linestyle='dashed')
+            self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
         for i in self.positions.locate_id():
-            self.axes[0].axvline(x=i, color='r', linestyle='dashed')
+            self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
 
 
         plt.show()
@@ -379,7 +392,7 @@ class Control(QtGui.QMainWindow):
         super(Control, self).__init__()
         self.initUI()
         self.k3strength = 3
-        self.plots = Create_plots()
+        self.plots = Plot()
 
     def initUI(self):
 
