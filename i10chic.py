@@ -45,6 +45,9 @@ class Kicker(object):
         kick = np.array([0, self.k])
         return e + kick
 
+    def set_position(self, where):
+        self.where = where
+
     def get_type(self):
         return 'kicker'
 
@@ -57,6 +60,9 @@ class InsertionDevice(object):
 
     def increment(self, e):
         return e
+
+    def set_position(self, where):
+        self.where = where
 
     def get_type(self):
         return 'id'
@@ -78,32 +84,54 @@ class Locate(object):
     def __init__(self):
         self.lengths = Constants().LENGTHS
 
-    def locate_devices(self):
-        
-        positions = [0]
-        positions.extend(np.cumsum(self.lengths))
-    
-        return positions
+    def path(self): 
 
+        return [
+               Drifting(),Kicker(),
+               Drifting(),Kicker(),
+               Drifting(),InsertionDevice(),
+               Drifting(),Kicker(),
+               Drifting(),InsertionDevice(),
+               Drifting(),Kicker(),
+               Drifting(),Kicker(),
+               Drifting()
+               ]
+
+    def positions(self):
+        
+        pos = [0]
+        pos.extend(np.cumsum(self.lengths))
+    
+        return pos
+
+#    def locate_devices(self):
+#        self.drift_elements = Collect_data().get_elements('drift')
+#        self.devices = [x for x in self.path if x not in self.drift_elements]
+#        self.device_positions = self.locate_devices[1:len(self.positions)-1]
+#        for device, where in zip(self.devices, self.device_positions):
+#            device.set_position(where) #gaaaaaargh
+        
+
+    
     def locate_kicker(self):
 
         kicker_pos = [
-                     self.locate_devices()[1],
-                     self.locate_devices()[2],
-                     self.locate_devices()[4],
-                     self.locate_devices()[6],
-                     self.locate_devices()[7]
+                     self.positions()[1],
+                     self.positions()[2],
+                     self.positions()[4],
+                     self.positions()[6],
+                     self.positions()[7]
                      ]
 
         return kicker_pos
 
     def locate_id(self):
 
-        return [self.locate_devices()[3],self.locate_devices()[5]]
-
+        return [self.positions()[3],self.positions()[5]]
+    
     def locate_detector(self):
 
-        return self.locate_devices()[8]
+        return self.positions()[8]
 
     def locate_photonbeam(self):
 
@@ -153,18 +181,10 @@ class Collect_data(object):
 
 
     def __init__(self):
-        self.path = [
-                    Drifting(),Kicker(),
-                    Drifting(),Kicker(),
-                    Drifting(),InsertionDevice(),
-                    Drifting(),Kicker(),
-                    Drifting(),InsertionDevice(),
-                    Drifting(),Kicker(),
-                    Drifting(),Kicker(),
-                    Drifting()
-                    ]
+
         self.numbers = Constants()
         self.positions = Locate()
+        self.path = self.positions.path()
 #        self.e_vector = [[0,0]]
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
@@ -222,7 +242,7 @@ class Collect_data(object):
     def p_plot(self, p_beam):
         
         travel = [Drifting(),Drifting()]
-        p_pos = self.positions.locate_photonbeam()
+        p_pos = self.positions.locate_photonbeam() ########################
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
             p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -319,7 +339,7 @@ class Plot(object):
 
         beams = self.init_data()
         # Set data for electron beam.
-        beams[0].set_data(self.positions.locate_devices(), e_data)
+        beams[0].set_data(self.positions.positions(), e_data)
     
         # Set data for two photon beams.
         for line, x, y in zip([beams[1],beams[2]], self.positions.locate_photonbeam(), p_data):
