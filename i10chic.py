@@ -272,7 +272,7 @@ class Collect_data(object):
     
         return p_positions
 
-print Collect_data().locate_devices()
+
 ####################
 ## Graph plotting ##
 ####################
