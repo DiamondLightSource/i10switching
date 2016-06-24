@@ -66,26 +66,17 @@ class InsertionDevice(object):
 
 class Constants(object):
 
-    def __init__(self):
-        self.length_list = [2,2,4,4,4,4,2,20]
-        self.kicker3_strength = 1.5
-        # self.kicker3_strength = Control().k3()
+    LENGTHS = [2,2,4,4,4,4,2,20]
+    KICKER3 = 1
 
-    def lengths(self):
-
-        return self.length_list
-
-    def kicker3(self):
-
-        return self.kicker3_strength
 
 # Assign locations of devices along the axis of the system.
 
 class Locate(object):
 
 
-    def __init__(self, lengths):
-        self.lengths = lengths
+    def __init__(self):
+        self.lengths = Constants().LENGTHS
 
     def locate_devices(self):
         
@@ -108,47 +99,25 @@ class Locate(object):
 
     def locate_id(self):
 
-        id_pos = [self.locate_devices()[3],self.locate_devices()[5]]
-
-        return id_pos
+        return [self.locate_devices()[3],self.locate_devices()[5]]
 
     def locate_detector(self):
 
-        d_pos = self.locate_devices()[8]
-
-        return d_pos
+        return self.locate_devices()[8]
 
     def locate_photonbeam(self):
 
-        p_pos = [[self.locate_id()[0], self.locate_detector()],
-                 [self.locate_id()[1], self.locate_detector()]]
-
-        return p_pos
+        return [[self.locate_id()[0], self.locate_detector()],
+                [self.locate_id()[1], self.locate_detector()]]
 
 # Collect data on electron and photon beams at time t.
 
-class Collect_data(object):
+class Magnet_strengths(object):
 
 
     def __init__(self):
-        self.path = [
-                    Drifting(),Kicker(),
-                    Drifting(),Kicker(),
-                    Drifting(),InsertionDevice(),
-                    Drifting(),Kicker(),
-                    Drifting(),InsertionDevice(),
-                    Drifting(),Kicker(),
-                    Drifting(),Kicker(),
-                    Drifting()
-                    ]
         self.numbers = Constants()
-        self.positions = Locate(self.numbers.lengths())
-#        self.e_vector = [[0,0]]
-#        self.p_vector = []
-    #PUT THIS IN A FUNCTION? OR CLASS?
-    # Set drift distances (time independent).
-        for drift, distance in zip(self.get_elements('drift'), Constants().lengths()):
-            drift.set_length(distance)
+        self.positions = Locate()
 
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
@@ -165,18 +134,43 @@ class Collect_data(object):
         return max_kick
     
     # Define time-varying strengths of kicker magnets.
-    def calculate_strengths(self,t):
+    def calculate_strengths(self, t):
     
-        max_kick = self.max_magnet_strengths()
         graphscale = 0.5
-        kicker3 = self.numbers.kicker3()
-        kick = graphscale*max_kick*np.array([
+        kicker3 = self.numbers.KICKER3
+        kick = graphscale*self.max_magnet_strengths()*np.array([
             np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
             kicker3, np.sin(t*np.pi/100) - 1,
             -np.sin(t*np.pi/100) + 1
             ])
     
         return kick
+
+
+
+
+class Collect_data(object):
+
+
+    def __init__(self):
+        self.path = [
+                    Drifting(),Kicker(),
+                    Drifting(),Kicker(),
+                    Drifting(),InsertionDevice(),
+                    Drifting(),Kicker(),
+                    Drifting(),InsertionDevice(),
+                    Drifting(),Kicker(),
+                    Drifting(),Kicker(),
+                    Drifting()
+                    ]
+        self.numbers = Constants()
+        self.positions = Locate()
+#        self.e_vector = [[0,0]]
+#        self.p_vector = []
+    #PUT THIS IN A FUNCTION? OR CLASS?
+    # Set drift distances (time independent).
+        for drift, distance in zip(self.get_elements('drift'), Constants().LENGTHS):
+            drift.set_length(distance)
 
     # Function that returns all objects of a particular type from path.
     def get_elements(self, which):
@@ -195,9 +189,10 @@ class Collect_data(object):
     
         # Initialise photon beam position and velocity
         p_vector = []
-    
+        
+        magnets = Magnet_strengths()
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.get_elements('kicker'), self.calculate_strengths(t)):
+        for kicker, strength in zip(self.get_elements('kicker'), magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
         for p in self.path:
             e_beam = p.increment(e_beam)
@@ -246,8 +241,8 @@ class Plot(object):
 
     def __init__(self):
 
-        self.lengths = Constants().lengths()
-        self.positions = Locate(self.lengths)
+        self.lengths = Constants().LENGTHS
+        self.positions = Locate()
         self.information = Collect_data()
 
         self.fig = plt.figure()
