@@ -96,11 +96,13 @@ class Locate(object):
 
     def locate_kicker(self):
 
-        kicker_pos = [self.locate_devices()[1],
-                      self.locate_devices()[2],
-                      self.locate_devices()[4],
-                      self.locate_devices()[6],
-                      self.locate_devices()[7]]
+        kicker_pos = [
+                     self.locate_devices()[1],
+                     self.locate_devices()[2],
+                     self.locate_devices()[4],
+                     self.locate_devices()[6],
+                     self.locate_devices()[7]
+                     ]
 
         return kicker_pos
 
@@ -243,21 +245,17 @@ class Plot(object):
 
 
     def __init__(self):
-#        self.fig = fig
+
         self.lengths = Constants().lengths()
         self.positions = Locate(self.lengths)
-
-#        self.beams = beams
-#        self.other = other
         self.information = Collect_data()
 
         self.fig = plt.figure()
+ 
         self.other_data = [[],[],[],[]]
-
-#        setup = Plot_setup(self.fig)
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
-#        self.plotting = Plotting(self.data, self.other_data)
+
 
 
     def fig_setup(self):
@@ -282,21 +280,17 @@ class Plot(object):
 
     def data_setup(self):
 
-        beams = [self.axes[0].plot([], [])[0], self.axes[0].plot([], [], 'r')[0], 
-                 self.axes[0].plot([], [], 'r')[0], self.axes[1].plot([], [], 'r.')[0], 
-                 self.axes[1].plot([], [], 'r.')[0], self.axes[1].plot([], [], 'y.')[0], 
-                 self.axes[1].plot([], [], 'ro')[0]]
+        beams = [
+                self.axes[0].plot([], [])[0], 
+                self.axes[0].plot([], [], 'r')[0], 
+                self.axes[0].plot([], [], 'r')[0], 
+                self.axes[1].plot([], [], 'r.')[0], 
+                self.axes[1].plot([], [], 'r.')[0], 
+                self.axes[1].plot([], [], 'y.')[0], 
+                self.axes[1].plot([], [], 'ro')[0]
+                ]
 
         return beams
-
-
-#class Plotting(object):
-
-
-#    def __init__(self,beams,other):
-#        self.beams = beams
-#        self.other = other
-#        self.information = Collect_data()
 
     def init_data(self):
 
@@ -310,8 +304,6 @@ class Plot(object):
     def animate(self, t):
 
         # Obtain data for plotting.
-
-#        positions = Locate(Constants().lengths())
         data = self.information.timestep(t)
         e_data = self.information.e_plot(data[0])
         p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
@@ -347,21 +339,7 @@ class Plot(object):
     
         return beams
 
-
-#class Create_plots(object):
-
-
-#    def __init__(self): 
-
-#        self.fig = plt.figure()
-#        self.other_data = [[],[],[],[]]
-
-#        setup = Plot_setup(self.fig)
-#        self.axes = setup.fig_setup()
-#        self.data = setup.data_setup()
-#        self.plotting = Plotting(self.data, self.other_data)
-#        self.positions = Locate(Constants().lengths())
-        
+    
     def show_plot(self):
 
         # Create animations
