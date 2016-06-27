@@ -82,8 +82,21 @@ class InsertionDevice(object):
 class Constants(object):
 
     LENGTHS = [2,2,4,4,4,4,2,20]
-    KICKER3 = 1
 
+class K3strength(object):
+
+    def __init__(self, k3=1):
+        self.k3 = k3
+
+#    def set_k3(self, k3):
+#        self.k3 = k3
+
+    def k3_value(self):
+        return self.k3
+
+    def k3_plus(self):
+        self.k3 += 1
+        print self.k3 #############################################??????????????????????????????????/
 
 # Assign locations of devices along the axis of the system.
 
@@ -116,18 +129,17 @@ class Locate(object):
 
         return pos
 
-    def locate_kicker(self):
+#    def locate_kicker(self):
 
-        pos = self.positions()
-        kicker_pos = [
-                     pos[1],
-                     pos[2],
-                     pos[4],
-                     pos[6],
-                     pos[7]
-                     ]
-#        return self.locate_devices()[0]
-        return kicker_pos
+#        pos = self.positions()
+#        kicker_pos = [
+#                     pos[1],
+#                     pos[2],
+#                     pos[4],
+#                     pos[6],
+#                     pos[7]
+#                     ]
+#        return kicker_pos
 
     def locate_id(self):
 
@@ -201,7 +213,7 @@ class Magnet_strengths(object):
     def calculate_strengths(self, t):
     
         graphscale = 0.5
-        kicker3 = self.numbers.KICKER3
+        kicker3 = K3strength().k3_value() #self.numbers.KICKER3
         kick = graphscale * self.max_magnet_strengths() * np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
@@ -404,7 +416,7 @@ class Control(QtGui.QMainWindow):
     def __init__(self):
         super(Control, self).__init__()
         self.initUI()
-        self.k3strength = 3
+        self.k3strength = 1
         self.plots = Plot()
 
     def initUI(self):
@@ -437,8 +449,9 @@ class Control(QtGui.QMainWindow):
 
     def k3plus(self):
         print 'Updating k3'
-        self.k3strength += 1
-        return self.k3strength
+        return K3strength().k3_plus() #######################????????????????????????????????????????
+
+#        return self.k3strength
 
     def centre(self):
         
