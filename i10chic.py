@@ -91,12 +91,12 @@ class Constants(object):
 
 # Assign locations of devices along the axis of the system.
 
-class Locate(object):
+class Location(object):
 
 
     def __init__(self):
         self.lengths = Constants().LENGTHS
-        self.pathway = [
+        self.path = [
                   Drift(),Kicker(),
                   Drift(),Kicker(),
                   Drift(),InsertionDevice(),
@@ -107,9 +107,6 @@ class Locate(object):
                   Drift()
                   ]
 
-    def path(self): 
-        return self.pathway
-
     def positions(self):
         
         pos = [0]
@@ -117,51 +114,11 @@ class Locate(object):
 
         return pos
 
-#    def locate_kicker(self):
-
-#        pos = self.positions()
-#        kicker_pos = [
-#                     pos[1],
-#                     pos[2],
-#                     pos[4],
-#                     pos[6],
-#                     pos[7]
-#                     ]
-#        return kicker_pos
-
-#    def locate_id(self):
-
-#        pos = self.positions()
-#        idpos = self.locate_devices()[1]
-
-#        return idpos
-#       self.locate_devices()
-#        return [pos[3], pos[5]]
-    
-    def locate_detector(self):
-
-        return self.positions()[8]
-
-    def locate_photonbeam(self):
-
-        return [[self.locate_devices()[1][0], self.locate_detector()],
-                [self.locate_devices()[1][1], self.locate_detector()]]
-
-    def get_elements(self, which):
-        list_objects = []
-        for p in self.pathway:
-            if p.get_type() == which:
-                list_objects.append(p)
-
-        return list_objects
-
-#########################################################################
-    # Only partially working currently
     def locate_devices(self):
 
         kicker_pos = []
         id_pos = []
-        devices = [x for x in self.path() if x.get_type() != 'drift']
+        devices = [x for x in self.path if x.get_type() != 'drift']
         device_positions = self.positions()[1:]
         for device, where in zip(devices, device_positions):
             device.set_position(where)
@@ -172,16 +129,32 @@ class Locate(object):
                 id_pos.append(device.coordinate())
 
         return kicker_pos, id_pos
+    
+    def locate_detector(self):
+        return self.positions()[8]
+
+    def locate_photonbeam(self):
+
+        return [[self.locate_devices()[1][0], self.locate_detector()],
+                [self.locate_devices()[1][1], self.locate_detector()]]
+
+    def get_elements(self, which):
+
+        list_objects = []
+        for p in self.path:
+            if p.get_type() == which:
+                list_objects.append(p)
+
+        return list_objects
 
 
 # Collect data on electron and photon beams at time t.
-
 class Magnet_strengths(object):
 
 
     def __init__(self, k3=1):
         self.numbers = Constants()
-        self.pos = Locate()
+        self.locate = Location()
         self.k3 = k3
 
     def step_k3_plus(self, increment):
@@ -193,7 +166,7 @@ class Magnet_strengths(object):
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
 
-        kicker_pos = self.pos.locate_devices()[0]
+        kicker_pos = self.locate.locate_devices()[0]
         len1 = kicker_pos[1] - kicker_pos[0]
         len2 = kicker_pos[2] - kicker_pos[1]
         d12 = float(len1)/float(len2)
@@ -223,13 +196,13 @@ class Collect_data(object):
     def __init__(self):
 
         self.numbers = Constants()
-        self.pos = Locate()
-        self.path = self.pos.path()
+        self.locate = Location()
+        self.path = self.locate.path #()
 #        self.e_vector = [[0,0]]
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
-        for drift, distance in zip(self.pos.get_elements('drift'), self.numbers.LENGTHS):
+        for drift, distance in zip(self.locate.get_elements('drift'), self.numbers.LENGTHS):
             drift.set_length(distance)
         self.magnets = Magnet_strengths()
     
@@ -244,7 +217,7 @@ class Collect_data(object):
         p_vector = []
 
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.pos.get_elements('kicker'), self.magnets.calculate_strengths(t)):
+        for kicker, strength in zip(self.locate.get_elements('kicker'), self.magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
 
         for p in self.path:
@@ -262,7 +235,7 @@ class Collect_data(object):
     
         e_positions = np.array(e_beam)[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.pos.get_elements('drift'))):
+        for i in range(len(self.locate.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
         
@@ -274,7 +247,7 @@ class Collect_data(object):
     def p_plot(self, p_beam):
         
         travel = [Drift(),Drift()]
-        p_pos = self.pos.locate_photonbeam()
+        p_pos = self.locate.locate_photonbeam()
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
             p_beam[i].extend(travel[i].increment(p_beam[i]))
@@ -294,7 +267,7 @@ class Plot(object):
     def __init__(self):
 
         self.lengths = Constants().LENGTHS
-        self.positions = Locate()
+        self.locate = Location()
         self.information = Collect_data()
 
         self.fig = plt.figure()
@@ -369,10 +342,10 @@ class Plot(object):
 
         beams = self.init_data()
         # Set data for electron beam.
-        beams[0].set_data(self.positions.positions(), e_data)
+        beams[0].set_data(self.locate.positions(), e_data)
     
         # Set data for two photon beams.
-        for line, x, y in zip([beams[1],beams[2]], self.positions.locate_photonbeam(), p_data):
+        for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
         # Set data for photon beam at detector.
@@ -391,9 +364,9 @@ class Plot(object):
         anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data,
                                        frames=1000, interval=20, blit=True)
         # Plot positions of kickers and IDs.
-        for i in self.positions.locate_devices()[0]:
+        for i in self.locate.locate_devices()[0]:
             self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in self.positions.locate_devices()[1]:
+        for i in self.locate.locate_devices()[1]:
             self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
 
 
