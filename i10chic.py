@@ -37,8 +37,9 @@ class Drifting(object):
 class Kicker(object):
 
 
-    def __init__(self, k=0):
+    def __init__(self, k=0, where=0):
         self.k = k
+        self.where = where
 
     def set_strength(self, k):
         self.k = k
@@ -48,7 +49,10 @@ class Kicker(object):
         return e + kick
 
     def set_position(self, where):
-        return where
+        self.where = where
+
+    def coordinate(self):
+        return self.where
 
     def get_type(self):
         return 'kicker'
@@ -57,14 +61,17 @@ class Kicker(object):
 class InsertionDevice(object):
 
 
-    def __init__(self):
-        pass
+    def __init__(self, where=0):
+        self.where = where
 
     def increment(self, e):
         return e
 
     def set_position(self, where):
-        return where
+        self.where = where
+
+    def coordinate(self):
+        return self.where
 
     def get_type(self):
         return 'id'
@@ -99,33 +106,36 @@ class Locate(object):
                   Drifting(),Kicker(),
                   Drifting()
                   ]
-        return self.pathway
 
+        return self.pathway
 
     def positions(self):
         
         pos = [0]
         pos.extend(np.cumsum(self.lengths))
-    
+
         return pos
 
-
-    
     def locate_kicker(self):
 
+        pos = self.positions()
         kicker_pos = [
-                     self.positions()[1],
-                     self.positions()[2],
-                     self.positions()[4],
-                     self.positions()[6],
-                     self.positions()[7]
+                     pos[1],
+                     pos[2],
+                     pos[4],
+                     pos[6],
+                     pos[7]
                      ]
-
+#        return self.locate_devices()[0]
         return kicker_pos
 
     def locate_id(self):
 
-        return [self.positions()[3],self.positions()[5]]
+        pos = self.positions()
+#        idpos = self.locate_devices()[1]
+
+#        return idpos
+        return [pos[3], pos[5]]
     
     def locate_detector(self):
 
@@ -136,13 +146,33 @@ class Locate(object):
         return [[self.locate_id()[0], self.locate_detector()],
                 [self.locate_id()[1], self.locate_detector()]]
 
-    def get_elements2(self, which):
+    def get_elements(self, which):
         list_objects = []
         for p in self.pathway:
             if p.get_type() == which:
                 list_objects.append(p)
-        return list_objects # Doesn't work???????????????????????????????????
 
+        return list_objects
+
+#########################################################################
+    # Only partially working currently
+    def locate_devices(self):
+
+        kicker_pos = []
+        id_pos = []
+        self.devices = [x for x in self.path() if x.get_type() != 'drift']
+        self.device_positions = self.positions()[1:]
+        for device, where in zip(self.devices, self.device_positions):
+            device.set_position(where)
+        for device in self.devices:
+            if device.get_type() == 'kicker':
+                kicker_pos.append(device.coordinate())
+            elif device.get_type() == 'id':
+                id_pos.append(device.coordinate())
+
+        return kicker_pos, id_pos
+
+#########################################################################
 
 # Collect data on electron and photon beams at time t.
 
@@ -156,7 +186,7 @@ class Magnet_strengths(object):
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
 
-        kicker_pos = self.pos.locate_kicker()
+        kicker_pos = self.pos.locate_devices()[0]
         len1 = kicker_pos[1] - kicker_pos[0]
         len2 = kicker_pos[2] - kicker_pos[1]
         d12 = float(len1)/float(len2)
@@ -172,15 +202,12 @@ class Magnet_strengths(object):
     
         graphscale = 0.5
         kicker3 = self.numbers.KICKER3
-        kick = graphscale*self.max_magnet_strengths()*np.array([
-            np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-            kicker3, np.sin(t*np.pi/100) - 1,
-            -np.sin(t*np.pi/100) + 1
-            ])
-    
+        kick = graphscale * self.max_magnet_strengths() * np.array([
+               np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
+               kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
+               + 1])
+
         return kick
-
-
 
 
 class Collect_data(object):
@@ -195,34 +222,8 @@ class Collect_data(object):
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
-        for drift, distance in zip(self.pos.get_elements2('drift'), self.numbers.LENGTHS):
+        for drift, distance in zip(self.pos.get_elements('drift'), self.numbers.LENGTHS):
             drift.set_length(distance)
-
-########################################################################
-    # Want to put this into Locate class but for some reason it won't currently work...
-    # Function that returns all objects of a particular type from path.
-    def get_elements(self, which):
-        list_objects = []
-        for p in self.path:
-            if p.get_type() == which:
-                list_objects.append(p)
-        return list_objects
-#########################################################################
-    # Gives correct coordinates but not currently used because in the wrong class
-    def locate_devices(self):
-        kpos = []
-        idpos = []
-        self.drift_elements = self.get_elements('drift')
-        self.devices = [x for x in self.path if x not in self.drift_elements]
-        self.device_positions = self.pos.positions()[1:]
-        for device, where in zip(self.devices, self.device_positions):
-            place = device.set_position(where) # Need to rename variables so it's less confusing.
-            if device.get_type() == 'kicker':
-                kpos.append(place)
-            elif device.get_type() == 'id':
-                idpos.append(place)
-        return kpos, idpos
-#########################################################################
     
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -236,7 +237,7 @@ class Collect_data(object):
         
         magnets = Magnet_strengths()
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.pos.get_elements2('kicker'), magnets.calculate_strengths(t)):
+        for kicker, strength in zip(self.pos.get_elements('kicker'), magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
 
         for p in self.path:
@@ -246,7 +247,6 @@ class Collect_data(object):
             if device == 'id':
                 p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
 
-#        return p_vector    
         return e_vector, p_vector # Returns positions and velocities of electrons and photons.
     
     
@@ -255,7 +255,7 @@ class Collect_data(object):
     
         e_positions = np.array(e_beam)[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.pos.get_elements2('drift'))):
+        for i in range(len(self.pos.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
         
@@ -296,8 +296,6 @@ class Plot(object):
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
 
-
-
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
@@ -333,7 +331,6 @@ class Plot(object):
         return beams
 
     def init_data(self):
-
 
         for line in self.beams:
             line.set_data([], [])
@@ -386,9 +383,9 @@ class Plot(object):
         anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data,
                                        frames=1000, interval=20, blit=True)
         # Plot positions of kickers and IDs.
-        for i in self.positions.locate_kicker():
+        for i in self.positions.locate_devices()[0]:
             self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in self.positions.locate_id():
+        for i in self.positions.locate_devices()[1]:
             self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
 
 
