@@ -11,15 +11,15 @@ import sys
 from PyQt4 import QtGui, QtCore
 
 
-
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
-class Drifting(object):
+class Drift(object):
 
 
-    def __init__(self, step=0):
+    def __init__(self, step=0, where=0):
         self.step = step
+        self.where = where
 
     def set_length(self, step):
         self.step = step
@@ -29,9 +29,14 @@ class Drifting(object):
                           [0,1]])
         return np.dot(drift,e)
 
+    def set_position(self, where):
+        self.where = where
+
+    def coordinate(self):
+        return self.where
+
     def get_type(self):
         return 'drift'
-
 
 
 class Kicker(object):
@@ -83,43 +88,26 @@ class Constants(object):
 
     LENGTHS = [2,2,4,4,4,4,2,20]
 
-class K3strength(object):
-
-    def __init__(self, k3=1):
-        self.k3 = k3
-
-#    def set_k3(self, k3):
-#        self.k3 = k3
-
-    def k3_value(self):
-        return self.k3
-
-    def k3_plus(self):
-        self.k3 += 1
-        print self.k3 #############################################??????????????????????????????????/
 
 # Assign locations of devices along the axis of the system.
 
 class Locate(object):
 
 
-    def __init__(self,pathway=[]):
+    def __init__(self):
         self.lengths = Constants().LENGTHS
-        self.pathway = pathway
-
-    def path(self): 
-
         self.pathway = [
-                  Drifting(),Kicker(),
-                  Drifting(),Kicker(),
-                  Drifting(),InsertionDevice(),
-                  Drifting(),Kicker(),
-                  Drifting(),InsertionDevice(),
-                  Drifting(),Kicker(),
-                  Drifting(),Kicker(),
-                  Drifting()
+                  Drift(),Kicker(),
+                  Drift(),Kicker(),
+                  Drift(),InsertionDevice(),
+                  Drift(),Kicker(),
+                  Drift(),InsertionDevice(),
+                  Drift(),Kicker(),
+                  Drift(),Kicker(),
+                  Drift()
                   ]
 
+    def path(self): 
         return self.pathway
 
     def positions(self):
@@ -141,13 +129,14 @@ class Locate(object):
 #                     ]
 #        return kicker_pos
 
-    def locate_id(self):
+#    def locate_id(self):
 
-        pos = self.positions()
+#        pos = self.positions()
 #        idpos = self.locate_devices()[1]
 
 #        return idpos
-        return [pos[3], pos[5]]
+#       self.locate_devices()
+#        return [pos[3], pos[5]]
     
     def locate_detector(self):
 
@@ -155,8 +144,8 @@ class Locate(object):
 
     def locate_photonbeam(self):
 
-        return [[self.locate_id()[0], self.locate_detector()],
-                [self.locate_id()[1], self.locate_detector()]]
+        return [[self.locate_devices()[1][0], self.locate_detector()],
+                [self.locate_devices()[1][1], self.locate_detector()]]
 
     def get_elements(self, which):
         list_objects = []
@@ -172,11 +161,11 @@ class Locate(object):
 
         kicker_pos = []
         id_pos = []
-        self.devices = [x for x in self.path() if x.get_type() != 'drift']
-        self.device_positions = self.positions()[1:]
-        for device, where in zip(self.devices, self.device_positions):
+        devices = [x for x in self.path() if x.get_type() != 'drift']
+        device_positions = self.positions()[1:]
+        for device, where in zip(devices, device_positions):
             device.set_position(where)
-        for device in self.devices:
+        for device in devices:
             if device.get_type() == 'kicker':
                 kicker_pos.append(device.coordinate())
             elif device.get_type() == 'id':
@@ -184,16 +173,22 @@ class Locate(object):
 
         return kicker_pos, id_pos
 
-#########################################################################
 
 # Collect data on electron and photon beams at time t.
 
 class Magnet_strengths(object):
 
 
-    def __init__(self):
+    def __init__(self, k3=1):
         self.numbers = Constants()
         self.pos = Locate()
+        self.k3 = k3
+
+    def step_k3_plus(self, increment):
+        self.k3 += increment
+
+    def step_k3_minus(self, increment):
+        self.k3 -= increment
 
     # Define magnet strength factors (dependent on relative positions and time).
     def max_magnet_strengths(self):
@@ -213,7 +208,7 @@ class Magnet_strengths(object):
     def calculate_strengths(self, t):
     
         graphscale = 0.5
-        kicker3 = K3strength().k3_value() #self.numbers.KICKER3
+        kicker3 = self.k3 # k3_strength.k3_value() #self.numbers.KICKER3
         kick = graphscale * self.max_magnet_strengths() * np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
@@ -236,6 +231,7 @@ class Collect_data(object):
     # Set drift distances (time independent).
         for drift, distance in zip(self.pos.get_elements('drift'), self.numbers.LENGTHS):
             drift.set_length(distance)
+        self.magnets = Magnet_strengths()
     
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -246,10 +242,9 @@ class Collect_data(object):
     
         # Initialise photon beam position and velocity
         p_vector = []
-        
-        magnets = Magnet_strengths()
+
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.pos.get_elements('kicker'), magnets.calculate_strengths(t)):
+        for kicker, strength in zip(self.pos.get_elements('kicker'), self.magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
 
         for p in self.path:
@@ -278,7 +273,7 @@ class Collect_data(object):
     # original vector to create beam for plotting.
     def p_plot(self, p_beam):
         
-        travel = [Drifting(),Drifting()]
+        travel = [Drift(),Drift()]
         p_pos = self.pos.locate_photonbeam()
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
@@ -351,6 +346,7 @@ class Plot(object):
 
     # Animation function
     def animate(self, t):
+#        t = t*4 # This gets it to one cycle per second.
 
         # Obtain data for plotting.
         data = self.information.timestep(t)
@@ -416,7 +412,6 @@ class Control(QtGui.QMainWindow):
     def __init__(self):
         super(Control, self).__init__()
         self.initUI()
-        self.k3strength = 1
         self.plots = Plot()
 
     def initUI(self):
@@ -427,8 +422,12 @@ class Control(QtGui.QMainWindow):
         btn.clicked.connect(self.plotgraphs)
         # then add extra buttons to adjust things
 
-        k3Button = QtGui.QPushButton("K3 +",self) # NOT CURRENTLY WORKING
+        k3Button = QtGui.QPushButton("K3 +",self)
         k3Button.clicked.connect(self.k3plus)
+        k3Button.move(100, 0)
+
+        k3Button = QtGui.QPushButton("K3 -",self)
+        k3Button.clicked.connect(self.k3minus)
         k3Button.move(100, 30)
 
         quitButton = QtGui.QPushButton("Quit",self)
@@ -444,14 +443,11 @@ class Control(QtGui.QMainWindow):
     def plotgraphs(self):
         return self.plots.show_plot()
 
-    def k3(self):
-        return self.k3strength
-
     def k3plus(self):
-        print 'Updating k3'
-        return K3strength().k3_plus() #######################????????????????????????????????????????
+        self.plots.information.magnets.step_k3_plus(0.1)
 
-#        return self.k3strength
+    def k3minus(self):
+        self.plots.information.magnets.step_k3_minus(0.1)
 
     def centre(self):
         
