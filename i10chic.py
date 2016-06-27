@@ -83,21 +83,24 @@ class Constants(object):
 class Locate(object):
 
 
-    def __init__(self):
+    def __init__(self,pathway=[]):
         self.lengths = Constants().LENGTHS
+        self.pathway = pathway
 
     def path(self): 
 
-        return [
-               Drifting(),Kicker(),
-               Drifting(),Kicker(),
-               Drifting(),InsertionDevice(),
-               Drifting(),Kicker(),
-               Drifting(),InsertionDevice(),
-               Drifting(),Kicker(),
-               Drifting(),Kicker(),
-               Drifting()
-               ]
+        self.pathway = [
+                  Drifting(),Kicker(),
+                  Drifting(),Kicker(),
+                  Drifting(),InsertionDevice(),
+                  Drifting(),Kicker(),
+                  Drifting(),InsertionDevice(),
+                  Drifting(),Kicker(),
+                  Drifting(),Kicker(),
+                  Drifting()
+                  ]
+        return self.pathway
+
 
     def positions(self):
         
@@ -135,8 +138,7 @@ class Locate(object):
 
     def get_elements2(self, which):
         list_objects = []
-        pathway = self.path()
-        for p in pathway:
+        for p in self.pathway:
             if p.get_type() == which:
                 list_objects.append(p)
         return list_objects # Doesn't work???????????????????????????????????
@@ -193,8 +195,9 @@ class Collect_data(object):
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
-        for drift, distance in zip(self.get_elements('drift'), self.numbers.LENGTHS):
+        for drift, distance in zip(self.pos.get_elements2('drift'), self.numbers.LENGTHS):
             drift.set_length(distance)
+
 ########################################################################
     # Want to put this into Locate class but for some reason it won't currently work...
     # Function that returns all objects of a particular type from path.
@@ -233,8 +236,9 @@ class Collect_data(object):
         
         magnets = Magnet_strengths()
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.get_elements('kicker'), magnets.calculate_strengths(t)):
+        for kicker, strength in zip(self.pos.get_elements2('kicker'), magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
+
         for p in self.path:
             e_beam = p.increment(e_beam)
             device = p.get_type()
@@ -251,7 +255,7 @@ class Collect_data(object):
     
         e_positions = np.array(e_beam)[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.get_elements('drift'))):
+        for i in range(len(self.pos.get_elements2('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
         
