@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import sys
-from PyQt4 import QtGui, QtCore
+from PyQt4 import QtGui, QtCore, uic
 
 
 # Define matrices to modify the electron beam vector:
@@ -181,7 +181,7 @@ class Magnet_strengths(object):
     def calculate_strengths(self, t):
     
         graphscale = 0.5
-        kicker3 = self.k3 # k3_strength.k3_value() #self.numbers.KICKER3
+        kicker3 = self.k3
         kick = graphscale * self.max_magnet_strengths() * np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
@@ -379,37 +379,62 @@ class Plot(object):
 
 # Initial attempt at adding GUI to control the simulation.
 
+form_class = uic.loadUiType("guitest.ui")[0]
 
-class Control(QtGui.QMainWindow):
+class Control(QtGui.QMainWindow, form_class):
 
-    def __init__(self):
-        super(Control, self).__init__()
-        self.initUI()
+    def __init__(self, parent=None):
+        QtGui.QMainWindow.__init__(self, parent)
+        self.setupUi(self)
         self.plots = Plot()
 
-    def initUI(self):
+        self.plotButton.clicked.connect(self.plotgraphs)
 
-        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+#    def plotgraphs(self):
+#        return self.plots.show_plot()
 
-        btn = QtGui.QPushButton("Plot",self)
-        btn.clicked.connect(self.plotgraphs)
-        # then add extra buttons to adjust things
 
-        k3Button = QtGui.QPushButton("K3 +",self)
-        k3Button.clicked.connect(self.k3plus)
-        k3Button.move(100, 0)
+#def main():
+    
+#    app = QtGui.QApplication(sys.argv)
+#    ex = Control()
+#    ex.show()
+#    sys.exit(app.exec_())
 
-        k3Button = QtGui.QPushButton("K3 -",self)
-        k3Button.clicked.connect(self.k3minus)
-        k3Button.move(100, 30)
 
-        quitButton = QtGui.QPushButton("Quit",self)
-        quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
-        quitButton.move(0, 30)
+#if __name__ == '__main__':
+#    main()
 
-        self.setGeometry(300, 300, 250, 150)
-        self.setWindowTitle('i10chic GUI')    
-        self.resize(250, 150)
+
+#class Control(QtGui.QMainWindow):
+
+#    def __init__(self):
+#        super(Control, self).__init__()
+#        self.initUI()
+#        self.plots = Plot()
+
+#    def initUI(self):
+
+#        QtGui.QToolTip.setFont(QtGui.QFont('SansSerif', 10))
+
+#        plotButton = QtGui.QPushButton("Plot",self)
+#        plotButton.clicked.connect(self.plotgraphs)
+
+#        k3Button = QtGui.QPushButton("K3 +",self)
+        self.kplusButton.clicked.connect(self.k3plus)
+#        k3Button.move(100, 0)
+
+#        k3Button = QtGui.QPushButton("K3 -",self)
+        self.kminusButton.clicked.connect(self.k3minus)
+#        k3Button.move(100, 30)
+
+#        quitButton = QtGui.QPushButton("Quit",self)
+        self.quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
+#        quitButton.move(0, 30)
+
+#        self.setGeometry(300, 300, 250, 150)
+#        self.setWindowTitle('i10chic GUI')    
+#        self.resize(250, 150)
         self.centre()
         self.show()
 
