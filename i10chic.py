@@ -372,6 +372,7 @@ class Plot(object):
 
         plt.show()
 
+
     def fixed_plot(self):
 # NOT WORKING YET        
 #        self.animate(200) # ??
@@ -401,17 +402,33 @@ class Plot(object):
 
         plt.show()
 
+############################
+
+#from pylab import *
+import sys
+from PyQt4 import QtGui, QtCore, uic
+
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.figure import Figure
+from PyQt4.uic import loadUiType
 
 # Initial attempt at adding GUI to control the simulation.
 
-form_class = uic.loadUiType("i10chicgui.ui")[0]
+#form_class = uic.loadUiType("i10chicgui.ui")[0]
+Ui_MainWindow, QMainWindow = loadUiType('i10chicgui.ui')
 
-class Control(QtGui.QMainWindow, form_class):
+#class Control(QtGui.QMainWindow, form_class):
+class Control(QMainWindow, Ui_MainWindow):
 
     def __init__(self, parent=None):
-        QtGui.QMainWindow.__init__(self, parent)
+#        QtGui.QMainWindow.__init__(self, parent)
+        super(Control, self).__init__()
         self.setupUi(self)
         self.plots = Plot()
+
+        self.figure = self.plots.fig
+        self.canvas = FigureCanvas(self.figure)
+        self.plotLayout.addWidget(self.canvas)
 
         self.plotButton.clicked.connect(self.plotgraphs)
         self.kplusButton.clicked.connect(self.k3plus)
@@ -422,7 +439,7 @@ class Control(QtGui.QMainWindow, form_class):
         self.show()
 
     def plotgraphs(self):
-        return self.plots.show_plot()
+        self.plots.show_plot()
 
     def k3plus(self):
         self.plots.information.magnets.step_k3_plus(0.1)
