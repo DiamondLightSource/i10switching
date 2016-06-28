@@ -403,40 +403,63 @@ class Plot(object):
         plt.show()
 
 ############################
-
-#from pylab import *
 import sys
-from PyQt4 import QtGui, QtCore, uic
-
+import cothread
+from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from PyQt4.uic import loadUiType
+from PyQt4.QtCore import *
+from PyQt4.QtGui import *
+
+
 
 # Initial attempt at adding GUI to control the simulation.
 
 #form_class = uic.loadUiType("i10chicgui.ui")[0]
-Ui_MainWindow, QMainWindow = loadUiType('i10chicgui.ui')
+#Ui_MainWindow, QMainWindow = loadUiType('i10chicgui.ui')
+
+from i10chicgui import Ui_i10gui
 
 #class Control(QtGui.QMainWindow, form_class):
-class Control(QMainWindow, Ui_MainWindow):
+#class Control(QMainWindow, Ui_MainWindow):
 
-    def __init__(self, parent=None):
+#    def __init__(self, parent=None):
 #        QtGui.QMainWindow.__init__(self, parent)
-        super(Control, self).__init__()
-        self.setupUi(self)
+#        super(Control, self).__init__()
+#        self.setupUi(self)
+#        self.plots = Plot()
+
+#        self.figure = self.plots.fig
+#        self.canvas = FigureCanvas(self.figure)
+#        self.plotLayout.addWidget(self.canvas)
+
+#        self.plotButton.clicked.connect(self.plotgraphs)
+#        self.kplusButton.clicked.connect(self.k3plus)
+#        self.kminusButton.clicked.connect(self.k3minus)
+#        self.quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
+
+#        self.centre()
+#        self.show()
+
+class Control(object):
+
+    def __init__ (self, parent):
+        self.ui = Ui_i10gui()
+        self.ui.setupUi(parent)
         self.plots = Plot()
 
         self.figure = self.plots.fig
-        self.canvas = FigureCanvas(self.figure)
-        self.plotLayout.addWidget(self.canvas)
+        self.ui.graph = FigureCanvas(self.figure)
+        self.ui.matplotlib_layout.addWidget(self.ui.graph)
 
-        self.plotButton.clicked.connect(self.plotgraphs)
-        self.kplusButton.clicked.connect(self.k3plus)
-        self.kminusButton.clicked.connect(self.k3minus)
-        self.quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
+        self.ui.plotButton.clicked.connect(self.plotgraphs)
+        self.ui.kplusButton.clicked.connect(self.k3plus)
+        self.ui.kminusButton.clicked.connect(self.k3minus)
+        self.ui.quitButton.clicked.connect(QtCore.QCoreApplication.instance().quit)
 
-        self.centre()
-        self.show()
+#        self.centre()
+#        self.show()
 
     def plotgraphs(self):
         self.plots.show_plot()
@@ -447,19 +470,25 @@ class Control(QMainWindow, Ui_MainWindow):
     def k3minus(self):
         self.plots.information.magnets.step_k3_minus(0.1)
 
-    def centre(self):
+#    def centre(self):
         
-        qr = self.frameGeometry()
-        cp = QtGui.QDesktopWidget().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+#        qr = self.ui.frameGeometry()
+#        cp = QtGui.QDesktopWidget().availableGeometry().center()
+#        qr.moveCenter(cp)
+#        self.move(qr.topLeft())
 
 
 def main():
     
-    app = QtGui.QApplication(sys.argv)
-    ex = Control()
-    sys.exit(app.exec_())
+#    app = QtGui.QApplication(sys.argv)
+#    ex = Control()
+#    sys.exit(app.exec_())
+
+    cothread.iqt()
+    window = QMainWindow()
+    test_ui = Control(window)  # Must hold onto the instance
+    window.show()
+    cothread.WaitForQuit()
 
 
 if __name__ == '__main__':
