@@ -12,9 +12,10 @@ import cothread
 from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
-from PyQt4.uic import loadUiType
+from PyQt4 import uic
 from PyQt4.QtCore import *
 from PyQt4.QtGui import *
+import os
 
 
 # Define matrices to modify the electron beam vector:
@@ -267,7 +268,7 @@ class Collect_data(object):
 ## Graph plotting ##
 ####################
 
-class Plot(object):
+class Plot(FigureCanvas):
 
 
     def __init__(self):
@@ -277,10 +278,19 @@ class Plot(object):
         self.information = Collect_data()
 
         self.fig = plt.figure()
+        FigureCanvas.__init__(self, self.fig)
  
         self.other_data = [[],[],[],[]]
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
+
+        # Create animations
+        self.anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data, frames=1000, interval=20, blit=True)
+        # Plot positions of kickers and IDs.
+        for i in self.locate.locate_devices()[0]:
+            self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
+        for i in self.locate.locate_devices()[1]:
+            self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
 
     def fig_setup(self):
 
@@ -363,94 +373,39 @@ class Plot(object):
     
         return beams
 
-    
-    def show_plot(self):
-
-        # Create animations
-        anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data,
-                                       frames=1000, interval=20, blit=True)
-        # Plot positions of kickers and IDs.
-        for i in self.locate.locate_devices()[0]:
-            self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in self.locate.locate_devices()[1]:
-            self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
-
-
-        plt.show()
-
-
-    def fixed_plot(self):
-# NOT WORKING YET        
-#        self.animate(200) # ??
-        data = []
-        e_data = []
-        p_data = []
-#        beams = []
-
-        data.append(self.information.timestep(10))
-        e_data = self.information.e_plot(data[0])
-        p_data = self.information.p_plot(data[1])
-       
-        beams = self.init_data()[:3]
-        # Set data for electron beam.
-        beams[0].set_data(self.locate.positions(), e_data)
-  
-        # Set data for two photon beams.
-        for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
-            line.set_data(x,y)
-
-
-        # Plot positions of kickers and IDs.
-        for i in self.locate.locate_devices()[0]:
-            self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in self.locate.locate_devices()[1]:
-            self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
-
-        plt.show()
 
 ############################
 
 # Initial attempt at adding GUI to control the simulation.
 
-from i10chicgui import Ui_i10gui
+UI_FILENAME = 'i10chicgui.ui'
 
 
-class Control(object):
+class Control(QMainWindow):
 
-    def __init__ (self, parent):
-        self.ui = Ui_i10gui()
-        self.ui.setupUi(parent)
-        self.plots = Plot()
+    def __init__ (self):
+        filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
+        self.ui = uic.loadUi(filename)
 
-        self.figure = self.plots.fig
-        self.ui.graph = FigureCanvas(self.figure)
+        self.ui.graph = Plot()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
 
-        self.ui.plotButton.clicked.connect(self.plotgraphs)
         self.ui.kplusButton.clicked.connect(self.k3plus)
         self.ui.kminusButton.clicked.connect(self.k3minus)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-#        self.show()
-
-    def plotgraphs(self):
-        self.plots.show_plot()
-
     def k3plus(self):
-        self.plots.information.magnets.step_k3_plus(0.1)
+        self.ui.graph.information.magnets.step_k3_plus(0.1)
 
     def k3minus(self):
-        self.plots.information.magnets.step_k3_minus(0.1)
+        self.ui.graph.information.magnets.step_k3_minus(0.1)
 
 
 def main():
-
     cothread.iqt()
-    window = QMainWindow()
-    test_ui = Control(window)  # Must hold onto the instance
-    window.show()
+    test_ui = Control()
+    test_ui.ui.show()
     cothread.WaitForQuit()
-
 
 if __name__ == '__main__':
     main()
