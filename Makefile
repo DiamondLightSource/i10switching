@@ -1,4 +1,4 @@
-generated = i10.py matplotlib_test.py
+generated = i10.py
 
 all: $(generated)
 install: $(generated)
