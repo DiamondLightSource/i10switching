@@ -261,10 +261,12 @@ class Plot(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
+        self.colourin = [[],[]]
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
+#        self.animate(0)
 
         # Plot positions of kickers and IDs.
         for i in self.locate.locate_devices()[0]:
@@ -272,11 +274,15 @@ class Plot(FigureCanvas):
         for i in self.locate.locate_devices()[1]:
             self.axes.axvline(x=i, color='r', linestyle='dashed')
 
-        colourin1 = self.information.p_plot(self.information.timestep(50)[1])[0]
-        colourin2 = self.information.p_plot(self.information.timestep(150)[1])[1]
-#        self.animate(0)
-        self.axes.fill_between(self.locate.locate_photonbeam()[0],0,colourin1, facecolor='yellow', alpha=0.2)
-        self.axes.fill_between(self.locate.locate_photonbeam()[1],0,colourin2, facecolor='yellow', alpha=0.2) #doesn't change when k changes
+        for i in range(2):
+            self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
+            self.axes.fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
+
+#        self.colourin1 = self.information.p_plot(self.information.timestep(50)[1])[0]
+#        self.colourin2 = self.information.p_plot(self.information.timestep(150)[1])[1]
+
+#        self.axes.fill_between(self.locate.locate_photonbeam()[0],0,self.colourin1, facecolor='yellow', alpha=0.2)
+#        self.axes.fill_between(self.locate.locate_photonbeam()[1],0,self.colourin2, facecolor='yellow', alpha=0.2) #doesn't change when k changes
 
     def fig_setup(self):
 
@@ -292,7 +298,7 @@ class Plot(FigureCanvas):
         beams = [
                 self.axes.plot([], [])[0], 
                 self.axes.plot([], [], 'r')[0], 
-                self.axes.plot([], [], 'r')[0], 
+                self.axes.plot([], [], 'r')[0],
                 ]
 
         return beams
@@ -317,7 +323,6 @@ class Plot(FigureCanvas):
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
-
 
         return beams
 
