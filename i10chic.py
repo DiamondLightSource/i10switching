@@ -128,8 +128,7 @@ class Location(object):
         kicker_pos = []
         id_pos = []
         devices = [x for x in self.path if x.get_type() != 'drift']
-        device_positions = self.positions()[1:]
-        for device, where in zip(devices, device_positions):
+        for device, where in zip(devices, self.positions()[1:]):
             device.set_position(where)
         for device in devices:
             if device.get_type() == 'kicker':
@@ -143,18 +142,11 @@ class Location(object):
         return self.positions()[8]
 
     def locate_photonbeam(self):
-
         return [[self.locate_devices()[1][0], self.locate_detector()],
                 [self.locate_devices()[1][1], self.locate_detector()]]
 
     def get_elements(self, which):
-
-        list_objects = []
-        for p in self.path:
-            if p.get_type() == which:
-                list_objects.append(p)
-
-        return list_objects
+        return [x for x in self.path if x.get_type() == which]
 
 
 # Collect data on electron and photon beams at time t.
@@ -166,11 +158,8 @@ class Magnet_strengths(object):
         self.locate = Location()
         self.k3 = k3
 
-    def step_k3_plus(self, increment):
-        self.k3 += increment
-
-    def step_k3_minus(self, increment):
-        self.k3 -= increment
+    def step_k3(self, shift):
+        self.k3 += shift
 
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
@@ -343,16 +332,12 @@ class Control(QMainWindow):
         self.ui.graph = Plot()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
 
-        self.ui.kplusButton.clicked.connect(self.k3plus)
-        self.ui.kminusButton.clicked.connect(self.k3minus)
+        self.ui.kplusButton.clicked.connect(lambda: self.k3(0.1))
+        self.ui.kminusButton.clicked.connect(lambda: self.k3(-0.1))
         self.ui.quitButton.clicked.connect(sys.exit)
 
-    def k3plus(self):
-        self.ui.graph.information.magnets.step_k3_plus(0.1)
-
-    def k3minus(self):
-        self.ui.graph.information.magnets.step_k3_minus(0.1)
-
+    def k3(self, n):
+        self.ui.graph.information.magnets.step_k3(n)
 
 def main():
     cothread.iqt()
