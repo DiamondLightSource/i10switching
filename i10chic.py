@@ -265,11 +265,18 @@ class Plot(FigureCanvas):
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
+
         # Plot positions of kickers and IDs.
         for i in self.locate.locate_devices()[0]:
-            self.fig_setup().axvline(x=i, color='k', linestyle='dashed')
+            self.axes.axvline(x=i, color='k', linestyle='dashed')
         for i in self.locate.locate_devices()[1]:
-            self.fig_setup().axvline(x=i, color='r', linestyle='dashed')
+            self.axes.axvline(x=i, color='r', linestyle='dashed')
+
+        colourin1 = self.information.p_plot(self.information.timestep(50)[1])[0]
+        colourin2 = self.information.p_plot(self.information.timestep(150)[1])[1]
+#        self.animate(0)
+        self.axes.fill_between(self.locate.locate_photonbeam()[0],0,colourin1, facecolor='yellow', alpha=0.2)
+        self.axes.fill_between(self.locate.locate_photonbeam()[1],0,colourin2, facecolor='yellow', alpha=0.2) #doesn't change when k changes
 
     def fig_setup(self):
 
@@ -305,12 +312,12 @@ class Plot(FigureCanvas):
         data = self.information.timestep(t)
         e_data = self.information.e_plot(data[0])
         p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
-        detector_data = p_data[:,1].tolist()
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
+
 
         return beams
 
@@ -328,10 +335,8 @@ class Control(QMainWindow):
     def __init__ (self):
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
-
         self.ui.graph = Plot()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
-
         self.ui.kplusButton.clicked.connect(lambda: self.k3(0.1))
         self.ui.kminusButton.clicked.connect(lambda: self.k3(-0.1))
         self.ui.quitButton.clicked.connect(sys.exit)
@@ -341,9 +346,10 @@ class Control(QMainWindow):
 
 def main():
     cothread.iqt()
-    test_ui = Control()
-    test_ui.ui.show()
+    the_ui = Control()
+    the_ui.ui.show()
     cothread.WaitForQuit()
+
 
 if __name__ == '__main__':
     main()
