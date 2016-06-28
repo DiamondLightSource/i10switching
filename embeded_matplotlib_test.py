@@ -15,27 +15,24 @@ from matplotlib.figure import Figure
 
 import random
 
+from matplotlib_test import Ui_MainWindow
+
 
 class MyTestCanvas(FigureCanvas):
     pass
 
 
-class TestWindow(QDialog):
+class TestUi(object):
 
-    def __init__ (self):
-        super(TestWindow, self).__init__()
-        self.setWindowTitle("Test Window")
+    def __init__ (self, parent):
+        self.ui = Ui_MainWindow()
+        self.ui.setupUi(parent)
 
         self.figure = plt.figure()
-        self.canvas = FigureCanvas(self.figure)
+        self.ui.graph = FigureCanvas(self.figure)
+        self.ui.matplotlib_layout.addWidget(self.ui.graph)
 
-        self.button = QPushButton('Plot')
-        self.button.clicked.connect(self.plot)
-
-        layout = QVBoxLayout(self)
-        layout.addWidget(self.canvas)
-        layout.addWidget(self.button)
-
+        self.ui.plot_button.clicked.connect(self.plot)
         self.plot()
 
     def plot(self):
@@ -43,15 +40,17 @@ class TestWindow(QDialog):
         ax = self.figure.add_subplot(111)
         ax.hold(False)
         ax.plot(data, '*-')
-        self.canvas.draw()
+        self.ui.graph.draw()
 
 
 def main():
     cothread.iqt()
-    test_window = TestWindow()
-    test_window.show()
+    window = QMainWindow()
+    test_ui = TestUi(window)  # Must hold onto the instance
+    window.show()
     cothread.WaitForQuit()
-    sys.exit()
+
 
 if __name__ == '__main__':
     main()
+
