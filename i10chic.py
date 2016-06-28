@@ -21,6 +21,7 @@ import os
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
+
 class Drift(object):
 
 
@@ -88,6 +89,7 @@ class InsertionDevice(object):
     def get_type(self):
         return 'id'
 
+
 # Assign the values of constants in the system:
 # distances between devices and strength of 3rd kicker.
 
@@ -104,15 +106,15 @@ class Location(object):
     def __init__(self):
         self.lengths = Constants().LENGTHS
         self.path = [
-                  Drift(),Kicker(),
-                  Drift(),Kicker(),
-                  Drift(),InsertionDevice(),
-                  Drift(),Kicker(),
-                  Drift(),InsertionDevice(),
-                  Drift(),Kicker(),
-                  Drift(),Kicker(),
-                  Drift()
-                  ]
+                    Drift(),Kicker(),
+                    Drift(),Kicker(),
+                    Drift(),InsertionDevice(),
+                    Drift(),Kicker(),
+                    Drift(),InsertionDevice(),
+                    Drift(),Kicker(),
+                    Drift(),Kicker(),
+                    Drift()
+                    ]
 
     def positions(self):
         
@@ -170,26 +172,16 @@ class Magnet_strengths(object):
     def step_k3_minus(self, increment):
         self.k3 -= increment
 
-    # Define magnet strength factors (dependent on relative positions and time).
-    def max_magnet_strengths(self):
-
-        kicker_pos = self.locate.locate_devices()[0]
-        len1 = kicker_pos[1] - kicker_pos[0]
-        len2 = kicker_pos[2] - kicker_pos[1]
-        d12 = float(len1)/float(len2)
-        len3 = kicker_pos[3] - kicker_pos[2]
-        len4 = kicker_pos[4] - kicker_pos[3]
-        d34 = float(len3)/float(len4)
-        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
-    
-        return max_kick
-    
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
-    
+
+        kicker_pos = self.locate.locate_devices()[0]
+        d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
+        d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
+        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
         graphscale = 0.5
         kicker3 = self.k3
-        kick = graphscale * self.max_magnet_strengths() * np.array([
+        kick = graphscale * max_kick * np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1])
@@ -204,7 +196,7 @@ class Collect_data(object):
 
         self.numbers = Constants()
         self.locate = Location()
-        self.path = self.locate.path #()
+        self.path = self.locate.path
 #        self.e_vector = [[0,0]]
 #        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
@@ -276,47 +268,35 @@ class Plot(FigureCanvas):
         self.lengths = Constants().LENGTHS
         self.locate = Location()
         self.information = Collect_data()
-
         self.fig = plt.figure()
         FigureCanvas.__init__(self, self.fig)
- 
-        self.other_data = [[],[],[],[]]
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
 
         # Create animations
-        self.anim = animation.FuncAnimation(self.fig, self.animate, init_func=self.init_data, frames=1000, interval=20, blit=True)
+        self.anim = animation.FuncAnimation(self.fig, self.animate, 
+                    init_func=self.init_data, frames=1000, interval=20, blit=True)
         # Plot positions of kickers and IDs.
         for i in self.locate.locate_devices()[0]:
-            self.fig_setup()[0].axvline(x=i, color='k', linestyle='dashed')
+            self.fig_setup().axvline(x=i, color='k', linestyle='dashed')
         for i in self.locate.locate_devices()[1]:
-            self.fig_setup()[0].axvline(x=i, color='r', linestyle='dashed')
+            self.fig_setup().axvline(x=i, color='r', linestyle='dashed')
 
     def fig_setup(self):
 
-        ax1 = self.fig.add_subplot(2, 1, 1)
+        ax1 = self.fig.add_subplot(1, 1, 1)
         ax1.set_xlim(0, sum(self.lengths))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
-        
-        ax2 = self.fig.add_subplot(2, 3, 4)
-        ax2.set_xlim(-10, 10)
-        ax2.set_ylim(0, 1000)
-        ax2.get_xaxis().set_visible(False)        
-        ax2.get_yaxis().set_visible(False)
 
-        return ax1, ax2
+        return ax1
 
     def data_setup(self):
 
         beams = [
-                self.axes[0].plot([], [])[0], 
-                self.axes[0].plot([], [], 'r')[0], 
-                self.axes[0].plot([], [], 'r')[0], 
-                self.axes[1].plot([], [], 'r.')[0], 
-                self.axes[1].plot([], [], 'r.')[0], 
-                self.axes[1].plot([], [], 'y.')[0], 
-                self.axes[1].plot([], [], 'ro')[0]
+                self.axes.plot([], [])[0], 
+                self.axes.plot([], [], 'r')[0], 
+                self.axes.plot([], [], 'r')[0], 
                 ]
 
         return beams
@@ -337,35 +317,12 @@ class Plot(FigureCanvas):
         e_data = self.information.e_plot(data[0])
         p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
         detector_data = p_data[:,1].tolist()
-        time = [t,t]
-
-        if t < 1000:
-            if detector_data[0] == 0:
-                self.other_data[0].append(detector_data[0])
-                self.other_data[1].append(t)
-            elif detector_data[1] == 0:
-                self.other_data[0].append(detector_data[1])
-                self.other_data[1].append(t)
-    
-        if t < 1000 and t % 10 == 0:
-            self.other_data[2].append(detector_data)
-            self.other_data[3].append(time)
 
         beams = self.init_data()
-        # Set data for electron beam.
         beams[0].set_data(self.locate.positions(), e_data)
-    
-        # Set data for two photon beams.
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
-        # Set data for photon beam at detector.
-        beams[3].set_data(detector_data, [10,10])
-        beams[4].set_data(detector_data, time)
-        beams[5].set_data(self.other_data[2], self.other_data[3])
-        beams[6].set_data(self.other_data[0], self.other_data[1])
-    
-    
         return beams
 
 
@@ -377,6 +334,7 @@ UI_FILENAME = 'i10chicgui.ui'
 
 
 class Control(QMainWindow):
+
 
     def __init__ (self):
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
