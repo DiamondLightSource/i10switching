@@ -299,16 +299,11 @@ class Plot(FigureCanvas):
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
         
-        ax2 = self.fig.add_subplot(2, 2, 4)
+        ax2 = self.fig.add_subplot(2, 3, 4)
         ax2.set_xlim(-10, 10)
         ax2.set_ylim(0, 1000)
         ax2.get_xaxis().set_visible(False)        
         ax2.get_yaxis().set_visible(False)
-    
-#        ax3 = self.fig.add_subplot(2, 2, 3)
-#        ax3.set_xlim(0, 15)
-#        ax3.get_yaxis().set_visible(False)
-#        ax3.set_ylim(-2, 5)
 
         return ax1, ax2
 

@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>808</width>
-    <height>479</height>
+    <width>696</width>
+    <height>457</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,6 +18,9 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0" colspan="6">
+     <layout class="QVBoxLayout" name="matplotlib_layout"/>
+    </item>
     <item row="1" column="0">
      <widget class="QPushButton" name="kplusButton">
       <property name="text">
@@ -50,13 +53,6 @@
      <widget class="QPushButton" name="pushButton_7">
       <property name="text">
        <string>BUMP RIGHT +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="1" column="5">
-     <widget class="QPushButton" name="plotButton">
-      <property name="text">
-       <string>Plot</string>
       </property>
      </widget>
     </item>
@@ -102,9 +98,6 @@
       </property>
      </widget>
     </item>
-    <item row="0" column="0" colspan="4">
-     <layout class="QVBoxLayout" name="matplotlib_layout"/>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -112,7 +105,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>808</width>
+     <width>696</width>
      <height>25</height>
     </rect>
    </property>
