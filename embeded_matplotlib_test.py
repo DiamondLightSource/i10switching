@@ -18,8 +18,6 @@ import matplotlib.animation as animation
 import random
 import os
 
-from matplotlib_test import Ui_MainWindow
-
 
 UI_FILENAME = 'matplotlib_test.ui'
 
