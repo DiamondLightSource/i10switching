@@ -22,7 +22,17 @@ import os
 # drift, kicker magnets, insertion devices.
 
 
-class Drift(object):
+# Inherit from something like this
+class Element(object): # do I need to call an instance of where up here?
+    self.where # or can I just do this?
+
+    def set_position(self, where):
+        self.where = where
+
+    def coordinate(self):
+        return self.where # do I need both of these separately?
+
+class Drift(object): # inherit from Element in here
 
 
     def __init__(self, step=0, where=0):
@@ -97,6 +107,8 @@ class Constants(object):
 
     LENGTHS = [2,2,4,4,4,4,2,20]
 
+# How to access constant elements: Constants.LENGTH
+
 
 # Assign locations of devices along the axis of the system.
 
@@ -115,6 +127,17 @@ class Location(object):
                     Drift(),Kicker(),
                     Drift()
                     ]
+
+    def load_data(self, filename):
+        pass
+        #d = {key: value for (key, value) in iterable}
+        # Not working:   element_classes = {cls.get_type() for cls in Elements.__subclasses__()}
+
+  #      raw_data = [line.strip().split() for line in open(filename)]
+ #       raw_data[0][0] == 'drift'
+ 
+#       raw_data[0][1:] == 1
+#        raw_data[0][2] == 
 
     def positions(self):
         
@@ -269,14 +292,18 @@ class Plot(FigureCanvas):
 #        self.animate(0)
 
         # Plot positions of kickers and IDs.
-        for i in self.locate.locate_devices()[0]:
-            self.axes.axvline(x=i, color='k', linestyle='dashed')
+        for i in self.locate.locate_devices()[0]: # this should be in init function
+            self.axes[0].axvline(x=i, color='k', linestyle='dashed')
         for i in self.locate.locate_devices()[1]:
-            self.axes.axvline(x=i, color='r', linestyle='dashed')
+            self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
         for i in range(2):
             self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
-            self.axes.fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
+            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
+
+
+
+
 
 #        self.colourin1 = self.information.p_plot(self.information.timestep(50)[1])[0]
 #        self.colourin2 = self.information.p_plot(self.information.timestep(150)[1])[1]
@@ -286,19 +313,20 @@ class Plot(FigureCanvas):
 
     def fig_setup(self):
 
-        ax1 = self.fig.add_subplot(1, 1, 1)
+        ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.set_xlim(0, sum(self.lengths))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
+        ax2 = self.fig.add_subplot(2, 1, 2)
 
-        return ax1
+        return ax1, ax2
 
     def data_setup(self):
 
         beams = [
-                self.axes.plot([], [])[0], 
-                self.axes.plot([], [], 'r')[0], 
-                self.axes.plot([], [], 'r')[0],
+                self.axes[0].plot([], [])[0], 
+                self.axes[0].plot([], [], 'r')[0], 
+                self.axes[0].plot([], [], 'r')[0]
                 ]
 
         return beams
@@ -323,6 +351,10 @@ class Plot(FigureCanvas):
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
+
+
+#        self.colourin = self.information.p_plot(self.information.timestep(150)[1])[1] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
+
 
         return beams
 
