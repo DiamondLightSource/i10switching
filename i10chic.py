@@ -24,20 +24,20 @@ import os
 
 # Inherit from something like this
 class Element(object): # do I need to call an instance of where up here?
-    self.where # or can I just do this?
+
+
+    def __init__(self):
+        self.where  # or can I just do this?
 
     def set_position(self, where):
         self.where = where
 
-    def coordinate(self):
-        return self.where # do I need both of these separately?
 
-class Drift(object): # inherit from Element in here
+class Drift(Element):
 
 
-    def __init__(self, step=0, where=0):
+    def __init__(self, step=0):
         self.step = step
-        self.where = where
 
     def set_length(self, step):
         self.step = step
@@ -47,22 +47,15 @@ class Drift(object): # inherit from Element in here
                           [0,1]])
         return np.dot(drift,e)
 
-    def set_position(self, where):
-        self.where = where
-
-    def coordinate(self):
-        return self.where
-
     def get_type(self):
         return 'drift'
 
 
-class Kicker(object):
+class Kicker(Element):
 
 
-    def __init__(self, k=0, where=0):
+    def __init__(self, k=0):
         self.k = k
-        self.where = where
 
     def set_strength(self, k):
         self.k = k
@@ -71,34 +64,39 @@ class Kicker(object):
         kick = np.array([0, self.k])
         return e + kick
 
-    def set_position(self, where):
-        self.where = where
-
-    def coordinate(self):
-        return self.where
-
     def get_type(self):
         return 'kicker'
 
 
-class InsertionDevice(object):
+class InsertionDevice(Element):
 
 
-    def __init__(self, where=0):
-        self.where = where
+    def __init__(self):
+        pass
 
     def increment(self, e):
         return e
 
-    def set_position(self, where):
-        self.where = where
-
-    def coordinate(self):
-        return self.where
-
     def get_type(self):
         return 'id'
 
+#class Data(object):
+
+#    def __init__(self):
+#        pass
+
+#    def load_data(self):
+
+#        raw_data = [line.strip().split() for line in open('i10chicconfig.txt')]
+#        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
+#        lengths = []
+#        for i in raw_data[0][1:]:
+#            lengths.append(eval(i))
+#        path = []
+#        for i in raw_data[1][1:]:
+#            path.append(eval(i))
+
+#        return lengths, path
 
 # Assign the values of constants in the system:
 # distances between devices and strength of 3rd kicker.
@@ -107,7 +105,6 @@ class Constants(object):
 
     LENGTHS = [2,2,4,4,4,4,2,20]
 
-# How to access constant elements: Constants.LENGTH
 
 
 # Assign locations of devices along the axis of the system.
@@ -116,33 +113,43 @@ class Location(object):
 
 
     def __init__(self):
-        self.lengths = Constants().LENGTHS
-        self.path = [
-                    Drift(),Kicker(),
-                    Drift(),Kicker(),
-                    Drift(),InsertionDevice(),
-                    Drift(),Kicker(),
-                    Drift(),InsertionDevice(),
-                    Drift(),Kicker(),
-                    Drift(),Kicker(),
-                    Drift()
-                    ]
 
-    def load_data(self, filename):
-        pass
+        self.path = self.load_data()[1] # MOVE THIS
+#        self.path = [
+#                    Drift(),Kicker(),
+#                    Drift(),Kicker(),
+#                    Drift(),InsertionDevice(),
+#                    Drift(),Kicker(),
+#                    Drift(),InsertionDevice(),
+#                    Drift(),Kicker(),
+#                    Drift(),Kicker(),
+#                    Drift()
+#                    ]
+        
+
+
+    def load_data(self):
         #d = {key: value for (key, value) in iterable}
-        # Not working:   element_classes = {cls.get_type() for cls in Elements.__subclasses__()}
+#        element_classes = {cls.get_type(): cls for cls in Element.__subclasses__()}
 
-  #      raw_data = [line.strip().split() for line in open(filename)]
- #       raw_data[0][0] == 'drift'
- 
-#       raw_data[0][1:] == 1
-#        raw_data[0][2] == 
+
+        raw_data = [line.strip().split() for line in open('i10chicconfig.txt')]
+
+        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
+        lengths = []
+        for i in raw_data[0][1:]:
+            lengths.append(eval(i))
+        path = []
+        for i in raw_data[1][1:]:
+            path.append(eval(i))
+
+        return lengths, path
+
 
     def positions(self):
         
         pos = [0]
-        pos.extend(np.cumsum(self.lengths))
+        pos.extend(np.cumsum(Constants.LENGTHS))
 
         return pos
 
@@ -155,9 +162,9 @@ class Location(object):
             device.set_position(where)
         for device in devices:
             if device.get_type() == 'kicker':
-                kicker_pos.append(device.coordinate())
+                kicker_pos.append(device.where)
             elif device.get_type() == 'id':
-                id_pos.append(device.coordinate())
+                id_pos.append(device.where)
 
         return kicker_pos, id_pos
     
@@ -173,11 +180,10 @@ class Location(object):
 
 
 # Collect data on electron and photon beams at time t.
-class Magnet_strengths(object):
+class MagnetStrengths(object):
 
 
     def __init__(self, k3=1):
-        self.numbers = Constants()
         self.locate = Location()
         self.k3 = k3
 
@@ -201,22 +207,19 @@ class Magnet_strengths(object):
         return kick
 
 
-class Collect_data(object):
+class CollectData(object):
 
 
     def __init__(self):
 
-        self.numbers = Constants()
         self.locate = Location()
         self.path = self.locate.path
-#        self.e_vector = [[0,0]]
-#        self.p_vector = []
     #PUT THIS IN A FUNCTION? OR CLASS?
     # Set drift distances (time independent).
-        for drift, distance in zip(self.locate.get_elements('drift'), self.numbers.LENGTHS):
+        for drift, distance in zip(self.locate.get_elements('drift'), Constants.LENGTHS):
             drift.set_length(distance)
-        self.magnets = Magnet_strengths()
-    
+        self.magnets = MagnetStrengths()
+
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
     
@@ -268,6 +271,8 @@ class Collect_data(object):
         return p_positions
 
 
+
+
 ####################
 ## Graph plotting ##
 ####################
@@ -277,9 +282,8 @@ class Plot(FigureCanvas):
 
     def __init__(self):
 
-        self.lengths = Constants().LENGTHS
         self.locate = Location()
-        self.information = Collect_data()
+        self.information = CollectData()
         self.fig = plt.figure()
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig_setup()
@@ -314,7 +318,7 @@ class Plot(FigureCanvas):
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, sum(self.lengths))
+        ax1.set_xlim(0, sum(Constants.LENGTHS))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 5)
         ax2 = self.fig.add_subplot(2, 1, 2)
@@ -366,7 +370,7 @@ class Plot(FigureCanvas):
 UI_FILENAME = 'i10chicgui.ui'
 
 
-class Control(QMainWindow):
+class Gui(QMainWindow):
 
 
     def __init__ (self):
@@ -383,7 +387,7 @@ class Control(QMainWindow):
 
 def main():
     cothread.iqt()
-    the_ui = Control()
+    the_ui = Gui()
     the_ui.ui.show()
     cothread.WaitForQuit()
 

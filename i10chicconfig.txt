@@ -1,0 +1,3 @@
+LENGTHS 2 2 4 4 4 4 2 20
+PATH Drift() Kicker() Drift() Kicker() Drift() InsertionDevice() Drift() Kicker() Drift() InsertionDevice() Drift() Kicker() Drift() Kicker() Drift()
+
