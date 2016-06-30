@@ -159,6 +159,9 @@ class MagnetStrengths(object):
     def step_k3(self, shift):
         self.k3 += shift
 
+    def bump_left(self,shift):
+        print 'bump!' # set things up ready to implement bump
+
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
 
@@ -330,10 +333,16 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
         self.ui.kplusButton.clicked.connect(lambda: self.k3(0.1))
         self.ui.kminusButton.clicked.connect(lambda: self.k3(-0.1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(0.1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.bump_left(-0.1))
+
         self.ui.quitButton.clicked.connect(sys.exit)
 
     def k3(self, n):
         self.ui.graph.information.magnets.step_k3(n)
+
+    def bump_left(self, n):
+        self.ui.graph.information.magnets.bump_left(n)
 
 def main():
     cothread.iqt()
