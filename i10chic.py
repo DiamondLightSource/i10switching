@@ -17,7 +17,6 @@ from PyQt4.QtCore import *
 from PyQt4.QtGui import *
 import os
 
-
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
@@ -80,26 +79,6 @@ class InsertionDevice(Element):
     def get_type(self):
         return 'id'
 
-#class Data(object):
-
-#    def __init__(self):
-#        pass
-
-#    def load_data(self):
-
-#        raw_data = [line.strip().split() for line in open('i10chicconfig.txt')]
-#        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
-#        lengths = []
-#        for i in raw_data[0][1:]:
-#            lengths.append(eval(i))
-#        path = []
-#        for i in raw_data[1][1:]:
-#            path.append(eval(i))
-
-#        return lengths, path
-
-# Assign the values of constants in the system:
-# distances between devices and strength of 3rd kicker.
 
 class Constants(object):
 
@@ -114,20 +93,10 @@ class Location(object):
 
     def __init__(self):
 
-        self.path = self.load_data()[1] # MOVE THIS
-#        self.path = [
-#                    Drift(),Kicker(),
-#                    Drift(),Kicker(),
-#                    Drift(),InsertionDevice(),
-#                    Drift(),Kicker(),
-#                    Drift(),InsertionDevice(),
-#                    Drift(),Kicker(),
-#                    Drift(),Kicker(),
-#                    Drift()
-#                    ]
-        
+        self.path = self.load_data()[1] # MOVE THIS - probably not ideal
+# HOW ON EARTH AM I SUPPOSED TO GET ALL THE LAYOUT STUFF INTO THE CONFIG FILE? LAYOUT STUFF IS CURRENTLY DEPENDENT ON THE DRIFT ETC CLASSES AND THE CONFIG FILE IS A TXT FILE SO I CAN'T PUT COMMANDS IN THERE......
 
-
+# PARTIAL USE OF CONFIG FILE WITH PATH AND LENGTHS IN IT
     def load_data(self):
         #d = {key: value for (key, value) in iterable}
 #        element_classes = {cls.get_type(): cls for cls in Element.__subclasses__()}
@@ -135,7 +104,7 @@ class Location(object):
 
         raw_data = [line.strip().split() for line in open('i10chicconfig.txt')]
 
-        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
+#        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
         lengths = []
         for i in raw_data[0][1:]:
             lengths.append(eval(i))
@@ -143,7 +112,7 @@ class Location(object):
         for i in raw_data[1][1:]:
             path.append(eval(i))
 
-        return lengths, path
+        return lengths, path # not currently using lengths at all...
 
 
     def positions(self):
@@ -214,7 +183,7 @@ class CollectData(object):
 
         self.locate = Location()
         self.path = self.locate.path
-    #PUT THIS IN A FUNCTION? OR CLASS?
+    #PUT THIS IN A FUNCTION? OR CLASS? DON'T KNOW HOW TO GET IT TO WORK IF I MOVE IT ANYWHERE ELSE
     # Set drift distances (time independent).
         for drift, distance in zip(self.locate.get_elements('drift'), Constants.LENGTHS):
             drift.set_length(distance)
@@ -241,36 +210,13 @@ class CollectData(object):
             if device == 'id':
                 p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
 
-        return e_vector, p_vector # Returns positions and velocities of electrons and photons.
-    
-    
-    # Extract electron beam positions for plotting.
-    def e_plot(self, e_beam):
-    
-        e_positions = np.array(e_beam)[:,0].tolist()
-        # Remove duplicates in data.
-        for i in range(len(self.locate.get_elements('drift'))):
-            if e_positions[i] == e_positions[i+1]:
-                e_positions.pop(i+1)
-        
-        return e_positions
-    
-    # Allow the two photon vectors to drift over large distance 
-    # and add the vector for new position and velocity to 
-    # original vector to create beam for plotting.
-    def p_plot(self, p_beam):
-        
         travel = [Drift(),Drift()]
         p_pos = self.locate.locate_photonbeam()
         for i in range(2):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
-            p_beam[i].extend(travel[i].increment(p_beam[i]))
-    
-        p_positions = np.array(p_beam)[:,[0,2]]
-    
-        return p_positions
+            p_vector[i].extend(travel[i].increment(p_vector[i]))
 
-
+        return e_vector, p_vector # Returns positions and velocities of electrons and photons.
 
 
 ####################
@@ -301,19 +247,12 @@ class Plot(FigureCanvas):
         for i in self.locate.locate_devices()[1]:
             self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
-        for i in range(2):
-            self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
-            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
+# THIS NEEDS UPDATING AFTER EDITS MADE TO CODE
+#        for i in range(2):
+#            self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
+#            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
 
 
-
-
-
-#        self.colourin1 = self.information.p_plot(self.information.timestep(50)[1])[0]
-#        self.colourin2 = self.information.p_plot(self.information.timestep(150)[1])[1]
-
-#        self.axes.fill_between(self.locate.locate_photonbeam()[0],0,self.colourin1, facecolor='yellow', alpha=0.2)
-#        self.axes.fill_between(self.locate.locate_photonbeam()[1],0,self.colourin2, facecolor='yellow', alpha=0.2) #doesn't change when k changes
 
     def fig_setup(self):
 
@@ -342,22 +281,33 @@ class Plot(FigureCanvas):
 
         return self.beams
 
+    
+    # Extract electron and photon beam positions for plotting.
+    def beam_plot(self, t):
+    
+        e_positions = np.array(self.information.timestep(t)[0])[:,0].tolist()
+        # Remove duplicates in data.
+        for i in range(len(self.locate.get_elements('drift'))):
+            if e_positions[i] == e_positions[i+1]:
+                e_positions.pop(i+1)
+
+        p_positions = np.array(self.information.timestep(t)[1])[:,[0,2]]
+        
+        return e_positions, p_positions
+
     # Animation function
     def animate(self, t):
 #        t = t*4 # This gets it to one cycle per second.
 
         # Obtain data for plotting.
-        data = self.information.timestep(t)
-        e_data = self.information.e_plot(data[0])
-        p_data = self.information.p_plot(data[1]) ############## Tried to change this but failed - new attempt needed
+        data = self.beam_plot(t)
+        e_data = data[0]
+        p_data = data[1]
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
-
-
-#        self.colourin = self.information.p_plot(self.information.timestep(150)[1])[1] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
 
 
         return beams
