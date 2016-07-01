@@ -282,6 +282,18 @@ class Plot(FigureCanvas):
 #            self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
 #            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
 
+        # fake normal distribution data
+        mu, sigma = 0, 0.1 # mean and standard deviation
+        s1 = np.random.normal(mu, sigma, 1000)
+        s2 = np.random.normal(mu, 2*sigma, 1000)
+        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
+        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
+        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2 * np.pi)) * 
+                          np.exp( - (bins1 - mu)**2 / (2 * sigma**2) ), 
+                          linewidth=2, color='r')
+        area1 = sum(np.diff(bins1)*count1)
+        area2 = sum(np.diff(bins2)*count2)
+        self.axes[1].legend(("can't get rid of this",area1,area2))
 
 
     def fig_setup(self):
