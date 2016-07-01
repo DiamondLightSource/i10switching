@@ -114,7 +114,12 @@ class Location(object):
         for i in raw_data[1][1:]:
             path.append(eval(i))
 
-        return lengths, path # not currently using lengths at all...
+        button_data = [[],[],[],[],[]]
+        for i in range(2,7):
+            for j in raw_data[i][1:]:
+                button_data[i-2].append(eval(j))
+
+        return lengths, path, button_data # not currently using lengths at all...
 
 
     def positions(self):
@@ -149,24 +154,40 @@ class Location(object):
     def get_elements(self, which):
         return [x for x in self.path if x.get_type() == which]
 
-
 # Collect data on electron and photon beams at time t.
 class MagnetStrengths(object):
 
 
     def __init__(self, k3=1):
         self.locate = Location()
+        self.button_data = self.locate.load_data()[2]
         self.k3 = k3
-        self.k1 = 0
-        self.k2 = 0
-        self.k4 = 0
-        self.k5 = 0
+        self.kick_add = np.array([0,0,0,0,0])
 
-    def step_k3(self, shift):
-        self.k3 += shift
 
-    def bump_left(self,shift):
-        print 'bump!' # set things up ready to implement bump
+    def step_k3(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array(self.button_data[0])
+
+    def bump_left(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array(self.button_data[1])
+
+    def bump_right(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array(self.button_data[2])
+
+    def bpm1(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array(self.button_data[3])
+
+    def bpm2(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array(self.button_data[4])
+
+    def reset(self):
+
+        self.kick_add = np.array([0,0,0,0,0])
 
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
@@ -174,13 +195,13 @@ class MagnetStrengths(object):
         kicker_pos = self.locate.locate_devices()[0]
         d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
         d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
-        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) + np.array([self.k1, self.k2, 0, self.k4, self.k5]) # to be sorted so that the appropriate bumps can be added
+        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
         graphscale = 0.5
         kicker3 = self.k3
-        kick = graphscale * max_kick * np.array([
+        kick = graphscale * max_kick * (np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-               + 1])
+               + 1]) + self.kick_add)
 
         return kick
 
@@ -337,11 +358,17 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.ui.graph = Plot()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
-        self.ui.kplusButton.clicked.connect(lambda: self.k3(0.1))
-        self.ui.kminusButton.clicked.connect(lambda: self.k3(-0.1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(0.1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.bump_left(-0.1))
-
+        self.ui.kplusButton.clicked.connect(lambda: self.k3(1))
+        self.ui.kminusButton.clicked.connect(lambda: self.k3(-1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.bump_left(-1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.bump_right(1))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.bump_right(-1))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.bpm1(1))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.bpm1(-1))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.bpm2(1))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.bpm2(-1))
+        self.ui.resetButton.clicked.connect(self.reset)
 
         self.toolbar = NavigationToolbar(FigureCanvas(Plot().fig), 
                         self.ui.centralwidget, coordinates=True) # doesn't currently connect...
@@ -355,6 +382,18 @@ class Gui(QMainWindow):
 
     def bump_left(self, n):
         self.ui.graph.information.magnets.bump_left(n)
+
+    def bump_right(self, n):
+        self.ui.graph.information.magnets.bump_right(n)
+
+    def bpm1(self, n):
+        self.ui.graph.information.magnets.bpm1(n)
+
+    def bpm2(self, n):
+        self.ui.graph.information.magnets.bpm2(n)
+
+    def reset(self):
+        self.ui.graph.information.magnets.reset()
 
 def main():
     cothread.iqt()
