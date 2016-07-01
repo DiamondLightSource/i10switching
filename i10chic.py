@@ -123,7 +123,7 @@ class Location(object):
 
 
     def positions(self):
-        
+
         pos = [0]
         pos.extend(np.cumsum(Constants.LENGTHS))
 
@@ -143,7 +143,7 @@ class Location(object):
                 id_pos.append(device.where)
 
         return kicker_pos, id_pos
-    
+
     def locate_detector(self):
         return self.positions()[8]
 
@@ -221,11 +221,11 @@ class CollectData(object):
 
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
-    
+
         # Initialise electron beam position and velocity
         e_beam = np.array([0,0])
         e_vector = [[0,0]]
-    
+
         # Initialise photon beam position and velocity
         p_vector = []
 
@@ -264,37 +264,6 @@ class Plot(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
-        self.colourin = [[],[]]
-
-        # Create animations
-        self.anim = animation.FuncAnimation(self.fig, self.animate, 
-                    init_func=self.init_data, frames=1000, interval=20, blit=True)
-#        self.animate(0)
-
-        # Plot positions of kickers and IDs.
-        for i in self.locate.locate_devices()[0]: # this should be in init function
-            self.axes[0].axvline(x=i, color='k', linestyle='dashed')
-        for i in self.locate.locate_devices()[1]:
-            self.axes[0].axvline(x=i, color='r', linestyle='dashed')
-
-# THIS NEEDS UPDATING AFTER EDITS MADE TO CODE
-#        for i in range(2):
-#            self.colourin[i] = self.information.p_plot(self.information.timestep(50 + 100*i)[1])[i] # very dodgy - want max and min positions (which happen to be 50 and 150) and want them to update when k3 changes
-#            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],0,self.colourin[i], facecolor='yellow', alpha=0.2)
-
-        # fake normal distribution data
-        mu, sigma = 0, 0.1 # mean and standard deviation
-        s1 = np.random.normal(mu, sigma, 1000)
-        s2 = np.random.normal(mu, 2*sigma, 1000)
-        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
-        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
-        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2 * np.pi)) * 
-                          np.exp( - (bins1 - mu)**2 / (2 * sigma**2) ), 
-                          linewidth=2, color='r')
-        area1 = sum(np.diff(bins1)*count1)
-        area2 = sum(np.diff(bins2)*count2)
-        self.axes[1].legend(("can't get rid of this",area1,area2))
-
 
     def fig_setup(self):
 
@@ -323,10 +292,9 @@ class Plot(FigureCanvas):
 
         return self.beams
 
-    
     # Extract electron and photon beam positions for plotting.
     def beam_plot(self, t):
-    
+
         e_positions = np.array(self.information.timestep(t)[0])[:,0].tolist()
         # Remove duplicates in data.
         for i in range(len(self.locate.get_elements('drift'))):
@@ -334,7 +302,7 @@ class Plot(FigureCanvas):
                 e_positions.pop(i+1)
 
         p_positions = np.array(self.information.timestep(t)[1])[:,[0,2]]
-        
+
         return e_positions, p_positions
 
     # Animation function
@@ -351,9 +319,43 @@ class Plot(FigureCanvas):
         for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
-
         return beams
 
+    def show_plot(self):
+
+        # Plot positions of kickers and IDs.
+        for i in self.locate.locate_devices()[0]:
+            self.axes[0].axvline(x=i, color='k', linestyle='dashed')
+        for i in self.locate.locate_devices()[1]:
+            self.axes[0].axvline(x=i, color='r', linestyle='dashed')
+
+#        self.colourin = [[],[]]
+# THIS NEEDS UPDATING AFTER EDITS MADE TO CODE
+#        for i in range(2):
+#            self.colourin[i] = self.information.p_plot(
+#                               self.information.timestep(50 + 100*i)[1])[i] 
+# very dodgy - want max and min positions (which happen to be 50 and 150) 
+# and want them to update when k3 changes
+#            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],
+#                          0,self.colourin[i], facecolor='yellow', alpha=0.2)
+
+        # fake normal distribution data
+        mu, sigma = 0, 0.1 # mean and standard deviation
+        s1 = np.random.normal(mu, sigma, 1000)
+        s2 = np.random.normal(mu, 2*sigma, 1000)
+        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
+        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
+        area1 = sum(np.diff(bins1)*count1)
+        area2 = sum(np.diff(bins2)*count2)
+        self.axes[1].legend((area1,area2))
+        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2*np.pi)) 
+                 * np.exp(-(bins1-mu)**2 / (2*sigma**2)), 
+                 linewidth=2, color='r')
+
+        # Create animations
+        self.anim = animation.FuncAnimation(self.fig, self.animate, 
+                    init_func=self.init_data, frames=1000, interval=20, blit=True)
+#        self.animate(0)
 
 ############################
 
@@ -366,10 +368,12 @@ class Gui(QMainWindow):
 
 
     def __init__ (self):
+
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.ui.graph = Plot()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
+
         self.ui.kplusButton.clicked.connect(lambda: self.k3(1))
         self.ui.kminusButton.clicked.connect(lambda: self.k3(-1))
         self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(1))
@@ -385,9 +389,10 @@ class Gui(QMainWindow):
         self.toolbar = NavigationToolbar(FigureCanvas(Plot().fig), 
                         self.ui.centralwidget, coordinates=True) # doesn't currently connect...
         self.ui.matplotlib_layout.addWidget(self.toolbar)
-        
 
         self.ui.quitButton.clicked.connect(sys.exit)
+
+        self.ui.graph.show_plot()
 
     def k3(self, n):
         self.ui.graph.information.magnets.step_k3(n)
