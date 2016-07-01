@@ -22,9 +22,7 @@ import os
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
 
-
-# Inherit from something like this
-class Element(object): # do I need to call an instance of where up here?
+class Element(object):
 
 
     def __init__(self):
@@ -85,7 +83,6 @@ class InsertionDevice(Element):
 class Constants(object):
 
     LENGTHS = [2,2,4,4,4,4,2,20]
-
 
 
 # Assign locations of devices along the axis of the system.
@@ -154,6 +151,7 @@ class Location(object):
     def get_elements(self, which):
         return [x for x in self.path if x.get_type() == which]
 
+
 # Collect data on electron and photon beams at time t.
 class MagnetStrengths(object):
 
@@ -164,7 +162,7 @@ class MagnetStrengths(object):
         self.k3 = k3
         self.kick_add = np.array([0,0,0,0,0])
 
-
+    # Define alterations to the kickers.
     def step_k3(self, factor):
 
         self.kick_add = self.kick_add + factor*np.array(self.button_data[0])
@@ -215,7 +213,8 @@ class CollectData(object):
         self.path = self.locate.path
     #PUT THIS IN A FUNCTION? OR CLASS? DON'T KNOW HOW TO GET IT TO WORK IF I MOVE IT ANYWHERE ELSE
     # Set drift distances (time independent).
-        for drift, distance in zip(self.locate.get_elements('drift'), Constants.LENGTHS):
+        for drift, distance in zip(self.locate.get_elements('drift'), 
+                               Constants.LENGTHS):
             drift.set_length(distance)
         self.magnets = MagnetStrengths()
 
@@ -230,7 +229,8 @@ class CollectData(object):
         p_vector = []
 
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.locate.get_elements('kicker'), self.magnets.calculate_strengths(t)):
+        for kicker, strength in zip(self.locate.get_elements('kicker'), 
+                                self.magnets.calculate_strengths(t)):
              kicker.set_strength(strength)
 
         for p in self.path:
@@ -238,7 +238,7 @@ class CollectData(object):
             device = p.get_type()
             e_vector.append(e_beam.tolist())
             if device == 'id':
-                p_vector.append(e_beam.tolist())  # Electron vector passes through insertion device, photon vector created
+                p_vector.append(e_beam.tolist())
 
         travel = [Drift(),Drift()]
         p_pos = self.locate.locate_photonbeam()
@@ -246,7 +246,7 @@ class CollectData(object):
             travel[i].set_length(p_pos[i][1]-p_pos[i][0])
             p_vector[i].extend(travel[i].increment(p_vector[i]))
 
-        return e_vector, p_vector # Returns positions and velocities of electrons and photons.
+        return e_vector, p_vector # Returns pos and vel of electrons and photons.
 
 
 ####################
@@ -316,7 +316,8 @@ class Plot(FigureCanvas):
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
-        for line, x, y in zip([beams[1],beams[2]], self.locate.locate_photonbeam(), p_data):
+        for line, x, y in zip([beams[1],beams[2]], 
+                          self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
 
         return beams
@@ -368,11 +369,13 @@ class Gui(QMainWindow):
 
 
     def __init__ (self):
-
+        QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.ui.graph = Plot()
+        self.toolbar = NavigationToolbar(self.ui.graph, self)
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
+        self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.ui.kplusButton.clicked.connect(lambda: self.k3(1))
         self.ui.kminusButton.clicked.connect(lambda: self.k3(-1))
@@ -385,11 +388,6 @@ class Gui(QMainWindow):
         self.ui.bpm2plusButton.clicked.connect(lambda: self.bpm2(1))
         self.ui.bpm2minusButton.clicked.connect(lambda: self.bpm2(-1))
         self.ui.resetButton.clicked.connect(self.reset)
-
-        self.toolbar = NavigationToolbar(FigureCanvas(Plot().fig), 
-                        self.ui.centralwidget, coordinates=True) # doesn't currently connect...
-        self.ui.matplotlib_layout.addWidget(self.toolbar)
-
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.graph.show_plot()
