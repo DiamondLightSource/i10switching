@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>614</width>
-    <height>751</height>
+    <width>621</width>
+    <height>741</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,85 +18,133 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="3" column="0">
-     <widget class="QPushButton" name="kplusButton">
-      <property name="text">
-       <string>K3 +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="1">
-     <widget class="QPushButton" name="pushButton">
-      <property name="text">
-       <string>H BPM1 +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="2">
-     <widget class="QPushButton" name="pushButton_3">
-      <property name="text">
-       <string>H BPM2 +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="3">
-     <widget class="QPushButton" name="bumpleftplusButton">
-      <property name="text">
-       <string>BUMP LEFT +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="3" column="4">
-     <widget class="QPushButton" name="pushButton_7">
-      <property name="text">
-       <string>BUMP RIGHT +</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="0">
-     <widget class="QPushButton" name="kminusButton">
-      <property name="text">
-       <string>K3 -</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="1">
-     <widget class="QPushButton" name="pushButton_2">
-      <property name="text">
-       <string>H BPM1 -</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="2">
-     <widget class="QPushButton" name="pushButton_4">
-      <property name="text">
-       <string>H BPM2 -</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="3">
-     <widget class="QPushButton" name="bumpleftminusButton">
-      <property name="text">
-       <string>BUMP LEFT -</string>
-      </property>
-     </widget>
-    </item>
-    <item row="4" column="4">
-     <widget class="QPushButton" name="pushButton_8">
-      <property name="text">
-       <string>BUMP RIGHT -</string>
-      </property>
-     </widget>
-    </item>
-    <item row="0" column="0" colspan="6">
+    <item row="1" column="0" colspan="8">
      <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
-    <item row="4" column="5">
-     <widget class="QPushButton" name="quitButton">
-      <property name="text">
-       <string>Quit</string>
+    <item row="0" column="0" colspan="8">
+     <layout class="QGridLayout" name="gridLayout_2">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
       </property>
-     </widget>
+      <item row="0" column="3">
+       <widget class="QFrame" name="frame">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <spacer name="horizontalSpacer">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>40</width>
+          <height>20</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item row="0" column="2">
+       <widget class="QLabel" name="label">
+        <property name="text">
+         <string>Magnet Status</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
+    </item>
+    <item row="6" column="0" colspan="8">
+     <layout class="QGridLayout" name="gridLayout_3">
+      <item row="0" column="0">
+       <widget class="QPushButton" name="kminusButton">
+        <property name="text">
+         <string>K3 -</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="1">
+       <widget class="QPushButton" name="bumpleftplusButton">
+        <property name="text">
+         <string>BUMP LEFT +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="0">
+       <widget class="QPushButton" name="kplusButton">
+        <property name="text">
+         <string>K3 +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="1">
+       <widget class="QPushButton" name="bumpleftminusButton">
+        <property name="text">
+         <string>BUMP LEFT -</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="2">
+       <widget class="QPushButton" name="bumprightplusButton">
+        <property name="text">
+         <string>BUMP RIGHT +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="2">
+       <widget class="QPushButton" name="bumprightminusButton">
+        <property name="text">
+         <string>BUMP RIGHT -</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="3">
+       <widget class="QPushButton" name="bpm1plusButton">
+        <property name="text">
+         <string>H BPM1 +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="3">
+       <widget class="QPushButton" name="bpm1minusButton">
+        <property name="text">
+         <string>H BPM1 -</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="4">
+       <widget class="QPushButton" name="bpm2plusButton">
+        <property name="text">
+         <string>H BPM2 +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="4">
+       <widget class="QPushButton" name="bpm2minusButton">
+        <property name="text">
+         <string>H BPM2 -</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="5">
+       <widget class="QPushButton" name="resetButton">
+        <property name="text">
+         <string>Reset</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="5">
+       <widget class="QPushButton" name="quitButton">
+        <property name="text">
+         <string>Quit</string>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
    </layout>
   </widget>
@@ -105,12 +153,12 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>614</width>
+     <width>621</width>
      <height>25</height>
     </rect>
    </property>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
+  <widget class="QStatusBar" name="statusBar"/>
   <action name="actionStuff">
    <property name="text">
     <string>Stuff</string>
