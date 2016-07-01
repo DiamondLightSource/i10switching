@@ -10,7 +10,9 @@ import matplotlib.animation as animation
 import sys
 import cothread
 from cothread.catools import *
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+    NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from PyQt4 import uic
 from PyQt4.QtCore import *
@@ -155,6 +157,10 @@ class MagnetStrengths(object):
     def __init__(self, k3=1):
         self.locate = Location()
         self.k3 = k3
+        self.k1 = 0
+        self.k2 = 0
+        self.k4 = 0
+        self.k5 = 0
 
     def step_k3(self, shift):
         self.k3 += shift
@@ -168,7 +174,7 @@ class MagnetStrengths(object):
         kicker_pos = self.locate.locate_devices()[0]
         d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
         d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
-        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
+        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) + np.array([self.k1, self.k2, 0, self.k4, self.k5]) # to be sorted so that the appropriate bumps can be added
         graphscale = 0.5
         kicker3 = self.k3
         kick = graphscale * max_kick * np.array([
@@ -335,6 +341,12 @@ class Gui(QMainWindow):
         self.ui.kminusButton.clicked.connect(lambda: self.k3(-0.1))
         self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(0.1))
         self.ui.bumpleftminusButton.clicked.connect(lambda: self.bump_left(-0.1))
+
+
+        self.toolbar = NavigationToolbar(FigureCanvas(Plot().fig), 
+                        self.ui.centralwidget, coordinates=True) # doesn't currently connect...
+        self.ui.matplotlib_layout.addWidget(self.toolbar)
+        
 
         self.ui.quitButton.clicked.connect(sys.exit)
 
