@@ -286,8 +286,7 @@ class Plot(FigureCanvas):
         beams = [
                 self.axes[0].plot([], [])[0], 
                 self.axes[0].plot([], [], 'r')[0], 
-                self.axes[0].plot([], [], 'r')[0]
-                ]
+                self.axes[0].plot([], [], 'r')[0]]
 
         return beams
 
@@ -322,13 +321,14 @@ class Plot(FigureCanvas):
         p_data = data[1]
 
 ### SECOND VERSION ###
-        p_data = [[0,data[1][0][1]],[0,data[1][1][1]]]
+#        p_data = [[0,data[1][0][1]],[0,data[1][1][1]]]
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], 
                           self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
+
 
         return beams
 
@@ -342,35 +342,36 @@ class Plot(FigureCanvas):
 
 
 ### FIRST VERSION ###
-#        self.colourin = [[],[]]
-#        for i in range(2):
-#            self.colourin[i] = self.beam_plot(50 + 100*i)[1][i] # 50
-#            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],
-#                          0,self.colourin[i], facecolor='yellow', alpha=0.2)
+        self.colourin = [[],[]]
+        for i in range(2):
+            self.colourin[i] = self.beam_plot(50 + 100*i)[1][i] # 50
+            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],
+                          0,self.colourin[i], facecolor='yellow', alpha=0.2)
 
 ### SECOND VERSION ###
-        self.colourin = self.beam_plot(150)[1][1][1]
-        self.axes[0].fill_between( (Location().locate_devices()[1][1],self.locate.locate_detector()), (0,self.colourin), facecolor='yellow', alpha=0.2)
-        self.colourin2 = self.beam_plot(50)[1][0][1]
-        self.axes[0].fill_between( (Location().locate_devices()[1][0],self.locate.locate_detector()), (0,self.colourin2), facecolor='yellow', alpha=0.2) # messy but works
+#        self.colourin = self.beam_plot(150)[1][1][1]
+#        self.axes[0].fill_between( (Location().locate_devices()[1][1],self.locate.locate_detector()), (0,self.colourin), facecolor='yellow', alpha=0.2)
+#        self.colourin2 = self.beam_plot(50)[1][0][1]
+#        self.axes[0].fill_between( (Location().locate_devices()[1][0],self.locate.locate_detector()), (0,self.colourin2), facecolor='yellow', alpha=0.2) # messy but works
 
         # fake normal distribution data
-        mu, sigma = 0, 0.1 # mean and standard deviation
-        s1 = np.random.normal(mu, sigma, 1000)
-        s2 = np.random.normal(mu, 2*sigma, 1000)
-        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
-        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
-        area1 = sum(np.diff(bins1)*count1)
-        area2 = sum(np.diff(bins2)*count2)
-        self.axes[1].legend((area1,area2))
-        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2*np.pi)) 
-                 * np.exp(-(bins1-mu)**2 / (2*sigma**2)), 
-                 linewidth=2, color='r')
+#        mu, sigma = 0, 0.1 # mean and standard deviation
+#        s1 = np.random.normal(mu, sigma, 10000)
+#        s2 = np.random.normal(mu, 2*sigma, 1000)
+#        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
+#        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
+#        area1 = sum(np.diff(bins1)*count1)
+#        area2 = sum(np.diff(bins2)*count2)
+#        self.axes[1].legend((area1,area2))
+#        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2*np.pi)) 
+#                 * np.exp(-(bins1-mu)**2 / (2*sigma**2)), 
+#                 linewidth=2, color='r')
+
+#        plt.plot(caget('BL10I-EA-USER-01:WAI1'))
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
-
 
 
 #        self.animate(0)
