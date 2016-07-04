@@ -116,7 +116,11 @@ class Location(object):
             for j in raw_data[i][1:]:
                 button_data[i-2].append(eval(j))
 
-        return lengths, path, button_data # not currently using lengths at all...
+        max_kick = []
+        for i in raw_data[7][1:]:
+            max_kick.append(eval(i))
+
+        return lengths, path, button_data, max_kick # not currently using lengths at all...
 
 
     def positions(self):
@@ -161,6 +165,7 @@ class MagnetStrengths(object):
         self.button_data = self.locate.load_data()[2]
         self.k3 = k3
         self.kick_add = np.array([0,0,0,0,0])
+        self.limit = self.locate.load_data()[3]
 
     # Define alterations to the kickers.
     def step_k3(self, factor):
@@ -200,8 +205,9 @@ class MagnetStrengths(object):
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.kick_add)
+        kick_limit = graphscale * max_kick * self.limit
 
-        return kick
+        return kick, kick_limit
 
 
 class CollectData(object):
@@ -230,7 +236,7 @@ class CollectData(object):
 
         # Calculate positions of electron beam and photon beam relative to main axis.
         for kicker, strength in zip(self.locate.get_elements('kicker'), 
-                                self.magnets.calculate_strengths(t)):
+                                self.magnets.calculate_strengths(t)[0]):
              kicker.set_strength(strength)
 
         for p in self.path:
@@ -270,7 +276,7 @@ class Plot(FigureCanvas):
         ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.set_xlim(0, sum(Constants.LENGTHS))
         ax1.get_yaxis().set_visible(False)
-        ax1.set_ylim(-2, 5)
+        ax1.set_ylim(-2, 8)
         ax2 = self.fig.add_subplot(2, 1, 2)
 
         return ax1, ax2
@@ -312,7 +318,11 @@ class Plot(FigureCanvas):
         # Obtain data for plotting.
         data = self.beam_plot(t)
         e_data = data[0]
+### FIRST VERSION ###
         p_data = data[1]
+
+### SECOND VERSION ###
+        p_data = [[0,data[1][0][1]],[0,data[1][1][1]]]
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
@@ -330,15 +340,19 @@ class Plot(FigureCanvas):
         for i in self.locate.locate_devices()[1]:
             self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
+
+### FIRST VERSION ###
 #        self.colourin = [[],[]]
-# THIS NEEDS UPDATING AFTER EDITS MADE TO CODE
 #        for i in range(2):
-#            self.colourin[i] = self.information.p_plot(
-#                               self.information.timestep(50 + 100*i)[1])[i] 
-# very dodgy - want max and min positions (which happen to be 50 and 150) 
-# and want them to update when k3 changes
+#            self.colourin[i] = self.beam_plot(50 + 100*i)[1][i] # 50
 #            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],
 #                          0,self.colourin[i], facecolor='yellow', alpha=0.2)
+
+### SECOND VERSION ###
+        self.colourin = self.beam_plot(150)[1][1][1]
+        self.axes[0].fill_between( (Location().locate_devices()[1][1],self.locate.locate_detector()), (0,self.colourin), facecolor='yellow', alpha=0.2)
+        self.colourin2 = self.beam_plot(50)[1][0][1]
+        self.axes[0].fill_between( (Location().locate_devices()[1][0],self.locate.locate_detector()), (0,self.colourin2), facecolor='yellow', alpha=0.2) # messy but works
 
         # fake normal distribution data
         mu, sigma = 0, 0.1 # mean and standard deviation
@@ -356,6 +370,9 @@ class Plot(FigureCanvas):
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
+
+
+
 #        self.animate(0)
 
 ############################
