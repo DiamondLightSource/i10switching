@@ -20,6 +20,7 @@ import os
 
 
 UI_FILENAME = 'matplotlib_test.ui'
+PV = 'SR-DI-EBPM-01:SA:X'
 
 
 class MyTestCanvas(FigureCanvas):
@@ -27,21 +28,17 @@ class MyTestCanvas(FigureCanvas):
         self.scale_val = 1
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
-        self.plot = self.figure.add_subplot(1, 1, 1)
-        self.plot.set_xlim(0, 10)
-        self.plot.set_ylim(0, 10)
-        self.axis = self.plot.plot([])[0]
-        self.ani = animation.FuncAnimation(
-                self.figure, self.animate, frames=1000, interval=1000/60)
+        self.axes = self.figure.add_subplot(1, 1, 1)
 
-    def animate(self, _):
-        data = [random.random() for i in range(10)]
-        data = [x * self.scale_val for x in data]
-        xy = [range(len(data)), data]
-        self.axis.set_data(xy)
+        # Initialise with real data the first time to set axis ranges
+        data = caget(PV)
+        x, y = (range(len(data)), data)
+        self.lines = self.axes.plot(x, y)[0]
+        camonitor(PV, self.update_plot)
 
-    def scale(self, factor):
-        self.scale_val = self.scale_val * factor
+    def update_plot(self, value):
+        self.lines.set_ydata(value)
+        self.draw()
 
 
 class TestUi(QMainWindow):
@@ -52,10 +49,6 @@ class TestUi(QMainWindow):
 
         self.ui.graph = MyTestCanvas()
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
-        self.ui.plot_button.clicked.connect(self.adjust)
-
-    def adjust(self):
-        self.ui.graph.scale(2)
 
 
 def main():
