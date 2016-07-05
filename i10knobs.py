@@ -197,8 +197,9 @@ class KnobsUi(object):
     MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
-    SOMETHING_PV = 'BL10I-EA-USER-01:WAI1' ## goodness knows if these are the right ones
-    SOMETHING_ELSE_PV = 'BL10I-EA-USER-01:WAI2' ##
+    I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
+    I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
+    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
 
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
@@ -251,7 +252,7 @@ class KnobsUi(object):
         camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.graph = WaveformCanvas(self.SOMETHING_PV, self.SOMETHING_ELSE_PV)
+        self.ui.graph = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph_layout.addWidget(self.ui.graph)
 
 
