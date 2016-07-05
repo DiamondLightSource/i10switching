@@ -53,6 +53,10 @@ class WaveformCanvas(FigureCanvas):
         self.figure = pylab.plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
+        # Comment out these lines if preferred
+        self.ax2 = self.figure.add_subplot(111, sharex=self.ax1, frameon=False)
+        self.ax2.yaxis.tick_right()
+        #############################
 
         # Initialise with real data the first time to set axis ranges
         data = caget(pv1)
@@ -60,9 +64,11 @@ class WaveformCanvas(FigureCanvas):
         # Initialise second set of data for second trace
         data2 = caget(pv2)
         x2, y2 = (range(len(data2)), data2)
-        self.lines = [self.ax1.plot(x, y)[0], self.ax1.plot(x2, y2)[0]]
+        self.lines = [self.ax1.plot(x, y, 'b')[0], self.ax2.plot(x2, y2, 'g')[0]]
+        # Change ax2 to ax1 if preferred
         camonitor(pv1, self.update_plot)
         camonitor(pv2, self.update_plot2)
+
 
     def update_plot(self, value):
         self.lines[0].set_ydata(value)
