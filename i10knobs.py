@@ -181,9 +181,7 @@ class KnobsUi(object):
 
         self.ui = Ui_i10_knobs()
         self.ui.setupUi(parent)
-
         self.parent = parent
-        parent.setFixedSize(parent.width(), parent.height())
 
         self.setup_table()
 
@@ -294,14 +292,9 @@ class KnobsUi(object):
                     item.setBackground(QtGui.QBrush(self.HIGHLIGHT_COLOR))
                 table.setItem(row, col, item)
 
-        # Fix table size and distribute rows
-        table.verticalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
-        table.horizontalHeader().setFixedHeight(VERTICAL_HEADER_SIZE)
-        table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Fixed)
-        row_height = ((table.height() - table.horizontalHeader().height())
-                / table.rowCount())
-        for i in range(table.rowCount()):
-            table.setRowHeight(i, row_height)
+        # Automatically adjust table size
+        table.verticalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
+        table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
         # Callbacks: Min and Max
         max_pvs = [name + ':IMAX' for name in Knobs.NAMES]
