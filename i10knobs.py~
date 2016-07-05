@@ -52,12 +52,13 @@ class WaveformCanvas(FigureCanvas):
     def __init__(self, pv1, pv2):
         self.figure = pylab.plt.figure()
         FigureCanvas.__init__(self, self.figure)
-        self.ax1 = self.figure.add_subplot(1, 1, 1)
+        self.ax1 = self.figure.add_subplot(2, 1, 1)
+        self.ax2 = self.figure.add_subplot(2, 1, 2)
 
         # Initialise with real data the first time to set axis ranges
         data = caget(pv1)
         x, y = (range(len(data)), data)
-        # Initialise second set of data for second trace
+        # Initialise second set of data for second graph
         data2 = caget(pv2)
         x2, y2 = (range(len(data2)), data2)
         self.lines = [self.ax1.plot(x, y)[0], self.ax1.plot(x2, y2)[0]]

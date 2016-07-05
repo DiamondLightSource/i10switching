@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>772</width>
-    <height>330</height>
+    <width>892</width>
+    <height>528</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -206,6 +206,9 @@
        </spacer>
       </item>
      </layout>
+    </item>
+    <item>
+     <layout class="QGridLayout" name="graph_layout"/>
     </item>
     <item>
      <widget class="QTableWidget" name="table_widget">

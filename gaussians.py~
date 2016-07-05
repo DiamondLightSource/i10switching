@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integ
 
-
+x = np.linspace(0, GRAPHRANGE, GRAPHRANGE)
 
 # Number of data points
 GRAPHRANGE = 10000
@@ -13,8 +13,6 @@ WINDOW = GRAPHRANGE/2
 # Shift between edge of square wave and peak of Gaussian
 CENTRESHIFT = 100
 
-
-x = np.linspace(0, GRAPHRANGE, GRAPHRANGE)
 #########################################################
 # Let's create a function to model and create data
 def gaussian(x, a, x0, sigma):

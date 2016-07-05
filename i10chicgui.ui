@@ -18,10 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="1" column="0" colspan="8">
-     <layout class="QVBoxLayout" name="matplotlib_layout"/>
-    </item>
-    <item row="0" column="0" colspan="8">
+    <item row="0" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
@@ -58,7 +55,7 @@
       </item>
      </layout>
     </item>
-    <item row="6" column="0" colspan="8">
+    <item row="6" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="kminusButton">
@@ -145,6 +142,9 @@
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
    </layout>
   </widget>
