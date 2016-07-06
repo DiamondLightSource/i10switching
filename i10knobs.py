@@ -115,7 +115,7 @@ class Knobs(object):
         S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
         # knob deltas
-        dbpm = 1e-3/10; # 1e-3 mm = 1um
+        dbpm = 1e-4  # 1e-4 mm = 100 nm
         dscale = numpy.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
         dk3 = numpy.array([0, 0, 1e-2, 0, 0])
 
@@ -197,8 +197,9 @@ class KnobsUi(object):
     MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
-    SOMETHING_PV = 'BL10I-EA-USER-01:WAI1' ## goodness knows if these are the right ones
-    SOMETHING_ELSE_PV = 'BL10I-EA-USER-01:WAI2' ##
+    I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
+    I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
+    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
 
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
@@ -251,7 +252,7 @@ class KnobsUi(object):
         camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.graph = WaveformCanvas(self.SOMETHING_PV, self.SOMETHING_ELSE_PV)
+        self.ui.graph = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph_layout.addWidget(self.ui.graph)
 
 
