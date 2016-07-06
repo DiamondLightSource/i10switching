@@ -32,6 +32,7 @@ import pylab
 from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 
+import scipy.integrate as integ
 
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
@@ -54,10 +55,6 @@ class WaveformCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
 
-        # Use seperate axis for both plots
-        #self.ax2 = self.figure.add_subplot(111, sharex=self.ax1, frameon=False)
-        #self.ax2.yaxis.tick_right()
-
         # Initialise with real data the first time to set axis ranges
         self.trigger = caget(pv1)
 
@@ -66,18 +63,23 @@ class WaveformCanvas(FigureCanvas):
         self.lines = [
                 self.ax1.plot(x, data1, 'b')[0],
                 self.ax1.plot(x, data2, 'g')[0]]
-        # Change ax2 to ax1 if preferred
-        camonitor(pv1, self.update_plot)
-        camonitor(pv2, self.update_plot2)
+#        camonitor(pv1, self.update_plot2)
+        camonitor(pv2, self.update_plot)
+
+
+#    def update_plot2(self, value):
+#        self.trigger = value
 
     def update_plot(self, value):
-        self.trigger = value
-
-    def update_plot2(self, value):
         data1, data2 = self.get_windowed_data(value)
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
         self.draw()
+        label1=integ.simps(data1)
+        label2=integ.simps(data2)
+
+#        print label1, label2
+        return label1, label2
 
     def get_windowed_data(self, value):
         length = len(value)
@@ -88,7 +90,7 @@ class WaveformCanvas(FigureCanvas):
         data1 = numpy.roll(value, - edges[0] - length/4)[:length/2]
         data2 = numpy.roll(value, - edges[1] - length/4)[:length/2]
 
-        print edges
+#        print edges
         return data1, data2
 
 
@@ -268,10 +270,15 @@ class KnobsUi(object):
         self.ui.graph = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph_layout.addWidget(self.ui.graph)
 
+        self.plot_area()
+
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
         self.ui.cycling_textbox.setText(QtCore.QString('%s' % var.enums[var]))
+
+    def plot_area(self):
+        self.ui.area_label.setText('Area here when I know how')
 
     def update_magnet_led(self, var):
         '''Uses PV alarm status to choose color for qframe'''
