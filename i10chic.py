@@ -3,7 +3,12 @@
 
 # Import libraries
 
-import dls_packages
+#import dls_packages
+from pkg_resources import require
+require('cothread==2.10')
+require('scipy==0.10.1')
+require('matplotlib==1.3.1')
+require('numpy==1.11.1') # is this right?
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -15,9 +20,9 @@ from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 from matplotlib.figure import Figure
 from PyQt4 import uic
-from PyQt4.QtCore import *
-from PyQt4.QtGui import *
+from PyQt4.QtGui import QMainWindow
 import os
+import scipy.integrate as integ
 
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
@@ -26,7 +31,7 @@ class Element(object):
 
 
     def __init__(self):
-        self.where  # or can I just do this?
+        self.where
 
     def set_position(self, where):
         self.where = where
@@ -80,30 +85,25 @@ class InsertionDevice(Element):
         return 'id'
 
 
-class Constants(object):
-
-    LENGTHS = [2,2,4,4,4,4,2,20]
-
-
 # Assign locations of devices along the axis of the system.
 
-class Location(object):
+class Layout(object):
 
 
     def __init__(self):
 
         self.path = self.load_data()[1] # MOVE THIS - probably not ideal
-# HOW ON EARTH AM I SUPPOSED TO GET ALL THE LAYOUT STUFF INTO THE CONFIG FILE? LAYOUT STUFF IS CURRENTLY DEPENDENT ON THE DRIFT ETC CLASSES AND THE CONFIG FILE IS A TXT FILE SO I CAN'T PUT COMMANDS IN THERE......
+        self.lengths = self.load_data()[0]
 
 # PARTIAL USE OF CONFIG FILE WITH PATH AND LENGTHS IN IT
     def load_data(self):
         #d = {key: value for (key, value) in iterable}
 #        element_classes = {cls.get_type(): cls for cls in Element.__subclasses__()}
+#        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
 
 
         raw_data = [line.strip().split() for line in open('i10chicconfig.txt')]
 
-#        elements = {eval(el).get_type(): eval(el) for el in raw_data[1][1:]} # key not unique for different kickers etc
         lengths = []
         for i in raw_data[0][1:]:
             lengths.append(eval(i))
@@ -120,13 +120,12 @@ class Location(object):
         for i in raw_data[7][1:]:
             max_kick.append(eval(i))
 
-        return lengths, path, button_data, max_kick # not currently using lengths at all...
-
+        return lengths, path, button_data, max_kick # not currently using max_kick at all...
 
     def positions(self):
 
         pos = [0]
-        pos.extend(np.cumsum(Constants.LENGTHS))
+        pos.extend(np.cumsum(self.lengths))
 
         return pos
 
@@ -161,7 +160,7 @@ class MagnetStrengths(object):
 
 
     def __init__(self, k3=1):
-        self.locate = Location()
+        self.locate = Layout()
         self.button_data = self.locate.load_data()[2]
         self.k3 = k3
         self.kick_add = np.array([0,0,0,0,0])
@@ -209,18 +208,17 @@ class MagnetStrengths(object):
 
         return kick, kick_limit
 
-
 class CollectData(object):
 
 
     def __init__(self):
 
-        self.locate = Location()
-        self.path = self.locate.path
+        self.locate = Layout()
+        self.path = self.locate.path #WHYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY
     #PUT THIS IN A FUNCTION? OR CLASS? DON'T KNOW HOW TO GET IT TO WORK IF I MOVE IT ANYWHERE ELSE
     # Set drift distances (time independent).
         for drift, distance in zip(self.locate.get_elements('drift'), 
-                               Constants.LENGTHS):
+                               self.locate.lengths):
             drift.set_length(distance)
         self.magnets = MagnetStrengths()
 
@@ -264,7 +262,7 @@ class Plot(FigureCanvas):
 
     def __init__(self):
 
-        self.locate = Location()
+        self.locate = Layout()
         self.information = CollectData()
         self.fig = plt.figure()
         FigureCanvas.__init__(self, self.fig)
@@ -274,10 +272,12 @@ class Plot(FigureCanvas):
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, sum(Constants.LENGTHS))
+        ax1.set_xlim(0, sum(self.locate.lengths))
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-2, 8)
         ax2 = self.fig.add_subplot(2, 1, 2)
+        ax2.get_xaxis().set_visible(False)
+        ax2.get_yaxis().set_visible(False)
 
         return ax1, ax2
 
@@ -317,18 +317,13 @@ class Plot(FigureCanvas):
         # Obtain data for plotting.
         data = self.beam_plot(t)
         e_data = data[0]
-### FIRST VERSION ###
         p_data = data[1]
-
-### SECOND VERSION ###
-#        p_data = [[0,data[1][0][1]],[0,data[1][1][1]]]
 
         beams = self.init_data()
         beams[0].set_data(self.locate.positions(), e_data)
         for line, x, y in zip([beams[1],beams[2]], 
                           self.locate.locate_photonbeam(), p_data):
             line.set_data(x,y)
-
 
         return beams
 
@@ -340,41 +335,44 @@ class Plot(FigureCanvas):
         for i in self.locate.locate_devices()[1]:
             self.axes[0].axvline(x=i, color='r', linestyle='dashed')
 
-
-### FIRST VERSION ###
-        self.colourin = [[],[]]
-        for i in range(2):
-            self.colourin[i] = self.beam_plot(50 + 100*i)[1][i] # 50
-            self.axes[0].fill_between(self.locate.locate_photonbeam()[i],
-                          0,self.colourin[i], facecolor='yellow', alpha=0.2)
-
-### SECOND VERSION ###
-#        self.colourin = self.beam_plot(150)[1][1][1]
-#        self.axes[0].fill_between( (Location().locate_devices()[1][1],self.locate.locate_detector()), (0,self.colourin), facecolor='yellow', alpha=0.2)
-#        self.colourin2 = self.beam_plot(50)[1][0][1]
-#        self.axes[0].fill_between( (Location().locate_devices()[1][0],self.locate.locate_detector()), (0,self.colourin2), facecolor='yellow', alpha=0.2) # messy but works
-
-        # fake normal distribution data
-#        mu, sigma = 0, 0.1 # mean and standard deviation
-#        s1 = np.random.normal(mu, sigma, 10000)
-#        s2 = np.random.normal(mu, 2*sigma, 1000)
-#        count1, bins1, _ = self.axes[1].hist(s1, 30, normed=True, alpha = 0.2)
-#        count2, bins2, _ = self.axes[1].hist(s2, 30, normed=True, color='r', alpha = 0.2)
-#        area1 = sum(np.diff(bins1)*count1)
-#        area2 = sum(np.diff(bins2)*count2)
-#        self.axes[1].legend((area1,area2))
-#        self.axes[1].plot(bins1, 1/(sigma * np.sqrt(2*np.pi)) 
-#                 * np.exp(-(bins1-mu)**2 / (2*sigma**2)), 
-#                 linewidth=2, color='r')
-
-#        plt.plot(caget('BL10I-EA-USER-01:WAI1'))
+        xcolour = (self.locate.locate_devices()[0][2],self.locate.locate_detector())
+        ycolour = (0,self.beam_plot(150)[1][1][1])
+        ycolour2 = (0,self.beam_plot(50)[1][0][1])
+        self.axes[0].fill_between( xcolour, ycolour, ycolour2, facecolor='yellow', alpha=0.2) # messy but works
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
 
+    def gauss_plot(self):
+        # Eventually to be live plot
 
-#        self.animate(0)
+        # Import data
+        trigger = np.load('trigger.npy')[1200:6200]
+        trace = np.load('diode.npy')[1200:6200]
+
+        # Number of data points
+        GRAPHRANGE = 5000
+        WINDOW = GRAPHRANGE/2
+        # Shift between edge of square wave and peak of Gaussian
+        CENTRESHIFT = 25
+
+        x = np.linspace(0, GRAPHRANGE, GRAPHRANGE)
+
+        # Finds edges of square wave
+        sqdiff = np.diff(trigger).tolist()
+        edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))]
+
+        # Overlay the two gaussians
+        peak1 = np.array(trace[:WINDOW])
+        peak2 = np.array(trace[WINDOW:])
+        xwindow = np.linspace(-WINDOW/2, WINDOW/2, WINDOW)
+        peak1shift = WINDOW/2 - edges[0] - CENTRESHIFT
+        peak2shift = 3*WINDOW/2 - edges[1] - CENTRESHIFT
+        self.axes[1].plot(xwindow + peak1shift,peak1, label=integ.simps(peak1))
+        self.axes[1].plot(xwindow + peak2shift,peak2, label=integ.simps(peak2))
+        self.axes[1].legend()
+
 
 ############################
 
@@ -409,6 +407,7 @@ class Gui(QMainWindow):
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.graph.show_plot()
+        self.ui.graph.gauss_plot()
 
     def k3(self, n):
         self.ui.graph.information.magnets.step_k3(n)
