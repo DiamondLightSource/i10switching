@@ -53,30 +53,43 @@ class WaveformCanvas(FigureCanvas):
         self.figure = pylab.plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
-        # Comment out these lines if preferred
-        self.ax2 = self.figure.add_subplot(111, sharex=self.ax1, frameon=False)
-        self.ax2.yaxis.tick_right()
-        #############################
+
+        # Use seperate axis for both plots
+        #self.ax2 = self.figure.add_subplot(111, sharex=self.ax1, frameon=False)
+        #self.ax2.yaxis.tick_right()
 
         # Initialise with real data the first time to set axis ranges
-        data = caget(pv1)
-        x, y = (range(len(data)), data)
-        # Initialise second set of data for second trace
-        data2 = caget(pv2)
-        x2, y2 = (range(len(data2)), data2)
-        self.lines = [self.ax1.plot(x, y, 'b')[0], self.ax2.plot(x2, y2, 'g')[0]]
+        self.trigger = caget(pv1)
+
+        data1, data2 = self.get_windowed_data(caget(pv2))
+        x = range(len(data1))
+        self.lines = [
+                self.ax1.plot(x, data1, 'b')[0],
+                self.ax1.plot(x, data2, 'g')[0]]
         # Change ax2 to ax1 if preferred
         camonitor(pv1, self.update_plot)
         camonitor(pv2, self.update_plot2)
 
-
     def update_plot(self, value):
-        self.lines[0].set_ydata(value)
-        self.draw()
+        self.trigger = value
 
     def update_plot2(self, value):
-        self.lines[1].set_ydata(value)
+        data1, data2 = self.get_windowed_data(value)
+        self.lines[0].set_ydata(data1)
+        self.lines[1].set_ydata(data2)
         self.draw()
+
+    def get_windowed_data(self, value):
+        length = len(value)
+        ysq = self.trigger
+        ysqdiff = numpy.diff(ysq).tolist()
+        edges = [ysqdiff.index(max(ysqdiff)), ysqdiff.index(min(ysqdiff))]
+        offset = min(edges) / 2
+        data1 = numpy.roll(value, - edges[0] - length/4)[:length/2]
+        data2 = numpy.roll(value, - edges[1] - length/4)[:length/2]
+
+        print edges
+        return data1, data2
 
 
 class Knobs(object):
