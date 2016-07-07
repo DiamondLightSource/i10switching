@@ -30,8 +30,8 @@ import scipy.integrate as integ
 class Element(object):
 
 
-    def __init__(self): # put poritions in here and set lengths from those, load data vcan work out drifts from posns
-        self.where
+    def __init__(self, s): # put poritions in here and set lengths from those, load data vcan work out drifts from posns
+        self.where = s
 
     def set_position(self, where):
         self.where = where
@@ -42,12 +42,10 @@ class Drift(Element):
 
     def __init__(self, step=0):
         self.step = step
+#        self.s = s
 
     def set_length(self, step):
         self.step = step
-
-    def print_step(self):
-        print self.step
 
     def increment(self, e):
         drift = np.array([[1,self.step],
@@ -74,9 +72,6 @@ class Kicker(Element):
     def get_type(self):
         return 'kicker'
 
-    def print_step(self):
-        print 'nope'
-
 
 class InsertionDevice(Element):
 
@@ -90,9 +85,6 @@ class InsertionDevice(Element):
     def get_type(self):
         return 'id'
 
-    def print_step(self):
-        print 'nope'
-
 
 # Assign locations of devices along the axis of the system.
 
@@ -105,7 +97,28 @@ class Layout(object):
         self.path = self.load_data()[1] # MOVE THIS - probably not ideal
         self.lengths = self.load_data()[0]
 
-# PARTIAL USE OF CONFIG FILE WITH PATH AND LENGTHS IN IT
+    def load(self):
+
+        raw_data = [line.split() for line in open(self.NAME2)] # a list of lists from the config file
+        
+#        element_classes = {cls(None).get_type(): cls for cls in Element.__subclasses__()}
+#        self.route  = [element_classes[x[0]](float(x[1])) for x in raw_data]
+#        self._setup_drift_lengths() # Calcs drift lenghts from self.path
+        path_list = np.array(raw_data)[:,0].tolist()
+        properties = np.array(raw_data)[:,1].tolist()
+
+        route = []
+#        for i in range(len(path_list)):
+#            route.append(element_classes[path_list[i]])
+
+        for device, value in zip(route, properties):
+            if device.get_type() != 'drift':
+                device.set_position(value)
+            else:
+                device.set_length(value) # not ideal..
+        return route
+
+
     def load_data(self):
         #d = {key: value for (key, value) in iterable}
 
@@ -194,7 +207,7 @@ class Layout(object):
     def get_elements(self, which):
         return [x for x in self.path if x.get_type() == which]
 
-
+print Layout().load()
 # Collect data on electron and photon beams at time t.
 class MagnetStrengths(object):
 
