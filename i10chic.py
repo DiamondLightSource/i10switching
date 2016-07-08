@@ -158,7 +158,7 @@ class MagnetStrengths(object):
 
     def scale(self, factor):
 
-        self.kick_add = self.kick_add + factor*np.array([1,1,1,1,1]) # not working...
+        self.kick_add = self.kick_add + factor*np.array([0.01,0.01,0,0.01,0.01]) # surprising...
 
     def reset(self):
 
@@ -171,6 +171,7 @@ class MagnetStrengths(object):
         d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
         d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
         max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
+#        max_kick = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771]) # are these the actual magnet strengths??
         graphscale = 0.5
         kick = graphscale * max_kick * (np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
@@ -377,8 +378,8 @@ class Gui(QMainWindow):
         self.ui.bpm1minusButton.clicked.connect(lambda: self.bpm1(-1))
         self.ui.bpm2plusButton.clicked.connect(lambda: self.bpm2(1))
         self.ui.bpm2minusButton.clicked.connect(lambda: self.bpm2(-1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.scale(2))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.scale(-2))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.scale(1))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.scale(-1))
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
