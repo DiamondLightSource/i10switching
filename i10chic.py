@@ -42,6 +42,7 @@ class Detector(Element):
     def get_type(self):
         return 'detector'
 
+
 class Drift(Element):
 
 
@@ -131,7 +132,7 @@ class MagnetStrengths(object):
 
 
     def __init__(self, k3=1):
-        self.locate = Layout()
+        self.path = Layout().path
         self.k3 = k3
         self.kick_add = np.array([0,0,0,0,0])
 
@@ -163,7 +164,7 @@ class MagnetStrengths(object):
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
 
-        kicker_pos = [i.s for i in self.locate.path if i.get_type() == 'kicker']
+        kicker_pos = [i.s for i in self.path if i.get_type() == 'kicker']
         d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
         d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
         max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
@@ -182,13 +183,13 @@ class CollectData(object):
 
     def __init__(self):
 
-        self.locate = Layout()
-        self.path = self.locate.path
+        self.data = Layout()
+        self.path = self.data.path
         self.magnets = MagnetStrengths()
-        self.p_pos = [[self.locate.get_elements('id')[0].s, 
-                       self.locate.get_elements('detector')[0].s],
-                      [self.locate.get_elements('id')[1].s, 
-                       self.locate.get_elements('detector')[0].s]]
+        self.p_pos = [[self.data.get_elements('id')[0].s, 
+                       self.data.get_elements('detector')[0].s],
+                      [self.data.get_elements('id')[1].s, 
+                       self.data.get_elements('detector')[0].s]]
 
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -201,7 +202,7 @@ class CollectData(object):
         p_vector = []
 
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.locate.get_elements('kicker'), 
+        for kicker, strength in zip(self.data.get_elements('kicker'), 
                                 self.magnets.calculate_strengths(t)):
             kicker.set_strength(strength)
 
@@ -212,9 +213,11 @@ class CollectData(object):
             if p.get_type() == 'id':
                 p_vector.append(e_beam.tolist())
 
-        travel = [Drift(0), Drift(0)] # this should be length not position
+        # Create photon beams.
+        travel = [Drift(self.data.get_elements('id')[0].s), 
+                  Drift(self.data.get_elements('id')[1].s)]
         for i in range(2):
-            travel[i].set_length(self.p_pos[i][1]-self.p_pos[i][0]) # ditto
+            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
             p_vector[i].extend(travel[i].increment(p_vector[i]))
 
         return e_vector, p_vector # Returns pos and vel of electrons and photons.
@@ -234,14 +237,13 @@ class Plot(FigureCanvas):
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
-#        self.places = self.information.locate.locate_devices()
 
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(0, self.information.locate.get_elements('detector')[0].s)  #sum(self.information.locate.lengths))
+        ax1.set_xlim(self.information.data.get_elements('drift')[0].s, self.information.data.get_elements('detector')[0].s)
         ax1.get_yaxis().set_visible(False)
-        ax1.set_ylim(-2, 8)
+        ax1.set_ylim(-3, 4)
         ax2 = self.fig.add_subplot(2, 1, 2)
         ax2.get_xaxis().set_visible(False)
         ax2.get_yaxis().set_visible(False)
@@ -270,7 +272,7 @@ class Plot(FigureCanvas):
 
         e_positions = np.array(self.information.timestep(t)[0])[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.information.locate.get_elements('drift'))):
+        for i in range(len(self.information.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
@@ -288,7 +290,7 @@ class Plot(FigureCanvas):
         p_data = data[1]
 
         xaxis = [0]
-        xaxis.extend([i.s for i in self.information.locate.path if i.get_type() != 'drift'])
+        xaxis.extend([i.s for i in self.information.data.path if i.get_type() != 'drift'])
 
         beams = self.init_data()
         beams[0].set_data(xaxis, e_data)
@@ -301,15 +303,15 @@ class Plot(FigureCanvas):
     def show_plot(self):
 
         # Plot positions of kickers and IDs.
-        for i in self.information.locate.get_elements('kicker'):
+        for i in self.information.data.get_elements('kicker'):
             self.axes[0].axvline(x=i.s, color='k', linestyle='dashed')
-        for i in self.information.locate.get_elements('id'):        #for i in self.locate.path if i.get_type() == 'id':
+        for i in self.information.data.get_elements('id'):
             self.axes[0].axvline(x=i.s, color='r', linestyle='dashed')
 
-        xclr = (self.information.locate.get_elements('kicker')[2].s,
-                self.information.locate.get_elements('detector')[0].s)
+        xclr = (self.information.data.get_elements('kicker')[2].s,
+                self.information.data.get_elements('detector')[0].s)
         yclr = (0,self.beam_plot(150)[1][1][1])
-        yclr2 = (0,self.beam_plot(50)[1][0][1])
+        yclr2 = (0,self.beam_plot(50)[1][0][1]) # feels wrong to hard code these numbers
         self.axes[0].fill_between( xclr, yclr, yclr2, facecolor='yellow', alpha=0.2) # facecolor=[(1,1,0,0.2)])
 
         # Create animations
