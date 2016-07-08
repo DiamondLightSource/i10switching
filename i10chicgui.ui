@@ -58,9 +58,9 @@
     <item row="6" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
-       <widget class="QPushButton" name="kminusButton">
+       <widget class="QPushButton" name="kplusButton">
         <property name="text">
-         <string>K3 -</string>
+         <string>K3 +</string>
         </property>
        </widget>
       </item>
@@ -72,9 +72,9 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QPushButton" name="kplusButton">
+       <widget class="QPushButton" name="kminusButton">
         <property name="text">
-         <string>K3 +</string>
+         <string>K3 -</string>
         </property>
        </widget>
       </item>
@@ -138,6 +138,20 @@
        <widget class="QPushButton" name="quitButton">
         <property name="text">
          <string>Quit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="6">
+       <widget class="QPushButton" name="scaleplusButton">
+        <property name="text">
+         <string>Scale +</string>
+        </property>
+       </widget>
+      </item>
+      <item row="1" column="6">
+       <widget class="QPushButton" name="scaleminusButton">
+        <property name="text">
+         <string>Scale -</string>
         </property>
        </widget>
       </item>

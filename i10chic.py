@@ -131,9 +131,8 @@ class Layout(object):
 class MagnetStrengths(object):
 
 
-    def __init__(self, k3=1):
+    def __init__(self):
         self.path = Layout().path
-        self.k3 = k3
         self.kick_add = np.array([0,0,0,0,0])
 
     # Define alterations to the kickers.
@@ -157,6 +156,10 @@ class MagnetStrengths(object):
 
         self.kick_add = self.kick_add + factor*np.array(ButtonData.BPM2)
 
+    def scale(self, factor):
+
+        self.kick_add = self.kick_add + factor*np.array([1,1,1,1,1]) # not working...
+
     def reset(self):
 
         self.kick_add = np.array([0,0,0,0,0])
@@ -169,10 +172,9 @@ class MagnetStrengths(object):
         d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
         max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
         graphscale = 0.5
-        kicker3 = self.k3
         kick = graphscale * max_kick * (np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-               kicker3, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
+               1, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.kick_add)
 
         return kick
@@ -232,7 +234,7 @@ class Plot(FigureCanvas):
 
     def __init__(self):
 
-        self.information = CollectData()
+        self.info = CollectData()
         self.fig = plt.figure()
         FigureCanvas.__init__(self, self.fig)
         self.axes = self.fig_setup()
@@ -241,7 +243,7 @@ class Plot(FigureCanvas):
     def fig_setup(self):
 
         ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(self.information.data.get_elements('drift')[0].s, self.information.data.get_elements('detector')[0].s)
+        ax1.set_xlim(self.info.data.get_elements('drift')[0].s, self.info.data.get_elements('detector')[0].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-3, 4)
         ax2 = self.fig.add_subplot(2, 1, 2)
@@ -270,13 +272,13 @@ class Plot(FigureCanvas):
     # Extract electron and photon beam positions for plotting.
     def beam_plot(self, t):
 
-        e_positions = np.array(self.information.timestep(t)[0])[:,0].tolist()
+        e_positions = np.array(self.info.timestep(t)[0])[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.information.data.get_elements('drift'))):
+        for i in range(len(self.info.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
-        p_positions = np.array(self.information.timestep(t)[1])[:,[0,2]]
+        p_positions = np.array(self.info.timestep(t)[1])[:,[0,2]]
 
         return e_positions, p_positions
 
@@ -290,12 +292,12 @@ class Plot(FigureCanvas):
         p_data = data[1]
 
         xaxis = [0]
-        xaxis.extend([i.s for i in self.information.data.path if i.get_type() != 'drift'])
+        xaxis.extend([i.s for i in self.info.data.path if i.get_type() != 'drift'])
 
         beams = self.init_data()
         beams[0].set_data(xaxis, e_data)
         for line, x, y in zip([beams[1],beams[2]], 
-                          self.information.p_pos, p_data):
+                          self.info.p_pos, p_data):
             line.set_data(x,y)
 
         return beams
@@ -303,13 +305,13 @@ class Plot(FigureCanvas):
     def show_plot(self):
 
         # Plot positions of kickers and IDs.
-        for i in self.information.data.get_elements('kicker'):
+        for i in self.info.data.get_elements('kicker'):
             self.axes[0].axvline(x=i.s, color='k', linestyle='dashed')
-        for i in self.information.data.get_elements('id'):
+        for i in self.info.data.get_elements('id'):
             self.axes[0].axvline(x=i.s, color='r', linestyle='dashed')
 
-        xclr = (self.information.data.get_elements('kicker')[2].s,
-                self.information.data.get_elements('detector')[0].s)
+        xclr = (self.info.data.get_elements('kicker')[2].s,
+                self.info.data.get_elements('detector')[0].s)
         yclr = (0,self.beam_plot(150)[1][1][1])
         yclr2 = (0,self.beam_plot(50)[1][0][1]) # feels wrong to hard code these numbers
         self.axes[0].fill_between( xclr, yclr, yclr2, facecolor='yellow', alpha=0.2) # facecolor=[(1,1,0,0.2)])
@@ -375,6 +377,8 @@ class Gui(QMainWindow):
         self.ui.bpm1minusButton.clicked.connect(lambda: self.bpm1(-1))
         self.ui.bpm2plusButton.clicked.connect(lambda: self.bpm2(1))
         self.ui.bpm2minusButton.clicked.connect(lambda: self.bpm2(-1))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.scale(2))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.scale(-2))
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
@@ -382,22 +386,25 @@ class Gui(QMainWindow):
         self.ui.graph.gauss_plot()
 
     def k3(self, n):
-        self.ui.graph.information.magnets.step_k3(n)
+        self.ui.graph.info.magnets.step_k3(n)
 
     def bump_left(self, n):
-        self.ui.graph.information.magnets.bump_left(n)
+        self.ui.graph.info.magnets.bump_left(n)
 
     def bump_right(self, n):
-        self.ui.graph.information.magnets.bump_right(n)
+        self.ui.graph.info.magnets.bump_right(n)
 
     def bpm1(self, n):
-        self.ui.graph.information.magnets.bpm1(n)
+        self.ui.graph.info.magnets.bpm1(n)
 
     def bpm2(self, n):
-        self.ui.graph.information.magnets.bpm2(n)
+        self.ui.graph.info.magnets.bpm2(n)
+
+    def scale(self, n):
+        self.ui.graph.info.magnets.scale(n)
 
     def reset(self):
-        self.ui.graph.information.magnets.reset()
+        self.ui.graph.info.magnets.reset()
 
 def main():
     cothread.iqt()
