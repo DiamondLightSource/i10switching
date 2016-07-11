@@ -94,11 +94,14 @@ class InsertionDevice(Element):
 
 
 class ButtonData(object):
-        STEP_K3 = [0,0,0.1,0,0]
-        BUMP_LEFT = [0.1,-0.1,0.05,0,0]
-        BUMP_RIGHT = [0,0,0.05,-0.1,0.1]
-        BPM1 = [0.01,0.01,0,-0.01,-0.01]
-        BPM2 = [-0.01,-0.01,0,0.01,0.01]
+    STEP_K3 = [0,0,0.1,0,0]
+    BUMP_LEFT = [0.1,-0.1,0.05,0,0]
+    BUMP_RIGHT = [0,0,0.05,-0.1,0.1]
+    BPM1 = [0.01,0.01,0,-0.01,-0.01]
+    BPM2 = [-0.01,-0.01,0,0.01,0.01]
+    SCALE = [0.01,0.01,0,0.01,0.01]
+
+    SHIFT = [STEP_K3, BUMP_LEFT, BUMP_RIGHT, BPM1, BPM2, SCALE]
 
 
 # Assign locations of devices along the axis of the system.
@@ -134,51 +137,35 @@ class MagnetStrengths(object):
     def __init__(self):
         self.path = Layout().path
         self.kick_add = np.array([0,0,0,0,0])
+        kicker_pos = [i.s for i in self.path if i.get_type() == 'kicker']
+        d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
+        d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
+        self.max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
+        currents = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771]) # are these the actual magnet strengths?? # probably currents...
+        max_mag = np.array([0.034796, 0.044809, 0.011786, 0.045012, 0.035174]) #  max mag values...
+#        self.max_kick = np.array([0.0332487189, 0.0427319927, 0.0100072962, 0.0425308057, 0.0331370794]) # hopefully correct scaled values but need to add kick of np.array([0.2,-0.2, 0.9, 0, 0]) to get it approx lined up...
+#       is the issue that my kickers have 0 length when actually they should have a non-zero length for the physics to work?
+#        self.max_kick = currents*max_mag/np.array([24.4,24.4,12,24.4,24.4])
 
     # Define alterations to the kickers.
-    def step_k3(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.STEP_K3)
-
-    def bump_left(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.BUMP_LEFT)
-
-    def bump_right(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.BUMP_RIGHT)
-
-    def bpm1(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.BPM1)
-
-    def bpm2(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.BPM2)
-
-    def scale(self, factor):
-
-        self.kick_add = self.kick_add + factor*np.array([0.01,0.01,0,0.01,0.01]) # surprising...
 
     def reset(self):
 
         self.kick_add = np.array([0,0,0,0,0])
 
+    def buttons(self, factor, button):
+
+        self.kick_add = self.kick_add + factor * np.array(ButtonData.SHIFT[button])
+
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
 
-        kicker_pos = [i.s for i in self.path if i.get_type() == 'kicker']
-        d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
-        d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
-        max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34]) 
-#        max_kick = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771]) # are these the actual magnet strengths??
-        graphscale = 0.5
-        kick = graphscale * max_kick * (np.array([
+        kick = self.max_kick * (np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
                1, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.kick_add)
 
-        return kick
+        return kick 
 
 
 class CollectData(object):
@@ -246,7 +233,7 @@ class Plot(FigureCanvas):
         ax1 = self.fig.add_subplot(2, 1, 1)
         ax1.set_xlim(self.info.data.get_elements('drift')[0].s, self.info.data.get_elements('detector')[0].s)
         ax1.get_yaxis().set_visible(False)
-        ax1.set_ylim(-3, 4)
+#        ax1.set_ylim(-0.02, 0.02)
         ax2 = self.fig.add_subplot(2, 1, 2)
         ax2.get_xaxis().set_visible(False)
         ax2.get_yaxis().set_visible(False)
@@ -306,12 +293,13 @@ class Plot(FigureCanvas):
     def show_plot(self):
 
         # Plot positions of kickers and IDs.
-        for i in self.info.data.get_elements('kicker'):
+        kickers = self.info.data.get_elements('kicker')
+        for i in kickers:
             self.axes[0].axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.info.data.get_elements('id'):
             self.axes[0].axvline(x=i.s, color='r', linestyle='dashed')
 
-        xclr = (self.info.data.get_elements('kicker')[2].s,
+        xclr = (kickers[2].s,
                 self.info.data.get_elements('detector')[0].s)
         yclr = (0,self.beam_plot(150)[1][1][1])
         yclr2 = (0,self.beam_plot(50)[1][0][1]) # feels wrong to hard code these numbers
@@ -368,41 +356,26 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
-        self.ui.kplusButton.clicked.connect(lambda: self.k3(1))
-        self.ui.kminusButton.clicked.connect(lambda: self.k3(-1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.bump_left(1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.bump_left(-1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.bump_right(1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.bump_right(-1))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.bpm1(1))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.bpm1(-1))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.bpm2(1))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.bpm2(-1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.scale(1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.scale(-1))
+        self.ui.kplusButton.clicked.connect(lambda: self.button_controls(1,0))
+        self.ui.kminusButton.clicked.connect(lambda: self.button_controls(-1,0))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.button_controls(1,1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.button_controls(-1,1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.button_controls(1,2))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.button_controls(-1,2))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.button_controls(1,3))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.button_controls(-1,3))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.button_controls(1,4))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.button_controls(-1,4))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.button_controls(1,5))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.button_controls(-1,5))
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.graph.show_plot()
         self.ui.graph.gauss_plot()
 
-    def k3(self, n):
-        self.ui.graph.info.magnets.step_k3(n)
-
-    def bump_left(self, n):
-        self.ui.graph.info.magnets.bump_left(n)
-
-    def bump_right(self, n):
-        self.ui.graph.info.magnets.bump_right(n)
-
-    def bpm1(self, n):
-        self.ui.graph.info.magnets.bpm1(n)
-
-    def bpm2(self, n):
-        self.ui.graph.info.magnets.bpm2(n)
-
-    def scale(self, n):
-        self.ui.graph.info.magnets.scale(n)
+    def button_controls(self, factor, which_button):
+        self.ui.graph.info.magnets.buttons(factor, which_button)
 
     def reset(self):
         self.ui.graph.info.magnets.reset()
