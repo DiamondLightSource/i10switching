@@ -23,6 +23,7 @@ from PyQt4 import uic
 from PyQt4.QtGui import QMainWindow
 import os
 import scipy.integrate as integ
+from scipy.constants import c
 
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
@@ -116,7 +117,8 @@ class Layout(object):
     def load(self):
 
         raw_data = [line.split() for line in open(self.NAME)]
-        element_classes = {cls(None).get_type(): cls for cls in Element.__subclasses__()}
+        element_classes = {cls(None).get_type(): cls 
+                           for cls in Element.__subclasses__()}
         path  = [element_classes[x[0]](float(x[1])) for x in raw_data]
 
         # Set drift lengths
@@ -132,37 +134,35 @@ class Layout(object):
 
 # Collect data on electron and photon beams at time t.
 class MagnetStrengths(object):
-
+    BEAM_RIGIDITY = 3e9/c
+    # Conversion values between current and tesla for the kickers.
+    AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12, 
+                             0.045012/23, 0.035174/23])
+    CURRENTS = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771])
+    FIELDS = CURRENTS*AMP_TO_TESLA
 
     def __init__(self):
         self.path = Layout().path
         self.kick_add = np.array([0,0,0,0,0])
-        kicker_pos = [i.s for i in self.path if i.get_type() == 'kicker']
-        d12 = float(kicker_pos[1] - kicker_pos[0])/float(kicker_pos[2] - kicker_pos[1])
-        d34 = float(kicker_pos[3] - kicker_pos[2])/float(kicker_pos[4] - kicker_pos[3])
-        self.max_kick = np.array([1, 1 + d12, 2*d12, d12*(1+d34), d12*d34])
-        currents = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771]) # are these the actual magnet strengths?? # probably currents...
-        max_mag = np.array([0.034796, 0.044809, 0.011786, 0.045012, 0.035174]) #  max mag values...
-#        self.max_kick = np.array([0.0332487189, 0.0427319927, 0.0100072962, 0.0425308057, 0.0331370794]) # hopefully correct scaled values but need to add kick of np.array([0.2,-0.2, 0.9, 0, 0]) to get it approx lined up...
-#       is the issue that my kickers have 0 length when actually they should have a non-zero length for the physics to work?
-#        self.max_kick = currents*max_mag/np.array([24.4,24.4,12,24.4,24.4])
+
+        self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY)) 
+                                  for x in self.FIELDS])
 
     # Define alterations to the kickers.
+    def buttons(self, factor, button):
+
+        self.kick_add = self.kick_add + factor*np.array(ButtonData.SHIFT[button])
 
     def reset(self):
 
         self.kick_add = np.array([0,0,0,0,0])
-
-    def buttons(self, factor, button):
-
-        self.kick_add = self.kick_add + factor * np.array(ButtonData.SHIFT[button])
 
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
 
         kick = self.max_kick * (np.array([
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
-               1, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
+               2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.kick_add)
 
         return kick 
@@ -176,10 +176,14 @@ class CollectData(object):
         self.data = Layout()
         self.path = self.data.path
         self.magnets = MagnetStrengths()
-        self.p_pos = [[self.data.get_elements('id')[0].s, 
-                       self.data.get_elements('detector')[0].s],
-                      [self.data.get_elements('id')[1].s, 
-                       self.data.get_elements('detector')[0].s]]
+        self.ids = self.data.get_elements('id')
+        self.kickers = self.data.get_elements('kicker')
+        self.detector = self.data.get_elements('detector')
+        self.drifts = self.data.get_elements('drift')
+        self.p_pos = [[self.ids[0].s, 
+                       self.detector[0].s],
+                      [self.ids[1].s, 
+                       self.detector[0].s]]
 
     # Send electron vector through chicane magnets at time t.
     def timestep(self,t):
@@ -192,7 +196,7 @@ class CollectData(object):
         p_vector = []
 
         # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.data.get_elements('kicker'), 
+        for kicker, strength in zip(self.kickers, 
                                 self.magnets.calculate_strengths(t)):
             kicker.set_strength(strength)
 
@@ -204,8 +208,8 @@ class CollectData(object):
                 p_vector.append(e_beam.tolist())
 
         # Create photon beams.
-        travel = [Drift(self.data.get_elements('id')[0].s), 
-                  Drift(self.data.get_elements('id')[1].s)]
+        travel = [Drift(self.ids[0].s), 
+                  Drift(self.ids[1].s)]
         for i in range(2):
             travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
             p_vector[i].extend(travel[i].increment(p_vector[i]))
@@ -219,7 +223,6 @@ class CollectData(object):
 
 class Plot(FigureCanvas):
 
-
     def __init__(self):
 
         self.info = CollectData()
@@ -230,22 +233,22 @@ class Plot(FigureCanvas):
 
     def fig_setup(self):
 
-        ax1 = self.fig.add_subplot(2, 1, 1)
-        ax1.set_xlim(self.info.data.get_elements('drift')[0].s, self.info.data.get_elements('detector')[0].s)
+        ax1 = self.fig.add_subplot(1, 1, 1)
+        ax1.set_xlim(self.info.drifts[0].s, self.info.detector[0].s)
         ax1.get_yaxis().set_visible(False)
-#        ax1.set_ylim(-0.02, 0.02)
-        ax2 = self.fig.add_subplot(2, 1, 2)
-        ax2.get_xaxis().set_visible(False)
-        ax2.get_yaxis().set_visible(False)
+        ax1.set_ylim(-0.02, 0.02)
+#        ax2 = self.fig.add_subplot(2, 1, 2)
+#        ax2.get_xaxis().set_visible(False)
+#        ax2.get_yaxis().set_visible(False)
 
-        return ax1, ax2
+        return ax1#, ax2
 
     def data_setup(self):
 
         beams = [
-                self.axes[0].plot([], [])[0], 
-                self.axes[0].plot([], [], 'r')[0], 
-                self.axes[0].plot([], [], 'r')[0]
+                self.axes.plot([], [])[0], 
+                self.axes.plot([], [], 'r')[0], 
+                self.axes.plot([], [], 'r')[0]
                 ]
 
         return beams
@@ -262,7 +265,7 @@ class Plot(FigureCanvas):
 
         e_positions = np.array(self.info.timestep(t)[0])[:,0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.info.data.get_elements('drift'))):
+        for i in range(len(self.info.drifts)):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
@@ -293,29 +296,33 @@ class Plot(FigureCanvas):
     def show_plot(self):
 
         # Plot positions of kickers and IDs.
-        kickers = self.info.data.get_elements('kicker')
-        for i in kickers:
-            self.axes[0].axvline(x=i.s, color='k', linestyle='dashed')
-        for i in self.info.data.get_elements('id'):
-            self.axes[0].axvline(x=i.s, color='r', linestyle='dashed')
+        for i in self.info.kickers:
+            self.axes.axvline(x=i.s, color='k', linestyle='dashed')
+        for i in self.info.ids:
+            self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
-        xclr = (kickers[2].s,
-                self.info.data.get_elements('detector')[0].s)
+        xclr = (self.info.kickers[2].s,
+                self.info.detector[0].s)
         yclr = (0,self.beam_plot(150)[1][1][1])
         yclr2 = (0,self.beam_plot(50)[1][0][1]) # feels wrong to hard code these numbers
-        self.axes[0].fill_between( xclr, yclr, yclr2, facecolor='yellow', alpha=0.2) # facecolor=[(1,1,0,0.2)])
+        self.axes.fill_between( xclr, yclr, yclr2, facecolor='yellow', alpha=0.2) # facecolor=[(1,1,0,0.2)])
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
 
-    def gauss_plot(self):
-        # Eventually to be live plot
 
-        # Import data
-        trigger = np.load('trigger.npy')[1200:6200]
-        trace = np.load('diode.npy')[1200:6200]
+class GaussPlot(FigureCanvas):
 
+    def __init__(self):
+    # Import data - prob want to do this outside class
+        self.figure = plt.figure()
+        FigureCanvas.__init__(self, self.figure)
+        self.ax1 = self.figure.add_subplot(1, 1, 1)
+        self.trigger = np.load('trigger.npy')[1200:6200]
+        self.trace = np.load('diode.npy')[1200:6200]
+
+    def display(self):
         # Number of data points
         GRAPHRANGE = 5000
         WINDOW = GRAPHRANGE/2
@@ -325,19 +332,57 @@ class Plot(FigureCanvas):
         x = np.linspace(0, GRAPHRANGE, GRAPHRANGE)
 
         # Finds edges of square wave
-        sqdiff = np.diff(trigger).tolist()
+        sqdiff = np.diff(self.trigger).tolist()
         edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))]
 
         # Overlay the two gaussians
-        peak1 = np.array(trace[:WINDOW])
-        peak2 = np.array(trace[WINDOW:])
+        peak1 = np.array(self.trace[:WINDOW])
+        peak2 = np.array(self.trace[WINDOW:])
         xwindow = np.linspace(-WINDOW/2, WINDOW/2, WINDOW)
         peak1shift = WINDOW/2 - edges[0] - CENTRESHIFT
         peak2shift = 3*WINDOW/2 - edges[1] - CENTRESHIFT
-        self.axes[1].plot(xwindow + peak1shift,peak1, label=integ.simps(peak1))
-        self.axes[1].plot(xwindow + peak2shift,peak2, label=integ.simps(peak2))
-        self.axes[1].legend()
+        self.ax1.plot(xwindow + peak1shift,peak1, label=integ.simps(peak1))
+        self.ax1.plot(xwindow + peak2shift,peak2, label=integ.simps(peak2))
+        self.ax1.legend()
 
+
+class WaveformCanvas(FigureCanvas):
+
+    def __init__(self, pv1, pv2):
+        self.figure = plt.figure()
+        FigureCanvas.__init__(self, self.figure)
+        self.ax1 = self.figure.add_subplot(1, 1, 1)
+
+        # Initialise with real data the first time to set axis ranges
+        self.trigger = caget(pv1)
+
+        data1, data2 = self.get_windowed_data(caget(pv2))
+        x = range(len(data1))
+        self.lines = [
+                self.ax1.plot(x, data1, 'b')[0],
+                self.ax1.plot(x, data2, 'g')[0]]
+        camonitor(pv2, self.update_plot)
+
+    def update_plot(self, value):
+        data1, data2 = self.get_windowed_data(value)
+        self.lines[0].set_ydata(data1)
+        self.lines[1].set_ydata(data2)
+        self.draw()
+
+        label1=integ.simps(data1)
+        label2=integ.simps(data2)
+        return label1, label2
+
+    def get_windowed_data(self, value):
+        length = len(value)
+        ysq = self.trigger
+        ysqdiff = np.diff(ysq).tolist()
+        edges = [ysqdiff.index(max(ysqdiff)), ysqdiff.index(min(ysqdiff))]
+        offset = min(edges) / 2
+        data1 = np.roll(value, - edges[0] - length/4)[:length/2]
+        data2 = np.roll(value, - edges[1] - length/4)[:length/2]
+
+        return data1, data2
 
 ############################
 
@@ -346,14 +391,23 @@ UI_FILENAME = 'i10chicgui.ui'
 
 class Gui(QMainWindow):
 
+    I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
+    I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
+    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
 
     def __init__ (self):
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
+
         self.ui.graph = Plot()
+        self.ui.graph2 = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.ui.graph3 = GaussPlot()
         self.toolbar = NavigationToolbar(self.ui.graph, self)
+
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
+        self.ui.matplotlib_layout.addWidget(self.ui.graph2)
+        self.ui.matplotlib_layout.addWidget(self.ui.graph3)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.ui.kplusButton.clicked.connect(lambda: self.button_controls(1,0))
@@ -372,7 +426,7 @@ class Gui(QMainWindow):
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.graph.show_plot()
-        self.ui.graph.gauss_plot()
+        self.ui.graph3.display()
 
     def button_controls(self, factor, which_button):
         self.ui.graph.info.magnets.buttons(factor, which_button)
