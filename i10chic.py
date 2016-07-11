@@ -216,6 +216,73 @@ class CollectData(object):
 
         return e_vector, p_vector # Returns pos and vel of electrons and photons.
 
+###################################################################################
+###################################################################################
+    # Send electron vector through chicane magnets at time t.
+    def yellow(self, kick):
+
+        # Initialise electron beam position and velocity
+        e_beam = np.array([0,0])
+        e_vector = [[0,0]]
+
+        # Initialise photon beam position and velocity
+        p_vector = []
+
+        # Calculate positions of electron beam and photon beam relative to main axis.
+        for kicker, strength in zip(self.kickers, 
+                                self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
+                                + kick)):
+            kicker.set_strength(strength)
+
+        for p in self.path:
+            if p.get_type() != 'detector':
+                e_beam = p.increment(e_beam)
+                e_vector.append(e_beam.tolist())
+            if p.get_type() == 'id':
+                p_vector.append(e_beam.tolist())
+
+        # Create photon beams.
+        travel = [Drift(self.ids[0].s), 
+                  Drift(self.ids[1].s)]
+        for i in range(2):
+            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
+            p_vector[i].extend(travel[i].increment(p_vector[i]))
+
+        p_positions1 = np.array(p_vector)[:,[0,2]]
+
+        # Initialise electron beam position and velocity
+        e_beam = np.array([0,0])
+        e_vector = [[0,0]]
+
+        # Initialise photon beam position and velocity
+        p_vector = []
+
+        # Calculate positions of electron beam and photon beam relative to main axis.
+        for kicker, strength in zip(self.kickers, 
+                                self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
+                                + kick)):
+            kicker.set_strength(strength)
+
+        for p in self.path:
+            if p.get_type() != 'detector':
+                e_beam = p.increment(e_beam)
+                e_vector.append(e_beam.tolist())
+            if p.get_type() == 'id':
+                p_vector.append(e_beam.tolist())
+
+        # Create photon beams.
+        travel = [Drift(self.ids[0].s), 
+                  Drift(self.ids[1].s)]
+        for i in range(2):
+            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
+            p_vector[i].extend(travel[i].increment(p_vector[i]))
+
+        p_positions2 = np.array(p_vector)[:,[0,2]]
+
+        return p_positions1, p_positions2
+###################################################################################
+###################################################################################
+
 
 ####################
 ## Graph plotting ##
@@ -301,15 +368,32 @@ class Plot(FigureCanvas):
         for i in self.info.ids:
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
-        xclr = (self.info.kickers[2].s,
-                self.info.detector[0].s)
-        yclr = (0,self.beam_plot(150)[1][1][1])
-        yclr2 = (0,self.beam_plot(50)[1][0][1]) # feels wrong to hard code these numbers
-        self.axes.fill_between( xclr, yclr, yclr2, facecolor='yellow', alpha=0.2) # facecolor=[(1,1,0,0.2)])
+
+
+        # Alternative way of colouring in.
+#        xclr = [self.info.kickers[2].s, self.info.detector[0].s]
+
+#        yclr1 = (0,self.beam_plot(50)[1][1][1])
+#        yclr2 = (0,self.beam_plot(50)[1][0][1])
+#        self.axes.fill_between( xclr, yclr1, yclr2, facecolor='yellow', alpha=0.2)
+
+#        yclr3 = (0,self.beam_plot(150)[1][1][1])
+#        yclr4 = (0,self.beam_plot(150)[1][0][1])
+#        self.axes.fill_between( xclr, yclr3, yclr4, facecolor='yellow', alpha=0.2)
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=True)
+
+    def update_colourin(self):
+
+        kick = self.info.magnets.kick_add
+
+        max_lines = self.info.yellow(kick) # apply timestep to it...
+
+        # These do not update... issue with blit??
+        self.axes.fill_between(self.info.p_pos[0], 0, max_lines[0][0], facecolor='yellow', alpha=0.2)
+        self.axes.fill_between(self.info.p_pos[1], 0, max_lines[1][1], facecolor='yellow', alpha=0.2)
 
 
 class GaussPlot(FigureCanvas):
@@ -426,13 +510,16 @@ class Gui(QMainWindow):
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.graph.show_plot()
+        self.ui.graph.update_colourin()
         self.ui.graph3.display()
 
     def button_controls(self, factor, which_button):
         self.ui.graph.info.magnets.buttons(factor, which_button)
+        self.ui.graph.update_colourin()
 
     def reset(self):
         self.ui.graph.info.magnets.reset()
+        self.ui.graph.update_colourin()
 
 def main():
     cothread.iqt()
