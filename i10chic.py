@@ -379,6 +379,7 @@ class GaussPlot(FigureCanvas):
 class WaveformCanvas(FigureCanvas):
 
     def __init__(self, pv1, pv2):
+#        self.scale = 1
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
@@ -400,15 +401,35 @@ class WaveformCanvas(FigureCanvas):
         data1, data2 = self.get_windowed_data(value)
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
+#        self.scale+=1 # ??????????
         self.ax1.legend([self.lines[0], self.lines[1]], [integ.simps(data1), integ.simps(data2)])
 
         self.draw()
 
     def get_windowed_data(self, value):
         length = len(value)
-        ysq = self.trigger
-        ysqdiff = np.diff(ysq).tolist()
-        edges = [ysqdiff.index(max(ysqdiff)), ysqdiff.index(min(ysqdiff))]
+        sq = self.trigger
+        sqdiff = np.diff(sq).tolist()
+        edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))] # but what if there is more than one trigger in the window??
+
+
+###########################################################
+        diff = np.diff(sq).tolist()
+        try:
+            maxtrig = next(x for x in diff if x > 0.1)
+            print maxtrig, diff.index(maxtrig)
+
+            try:
+                mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -0.1)
+                print mintrig, diff[diff.index(maxtrig):].index(mintrig)+diff.index(maxtrig) # is this right?? check in edgefinder again
+            except StopIteration:
+                print 'Incomplete trace or step size too small'
+
+        except StopIteration:
+            print 'Incomplete trace or step size too small'
+###########################################################
+
+
         offset = min(edges) / 2
         data1 = np.roll(value, - edges[0] - length/4)[:length/2]
         data2 = np.roll(value, - edges[1] - length/4)[:length/2]
