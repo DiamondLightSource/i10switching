@@ -391,9 +391,8 @@ class Plot(FigureCanvas):
 
         max_lines = self.info.yellow(kick)
 
-
-        self.fill1 = self.axes.fill_between(self.info.p_pos[0], max_lines[0][0], max_lines[0][1], facecolor='yellow', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_pos[1], max_lines[1][0], max_lines[1][1], facecolor='yellow', alpha=0.2)
+        self.fill1 = self.axes.fill_between(self.info.p_pos[0], max_lines[0][0], max_lines[1][0], facecolor='yellow', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_pos[1], max_lines[0][1], max_lines[1][1], facecolor='yellow', alpha=0.2)
 
 
 
