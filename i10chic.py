@@ -195,10 +195,22 @@ class CollectData(object):
         # Initialise photon beam position and velocity
         p_vector = []
 
-        # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.kickers, 
-                                self.magnets.calculate_strengths(t)):
-            kicker.set_strength(strength)
+        if t == 'colourin1':
+            for kicker, strength in zip(self.kickers, 
+                                    self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
+                                    + self.magnets.kick_add)):
+                kicker.set_strength(strength)
+        elif t == 'colourin2':
+            for kicker, strength in zip(self.kickers, 
+                                    self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
+                                    + self.magnets.kick_add)):
+                kicker.set_strength(strength)
+        else:
+            # Calculate positions of electron beam and photon beam relative to main axis.
+            for kicker, strength in zip(self.kickers, 
+                                    self.magnets.calculate_strengths(t)):
+                kicker.set_strength(strength)
+
 
         for p in self.path:
             if p.get_type() != 'detector':
@@ -215,75 +227,6 @@ class CollectData(object):
             p_vector[i].extend(travel[i].increment(p_vector[i]))
 
         return e_vector, p_vector # Returns pos and vel of electrons and photons.
-
-###################################################################################
-###################################################################################
-    # Send electron vector through chicane magnets at time t.
-    def yellow(self, kick):
-
-        # Initialise electron beam position and velocity
-        e_beam = np.array([0,0])
-        e_vector = [[0,0]]
-
-        # Initialise photon beam position and velocity
-        p_vector = []
-
-        # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.kickers, 
-                                self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
-                                + kick)):
-            kicker.set_strength(strength)
-
-        for p in self.path:
-            if p.get_type() != 'detector':
-                e_beam = p.increment(e_beam)
-                e_vector.append(e_beam.tolist())
-            if p.get_type() == 'id':
-                p_vector.append(e_beam.tolist())
-
-        # Create photon beams.
-        travel = [Drift(self.ids[0].s), 
-                  Drift(self.ids[1].s)]
-        for i in range(2):
-            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
-            p_vector[i].extend(travel[i].increment(p_vector[i]))
-
-        p_positions1 = np.array(p_vector)[:,[0,2]]
-
-###
-
-        # Initialise electron beam position and velocity
-        e_beam = np.array([0,0])
-        e_vector = [[0,0]]
-
-        # Initialise photon beam position and velocity
-        p_vector = []
-
-        # Calculate positions of electron beam and photon beam relative to main axis.
-        for kicker, strength in zip(self.kickers, 
-                                self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
-                                + kick)):
-            kicker.set_strength(strength)
-
-        for p in self.path:
-            if p.get_type() != 'detector':
-                e_beam = p.increment(e_beam)
-                e_vector.append(e_beam.tolist())
-            if p.get_type() == 'id':
-                p_vector.append(e_beam.tolist())
-
-        # Create photon beams.
-        travel = [Drift(self.ids[0].s), 
-                  Drift(self.ids[1].s)]
-        for i in range(2):
-            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
-            p_vector[i].extend(travel[i].increment(p_vector[i]))
-
-        p_positions2 = np.array(p_vector)[:,[0,2]]
-
-        return p_positions1, p_positions2
-###################################################################################
-###################################################################################
 
 
 ####################
@@ -306,11 +249,8 @@ class Plot(FigureCanvas):
         ax1.set_xlim(self.info.drifts[0].s, self.info.detector[0].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-0.02, 0.02)
-#        ax2 = self.fig.add_subplot(2, 1, 2)
-#        ax2.get_xaxis().set_visible(False)
-#        ax2.get_yaxis().set_visible(False)
 
-        return ax1#, ax2
+        return ax1
 
     def data_setup(self):
 
@@ -370,30 +310,17 @@ class Plot(FigureCanvas):
         for i in self.info.ids:
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
-        # Alternative way of colouring in.
-#        xclr = [self.info.kickers[2].s, self.info.detector[0].s]
-
-#        yclr1 = (0,self.beam_plot(50)[1][1][1])
-#        yclr2 = (0,self.beam_plot(50)[1][0][1])
-#        self.axes.fill_between( xclr, yclr1, yclr2, facecolor='yellow', alpha=0.2)
-
-#        yclr3 = (0,self.beam_plot(150)[1][1][1])
-#        yclr4 = (0,self.beam_plot(150)[1][0][1])
-#        self.axes.fill_between( xclr, yclr3, yclr4, facecolor='yellow', alpha=0.2)
-
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
                     init_func=self.init_data, frames=1000, interval=20, blit=False)
 
     def update_colourin(self):
 
-        kick = self.info.magnets.kick_add
+        lines1 = self.beam_plot('colourin1')
+        lines2 = self.beam_plot('colourin2')
 
-        max_lines = self.info.yellow(kick)
-
-        self.fill1 = self.axes.fill_between(self.info.p_pos[0], max_lines[0][0], max_lines[1][0], facecolor='yellow', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_pos[1], max_lines[0][1], max_lines[1][1], facecolor='yellow', alpha=0.2)
-
+        self.fill1 = self.axes.fill_between(self.info.p_pos[0], lines1[1][0], lines2[1][0], facecolor='yellow', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_pos[1], lines2[1][1], lines1[1][1], facecolor='yellow', alpha=0.2)
 
 
 class GaussPlot(FigureCanvas):
@@ -425,7 +352,7 @@ class GaussPlot(FigureCanvas):
         xwindow = np.linspace(-WINDOW/2, WINDOW/2, WINDOW)
         peak1shift = WINDOW/2 - edges[0] - CENTRESHIFT
         peak2shift = 3*WINDOW/2 - edges[1] - CENTRESHIFT
-        self.ax1.plot(xwindow + peak1shift,peak1, label=integ.simps(peak1))
+        self.ax1.plot(xwindow + peak1shift, peak1, label=integ.simps(peak1))
         self.ax1.plot(xwindow + peak2shift,peak2, label=integ.simps(peak2))
         self.ax1.legend()
 
