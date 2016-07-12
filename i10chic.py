@@ -250,6 +250,8 @@ class CollectData(object):
 
         p_positions1 = np.array(p_vector)[:,[0,2]]
 
+###
+
         # Initialise electron beam position and velocity
         e_beam = np.array([0,0])
         e_vector = [[0,0]]
@@ -368,8 +370,6 @@ class Plot(FigureCanvas):
         for i in self.info.ids:
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
-
-
         # Alternative way of colouring in.
 #        xclr = [self.info.kickers[2].s, self.info.detector[0].s]
 
@@ -383,17 +383,18 @@ class Plot(FigureCanvas):
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
-                    init_func=self.init_data, frames=1000, interval=20, blit=True)
+                    init_func=self.init_data, frames=1000, interval=20, blit=False)
 
     def update_colourin(self):
 
         kick = self.info.magnets.kick_add
 
-        max_lines = self.info.yellow(kick) # apply timestep to it...
+        max_lines = self.info.yellow(kick)
 
-        # These do not update... issue with blit??
-        self.axes.fill_between(self.info.p_pos[0], 0, max_lines[0][0], facecolor='yellow', alpha=0.2)
-        self.axes.fill_between(self.info.p_pos[1], 0, max_lines[1][1], facecolor='yellow', alpha=0.2)
+
+        self.fill1 = self.axes.fill_between(self.info.p_pos[0], max_lines[0][0], max_lines[0][1], facecolor='yellow', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_pos[1], max_lines[1][0], max_lines[1][1], facecolor='yellow', alpha=0.2)
+
 
 
 class GaussPlot(FigureCanvas):
@@ -515,10 +516,14 @@ class Gui(QMainWindow):
 
     def button_controls(self, factor, which_button):
         self.ui.graph.info.magnets.buttons(factor, which_button)
+        self.ui.graph.axes.collections.remove(self.ui.graph.fill1)
+        self.ui.graph.axes.collections.remove(self.ui.graph.fill2)
         self.ui.graph.update_colourin()
 
     def reset(self):
         self.ui.graph.info.magnets.reset()
+        self.ui.graph.axes.collections.remove(self.ui.graph.fill1)
+        self.ui.graph.axes.collections.remove(self.ui.graph.fill2)
         self.ui.graph.update_colourin()
 
 def main():
