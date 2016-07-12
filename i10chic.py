@@ -3,7 +3,6 @@
 
 # Import libraries
 
-#import dls_packages
 from pkg_resources import require
 require('cothread==2.10')
 require('scipy==0.10.1')
@@ -180,49 +179,70 @@ class CollectData(object):
         self.kickers = self.data.get_elements('kicker')
         self.detector = self.data.get_elements('detector')
         self.drifts = self.data.get_elements('drift')
-        self.p_pos = [[self.ids[0].s, 
-                       self.detector[0].s],
-                      [self.ids[1].s, 
-                       self.detector[0].s]]
+        self.p_coord = [[self.ids[0].s, 
+                         self.detector[0].s],
+                        [self.ids[1].s, 
+                         self.detector[0].s]]
+        self.travel = [Drift(self.ids[0].s), 
+                       Drift(self.ids[1].s)]
 
-    # Send electron vector through chicane magnets at time t.
-    def timestep(self,t):
-
-        # Initialise electron beam position and velocity
-        e_beam = np.array([0,0])
-        e_vector = [[0,0]]
-
-        # Initialise photon beam position and velocity
-        p_vector = []
-
-        if t == 'position1':
-            strength_values = self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
-                              + self.magnets.kick_add)
-        elif t == 'position2':
-            strength_values = self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
-                              + self.magnets.kick_add)
-        else:
-            strength_values = self.magnets.calculate_strengths(t)
+    def strength_setup(self, strength_values):
 
         for kicker, strength in zip(self.kickers, strength_values):
             kicker.set_strength(strength)
 
+    def init_beam(self, beam, vector):
+
+        beam.append(vector.tolist())
+
+        return beam
+
+    def create_photon_beam(self, vector):
+
+        for i in range(2):
+            self.travel[i].set_length(self.p_coord[i][1] - self.p_coord[i][0])
+            vector[i].extend(self.travel[i].increment(vector[i]))
+
+        return vector
+
+    def send_electrons_through(self):
+
+        e_vector = np.array([0,0])
+        init_e = [[0,0]]
+        init_p = []
+
+        # Send e_vector through system and create electron and photon beams
         for p in self.path:
             if p.get_type() != 'detector':
-                e_beam = p.increment(e_beam)
-                e_vector.append(e_beam.tolist())
+                e_vector = p.increment(e_vector)
+                e_beam = self.init_beam(init_e, e_vector)
             if p.get_type() == 'id':
-                p_vector.append(e_beam.tolist())
+                p_vector = self.init_beam(init_p, e_vector)
+        p_beam = self.create_photon_beam(p_vector)
 
-        # Create photon beams.
-        travel = [Drift(self.ids[0].s), 
-                  Drift(self.ids[1].s)]
-        for i in range(2):
-            travel[i].set_length(self.p_pos[i][1] - self.p_pos[i][0])
-            p_vector[i].extend(travel[i].increment(p_vector[i]))
+        return e_beam, p_beam
 
-        return e_vector, p_vector # Returns pos and vel of electrons and photons.
+    # Create e and p beams at time t
+    def timestep(self,t):
 
+        self.strength_setup(self.magnets.calculate_strengths(t))
+
+        beams = self.send_electrons_through()
+        e_beam = beams[0]
+        p_beam = beams[1]
+
+        return e_beam, p_beam # Returns pos and vel of electrons and photons.
+
+    # Calculate p beams for fixed magnet strengths
+    def p_beam_range(self, strength_values):
+
+        self.strength_setup(self.magnets.max_kick 
+                            * (strength_values + self.magnets.kick_add))
+
+        p_beam = self.send_electrons_through()[1]
+
+
+        return p_beam
 
 ####################
 ## Graph plotting ##
@@ -292,7 +312,7 @@ class Plot(FigureCanvas):
         beams = self.init_data()
         beams[0].set_data(xaxis, e_data)
         for line, x, y in zip([beams[1],beams[2]], 
-                          self.info.p_pos, p_data):
+                          self.info.p_coord, p_data):
             line.set_data(x,y)
 
         return beams
@@ -311,16 +331,19 @@ class Plot(FigureCanvas):
 
     def update_colourin(self):
 
-        edges1 = self.beam_plot('position1')
-        edges2 = self.beam_plot('position2')
+        strengths1 = np.array([2,-2,2,0,0])
+        strengths2 = np.array([0,0,2,-2,2])
 
-        beam1max = edges2[1][0]
-        beam1min = edges1[1][0]
-        beam2max = edges1[1][1]
-        beam2min = edges2[1][1]
+        edges1 = np.array( self.info.p_beam_range(strengths1) )[:,[0,2]]
+        edges2 = np.array( self.info.p_beam_range(strengths2) )[:,[0,2]]
 
-        self.fill1 = self.axes.fill_between(self.info.p_pos[0], beam1min, beam1max, facecolor='yellow', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_pos[1], beam2min, beam2max, facecolor='yellow', alpha=0.2)
+        beam1min = edges1[0]
+        beam1max = edges2[0]
+        beam2min = edges2[1]
+        beam2max = edges1[1]
+
+        self.fill1 = self.axes.fill_between(self.info.p_coord[0], beam1min, beam1max, facecolor='blue', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_coord[1], beam2min, beam2max, facecolor='green', alpha=0.2)
 
 
 class GaussPlot(FigureCanvas):
@@ -382,7 +405,7 @@ class WaveformCanvas(FigureCanvas):
 
         label1=integ.simps(data1)
         label2=integ.simps(data2)
-        return label1, label2
+        return label1, label2 #label with default value then reset label? or callback function to update textbox
 
     def get_windowed_data(self, value):
         length = len(value)
@@ -395,7 +418,9 @@ class WaveformCanvas(FigureCanvas):
 
         return data1, data2
 
-############################
+###########################
+########### GUI ###########
+###########################
 
 UI_FILENAME = 'i10chicgui.ui'
 
