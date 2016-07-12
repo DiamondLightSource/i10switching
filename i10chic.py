@@ -195,22 +195,17 @@ class CollectData(object):
         # Initialise photon beam position and velocity
         p_vector = []
 
-        if t == 'colourin1':
-            for kicker, strength in zip(self.kickers, 
-                                    self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
-                                    + self.magnets.kick_add)):
-                kicker.set_strength(strength)
-        elif t == 'colourin2':
-            for kicker, strength in zip(self.kickers, 
-                                    self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
-                                    + self.magnets.kick_add)):
-                kicker.set_strength(strength)
+        if t == 'position1':
+            strength_values = self.magnets.max_kick * (np.array([2,-2,2,0,0]) 
+                              + self.magnets.kick_add)
+        elif t == 'position2':
+            strength_values = self.magnets.max_kick * (np.array([0,0,2,-2,2]) 
+                              + self.magnets.kick_add)
         else:
-            # Calculate positions of electron beam and photon beam relative to main axis.
-            for kicker, strength in zip(self.kickers, 
-                                    self.magnets.calculate_strengths(t)):
-                kicker.set_strength(strength)
+            strength_values = self.magnets.calculate_strengths(t)
 
+        for kicker, strength in zip(self.kickers, strength_values):
+            kicker.set_strength(strength)
 
         for p in self.path:
             if p.get_type() != 'detector':
@@ -316,11 +311,16 @@ class Plot(FigureCanvas):
 
     def update_colourin(self):
 
-        lines1 = self.beam_plot('colourin1')
-        lines2 = self.beam_plot('colourin2')
+        edges1 = self.beam_plot('position1')
+        edges2 = self.beam_plot('position2')
 
-        self.fill1 = self.axes.fill_between(self.info.p_pos[0], lines1[1][0], lines2[1][0], facecolor='yellow', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_pos[1], lines2[1][1], lines1[1][1], facecolor='yellow', alpha=0.2)
+        beam1max = edges2[1][0]
+        beam1min = edges1[1][0]
+        beam2max = edges1[1][1]
+        beam2min = edges2[1][1]
+
+        self.fill1 = self.axes.fill_between(self.info.p_pos[0], beam1min, beam1max, facecolor='yellow', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_pos[1], beam2min, beam2max, facecolor='yellow', alpha=0.2)
 
 
 class GaussPlot(FigureCanvas):
