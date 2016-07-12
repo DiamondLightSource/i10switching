@@ -23,6 +23,7 @@ from PyQt4.QtGui import QMainWindow
 import os
 import scipy.integrate as integ
 from scipy.constants import c
+from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
@@ -191,12 +192,6 @@ class CollectData(object):
         for kicker, strength in zip(self.kickers, strength_values):
             kicker.set_strength(strength)
 
-    def init_beam(self, beam, vector):
-
-        beam.append(vector.tolist())
-
-        return beam
-
     def create_photon_beam(self, vector):
 
         for i in range(2):
@@ -208,16 +203,17 @@ class CollectData(object):
     def send_electrons_through(self):
 
         e_vector = np.array([0,0])
-        init_e = [[0,0]]
-        init_p = []
+        e_beam = np.zeros((len(self.path),2))
+        test = np.array([0,0])
+        p_vector = []
 
         # Send e_vector through system and create electron and photon beams
         for p in self.path:
             if p.get_type() != 'detector':
                 e_vector = p.increment(e_vector)
-                e_beam = self.init_beam(init_e, e_vector)
+                e_beam[self.path.index(p)+1] = e_vector
             if p.get_type() == 'id':
-                p_vector = self.init_beam(init_p, e_vector)
+                p_vector.append(e_vector.tolist()) # here need it to be a list and indexes don't match up nicely anyway
         p_beam = self.create_photon_beam(p_vector)
 
         return e_beam, p_beam
@@ -393,19 +389,20 @@ class WaveformCanvas(FigureCanvas):
         data1, data2 = self.get_windowed_data(caget(pv2))
         x = range(len(data1))
         self.lines = [
-                self.ax1.plot(x, data1, 'b')[0],
-                self.ax1.plot(x, data2, 'g')[0]]
+                     self.ax1.plot(x, data1, 'b')[0],
+                     self.ax1.plot(x, data2, 'g')[0]
+                     ]
+
         camonitor(pv2, self.update_plot)
 
     def update_plot(self, value):
+
         data1, data2 = self.get_windowed_data(value)
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
-        self.draw()
+        self.ax1.legend([self.lines[0], self.lines[1]], [integ.simps(data1), integ.simps(data2)])
 
-        label1=integ.simps(data1)
-        label2=integ.simps(data2)
-        return label1, label2 #label with default value then reset label? or callback function to update textbox
+        self.draw()
 
     def get_windowed_data(self, value):
         length = len(value)
