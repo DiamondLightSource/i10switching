@@ -323,7 +323,7 @@ class Plot(FigureCanvas):
 
         # Create animations
         self.anim = animation.FuncAnimation(self.fig, self.animate, 
-                    init_func=self.init_data, frames=1000, interval=20, blit=False)
+                    init_func=self.init_data, frames=1000, interval=20)
 
     def update_colourin(self):
 
@@ -338,42 +338,68 @@ class Plot(FigureCanvas):
         beam2min = edges2[1]
         beam2max = edges1[1]
 
-        self.fill1 = self.axes.fill_between(self.info.p_coord[0], beam1min, beam1max, facecolor='blue', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_coord[1], beam2min, beam2max, facecolor='green', alpha=0.2)
+        self.fill1 = self.axes.fill_between(self.info.p_coord[0], 
+                               beam1min, beam1max, facecolor='blue', alpha=0.2)
+        self.fill2 = self.axes.fill_between(self.info.p_coord[1], 
+                               beam2min, beam2max, facecolor='green', alpha=0.2)
 
 
 class GaussPlot(FigureCanvas):
 
     def __init__(self):
-    # Import data - prob want to do this outside class
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
-        self.trigger = np.load('trigger.npy')[1200:6200]
-        self.trace = np.load('diode.npy')[1200:6200]
+        self.trigger = np.load('trigger.npy')#[5000:] #[5000:5500]
+        self.trace = np.load('diode.npy')#[5000:] #[5000:5500]
 
     def display(self):
-        # Number of data points
-        GRAPHRANGE = 5000
-        WINDOW = GRAPHRANGE/2
-        # Shift between edge of square wave and peak of Gaussian
-        CENTRESHIFT = 25
 
-        x = np.linspace(0, GRAPHRANGE, GRAPHRANGE)
 
-        # Finds edges of square wave
-        sqdiff = np.diff(self.trigger).tolist()
-        edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))]
+        diff = np.diff(self.trigger).tolist()
+        length = len(self.trace)
+        value = 0.1
+#        while value > max(diff) and value > 0:
+#            value = value/2
 
-        # Overlay the two gaussians
-        peak1 = np.array(self.trace[:WINDOW])
-        peak2 = np.array(self.trace[WINDOW:])
-        xwindow = np.linspace(-WINDOW/2, WINDOW/2, WINDOW)
-        peak1shift = WINDOW/2 - edges[0] - CENTRESHIFT
-        peak2shift = 3*WINDOW/2 - edges[1] - CENTRESHIFT
-        self.ax1.plot(xwindow + peak1shift, peak1, label=integ.simps(peak1))
-        self.ax1.plot(xwindow + peak2shift,peak2, label=integ.simps(peak2))
-        self.ax1.legend()
+        try:
+            maxtrig = next(x for x in diff if x > value)
+            mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -1*value)
+            edges = [diff.index(maxtrig),diff.index(mintrig)]
+
+
+        except StopIteration:
+            print 'Incomplete trigger'
+            self.ax1.plot(range(10), 'r', label = 'Incomplete trigger')
+            self.ax1.plot([9,8,7,6,5,4,3,2,1,0], 'r')
+            self.ax1.legend()
+
+        else:
+            half_length_trigger = (edges[1]-edges[0])/2
+            limits = [edges[0] - half_length_trigger, edges[0] + half_length_trigger, edges[1] + half_length_trigger]
+            print limits
+
+            try:
+                if limits[2] > length or limits[0] < 0:
+                    raise RangeError
+
+                data1 = np.roll(self.trace[limits[0]:limits[2]], - edges[0] - half_length_trigger)[limits[0]:limits[1]]
+                data2 = np.roll(self.trace[limits[0]:limits[2]], - edges[1] - half_length_trigger)[limits[0]:limits[1]]
+                self.ax1.plot(data1, label = integ.simps(data1))
+                self.ax1.plot(data2, label = integ.simps(data2))
+                self.ax1.legend()
+                self.ax1.plot(self.trigger)
+
+            except RangeError:
+                print 'Range too small: cannot plot correctly'
+                self.ax1.plot(range(10), 'r', label = 'Range too small: cannot plot correctly')
+                self.ax1.plot([9,8,7,6,5,4,3,2,1,0], 'r')
+                self.ax1.legend()
+# MESSY
+
+class RangeError(Exception):
+    '''Raised when the trace data is partially cut off'''
+    pass
 
 
 class WaveformCanvas(FigureCanvas):
@@ -402,7 +428,8 @@ class WaveformCanvas(FigureCanvas):
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
 #        self.scale+=1 # ??????????
-        self.ax1.legend([self.lines[0], self.lines[1]], [integ.simps(data1), integ.simps(data2)])
+        self.ax1.legend([self.lines[0], self.lines[1]], 
+                        [integ.simps(data1), integ.simps(data2)])
 
         self.draw()
 
@@ -412,23 +439,22 @@ class WaveformCanvas(FigureCanvas):
         sqdiff = np.diff(sq).tolist()
         edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))] # but what if there is more than one trigger in the window??
 
-
 ###########################################################
         diff = np.diff(sq).tolist()
         try:
-            maxtrig = next(x for x in diff if x > 0.1)
-            print maxtrig, diff.index(maxtrig)
+            maxtrig = next(x for x in diff if x > 0.001)
+            #print maxtrig, diff.index(maxtrig)
 
             try:
-                mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -0.1)
-                print mintrig, diff[diff.index(maxtrig):].index(mintrig)+diff.index(maxtrig) # is this right?? check in edgefinder again
+                mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -0.001)
+                #print mintrig, diff[diff.index(maxtrig):].index(mintrig)+diff.index(maxtrig)
             except StopIteration:
                 print 'Incomplete trace or step size too small'
 
         except StopIteration:
             print 'Incomplete trace or step size too small'
+        edges = [diff.index(maxtrig),diff.index(mintrig)]
 ###########################################################
-
 
         offset = min(edges) / 2
         data1 = np.roll(value, - edges[0] - length/4)[:length/2]
@@ -457,25 +483,25 @@ class Gui(QMainWindow):
         self.ui.graph = Plot()
         self.ui.graph2 = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph3 = GaussPlot()
-        self.toolbar = NavigationToolbar(self.ui.graph, self)
+        self.toolbar = NavigationToolbar(self.ui.graph3, self)
 
         self.ui.matplotlib_layout.addWidget(self.ui.graph)
         self.ui.matplotlib_layout.addWidget(self.ui.graph2)
         self.ui.matplotlib_layout.addWidget(self.ui.graph3)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
-        self.ui.kplusButton.clicked.connect(lambda: self.button_controls(1,0))
-        self.ui.kminusButton.clicked.connect(lambda: self.button_controls(-1,0))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.button_controls(1,1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.button_controls(-1,1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.button_controls(1,2))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.button_controls(-1,2))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.button_controls(1,3))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.button_controls(-1,3))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.button_controls(1,4))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.button_controls(-1,4))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.button_controls(1,5))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.button_controls(-1,5))
+        self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1,0))
+        self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1,0))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1,1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1,1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1,2))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1,2))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1,3))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1,3))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1,4))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1,4))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1,5))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1,5))
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
@@ -483,7 +509,7 @@ class Gui(QMainWindow):
         self.ui.graph.update_colourin()
         self.ui.graph3.display()
 
-    def button_controls(self, factor, which_button):
+    def btn_ctrls(self, factor, which_button):
         self.ui.graph.info.magnets.buttons(factor, which_button)
         self.ui.graph.axes.collections.remove(self.ui.graph.fill1)
         self.ui.graph.axes.collections.remove(self.ui.graph.fill2)
