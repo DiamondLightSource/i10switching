@@ -350,56 +350,39 @@ class GaussPlot(FigureCanvas):
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.ax1 = self.figure.add_subplot(1, 1, 1)
-        self.trigger = np.load('trigger.npy')#[5000:] #[5000:5500]
-        self.trace = np.load('diode.npy')#[5000:] #[5000:5500]
+        self.trigger = np.load('trigger.npy')
+        self.trace = np.load('diode.npy')
 
     def display(self):
 
-
-        diff = np.diff(self.trigger).tolist()
-        length = len(self.trace)
-        value = 0.1
-#        while value > max(diff) and value > 0:
-#            value = value/2
-
         try:
-            maxtrig = next(x for x in diff if x > value)
-            mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -1*value)
+            diff = np.diff(self.trigger).tolist()
+            length = len(self.trace)
+            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+
+            if min(diff) > -1*stepvalue or max(diff) < stepvalue:
+                raise RangeError
+
+            maxtrig = next(x for x in diff if x > stepvalue)
+            mintrig = next(x for x in diff if x < -1*stepvalue)
             edges = [diff.index(maxtrig),diff.index(mintrig)]
 
+            trigger_length = (edges[1]-edges[0])*2
 
-        except StopIteration:
-            print 'Incomplete trigger'
-            self.ax1.plot(range(10), 'r', label = 'Incomplete trigger')
-            self.ax1.plot([9,8,7,6,5,4,3,2,1,0], 'r')
+            if length < trigger_length:
+                raise RangeError
+
+            data1 = np.roll(self.trace[:trigger_length], - edges[0] - trigger_length/4)[:trigger_length/2]
+            data2 = np.roll(self.trace[:trigger_length], - edges[1] - trigger_length/4)[:trigger_length/2]
+            self.ax1.plot(data1, label = integ.simps(data1))
+            self.ax1.plot(data2, label = integ.simps(data2))
             self.ax1.legend()
 
-        else:
-            half_length_trigger = (edges[1]-edges[0])/2
-            limits = [edges[0] - half_length_trigger, edges[0] + half_length_trigger, edges[1] + half_length_trigger]
-            print limits
-
-            try:
-                if limits[2] > length or limits[0] < 0:
-                    raise RangeError
-
-                data1 = np.roll(self.trace[limits[0]:limits[2]], - edges[0] - half_length_trigger)[limits[0]:limits[1]]
-                data2 = np.roll(self.trace[limits[0]:limits[2]], - edges[1] - half_length_trigger)[limits[0]:limits[1]]
-                self.ax1.plot(data1, label = integ.simps(data1))
-                self.ax1.plot(data2, label = integ.simps(data2))
-                self.ax1.legend()
-                self.ax1.plot(self.trigger)
-
-            except RangeError:
-                print 'Range too small: cannot plot correctly'
-                self.ax1.plot(range(10), 'r', label = 'Range too small: cannot plot correctly')
-                self.ax1.plot([9,8,7,6,5,4,3,2,1,0], 'r')
-                self.ax1.legend()
-# MESSY
-
-class RangeError(Exception):
-    '''Raised when the trace data is partially cut off'''
-    pass
+        except RangeError:
+            print 'Trace is partially cut off'
+            self.ax1.plot(range(10), 'r', label = 'Trace is partially cut off')
+            self.ax1.plot(range(9,-1,-1), 'r')
+            self.ax1.legend()
 
 
 class WaveformCanvas(FigureCanvas):
@@ -433,34 +416,40 @@ class WaveformCanvas(FigureCanvas):
 
         self.draw()
 
-    def get_windowed_data(self, value):
-        length = len(value)
-        sq = self.trigger
-        sqdiff = np.diff(sq).tolist()
-        edges = [sqdiff.index(max(sqdiff)), sqdiff.index(min(sqdiff))] # but what if there is more than one trigger in the window??
+    def get_windowed_data(self, value): # I think this works but hard to tell without trying it on real data not noise
 
-###########################################################
-        diff = np.diff(sq).tolist()
         try:
-            maxtrig = next(x for x in diff if x > 0.001)
-            #print maxtrig, diff.index(maxtrig)
+            diff = np.diff(self.trigger).tolist()
+            length = len(value)
+            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
 
-            try:
-                mintrig = next(x for x in diff[diff.index(maxtrig):] if x < -0.001)
-                #print mintrig, diff[diff.index(maxtrig):].index(mintrig)+diff.index(maxtrig)
-            except StopIteration:
-                print 'Incomplete trace or step size too small'
+            if min(diff) > -1*stepvalue or max(diff) < stepvalue:
+                raise RangeError
 
-        except StopIteration:
-            print 'Incomplete trace or step size too small'
-        edges = [diff.index(maxtrig),diff.index(mintrig)]
-###########################################################
+            maxtrig = next(x for x in diff if x > stepvalue)
+            mintrig = next(x for x in diff if x < -1*stepvalue)
+            edges = [diff.index(maxtrig),diff.index(mintrig)]
 
-        offset = min(edges) / 2
-        data1 = np.roll(value, - edges[0] - length/4)[:length/2]
-        data2 = np.roll(value, - edges[1] - length/4)[:length/2]
+            trigger_length = (edges[1]-edges[0])*2
 
-        return data1, data2
+            if length < trigger_length:
+                raise RangeError
+
+            data1 = np.roll(value[:trigger_length], - edges[0] - trigger_length/4)[:trigger_length/2]
+            data2 = np.roll(value[:trigger_length], - edges[1] - trigger_length/4)[:trigger_length/2]
+            return data1, data2
+
+        except RangeError:
+            print 'Trace is partially cut off'
+            data1 = [float('nan'), float('nan')]
+            data2 = [float('nan'), float('nan')]
+            return data1, data2
+
+
+class RangeError(Exception):
+    '''Raised when the trace data is partially cut off'''
+    pass
+
 
 ###########################
 ########### GUI ###########
