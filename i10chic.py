@@ -17,13 +17,11 @@ from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar)
-from matplotlib.figure import Figure
 from PyQt4 import uic
 from PyQt4.QtGui import QMainWindow
 import os
 import scipy.integrate as integ
 from scipy.constants import c
-from mpl_toolkits.axes_grid.anchored_artists import AnchoredText
 
 # Define matrices to modify the electron beam vector:
 # drift, kicker magnets, insertion devices.
@@ -204,7 +202,6 @@ class CollectData(object):
 
         e_vector = np.array([0,0])
         e_beam = np.zeros((len(self.path),2))
-        test = np.array([0,0])
         p_vector = []
 
         # Send e_vector through system and create electron and photon beams
@@ -384,6 +381,7 @@ class GaussPlot(FigureCanvas):
             self.ax1.plot(range(9,-1,-1), 'r')
             self.ax1.legend()
 
+#put in trace graph here
 
 class WaveformCanvas(FigureCanvas):
 
@@ -421,7 +419,7 @@ class WaveformCanvas(FigureCanvas):
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(value)
-            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do?? # make it a config parameter
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
@@ -440,7 +438,7 @@ class WaveformCanvas(FigureCanvas):
             return data1, data2
 
         except RangeError:
-            print 'Trace is partially cut off'
+            print 'Trace is partially cut off' # status bar? callback?
             data1 = [float('nan'), float('nan')]
             data2 = [float('nan'), float('nan')]
             return data1, data2
