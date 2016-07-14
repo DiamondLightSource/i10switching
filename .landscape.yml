@@ -1,0 +1,10 @@
+doc-warnings: true
+test-warnings: false
+strictness: veryhigh
+max-line-length: 80
+autodetect: true
+requirements:
+  - requirements/test.txt
+python-targets:
+  - 2
+
