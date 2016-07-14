@@ -150,8 +150,7 @@ class MagnetStrengths(object):
     # Define alterations to the kickers.
     def buttons(self, factor, button):
 
-        self.kick_add = self.kick_add+factor
-                        * np.array(ButtonData.SHIFT[button])
+        self.kick_add = self.kick_add+factor*np.array(ButtonData.SHIFT[button])
 
     def reset(self):
 
