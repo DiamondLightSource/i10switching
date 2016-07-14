@@ -54,9 +54,9 @@ class Drift(Element):
         self.step = step
 
     def increment(self, e):
-        drift = np.array([[1,self.step],
-                          [0,1]])
-        return np.dot(drift,e)
+        drift = np.array([[1, self.step],
+                          [0, 1]])
+        return np.dot(drift, e)
 
     def get_type(self):
         return 'drift'
@@ -94,12 +94,12 @@ class InsertionDevice(Element):
 
 
 class ButtonData(object):
-    STEP_K3 = [0,0,0.1,0,0]
-    BUMP_LEFT = [0.1,-0.1,0.05,0,0]
-    BUMP_RIGHT = [0,0,0.05,-0.1,0.1]
-    BPM1 = [0.01,0.01,0,-0.01,-0.01]
-    BPM2 = [-0.01,-0.01,0,0.01,0.01]
-    SCALE = [0.01,0.01,0,0.01,0.01]
+    STEP_K3 = [0, 0, 0.1, 0, 0]
+    BUMP_LEFT = [0.1, -0.1, 0.05, 0, 0]
+    BUMP_RIGHT = [0, 0, 0.05, -0.1, 0.1]
+    BPM1 = [0.01, 0.01, 0, -0.01, -0.01]
+    BPM2 = [-0.01, -0.01, 0, 0.01, 0.01]
+    SCALE = [0.01, 0.01, 0, 0.01, 0.01]
 
     SHIFT = [STEP_K3, BUMP_LEFT, BUMP_RIGHT, BPM1, BPM2, SCALE]
 
@@ -116,9 +116,9 @@ class Layout(object):
     def load(self):
 
         raw_data = [line.split() for line in open(self.NAME)]
-        element_classes = {cls(None).get_type(): cls 
+        element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
-        path  = [element_classes[x[0]](float(x[1])) for x in raw_data]
+        path = [element_classes[x[0]](float(x[1])) for x in raw_data]
 
         # Set drift lengths
         for i in range(len(path)):
@@ -135,36 +135,37 @@ class Layout(object):
 class MagnetStrengths(object):
     BEAM_RIGIDITY = 3e9/c
     # Conversion values between current and tesla for the kickers.
-    AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12, 
+    AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
                              0.045012/23, 0.035174/23])
     CURRENTS = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771])
     FIELDS = CURRENTS*AMP_TO_TESLA
 
     def __init__(self):
         self.path = Layout().path
-        self.kick_add = np.array([0,0,0,0,0])
+        self.kick_add = np.array([0, 0, 0, 0, 0])
 
-        self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY)) 
+        self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.FIELDS])
 
     # Define alterations to the kickers.
     def buttons(self, factor, button):
 
-        self.kick_add = self.kick_add + factor*np.array(ButtonData.SHIFT[button])
+        self.kick_add = self.kick_add+factor
+                        * np.array(ButtonData.SHIFT[button])
 
     def reset(self):
 
-        self.kick_add = np.array([0,0,0,0,0])
+        self.kick_add = np.array([0, 0, 0, 0, 0])
 
     # Define time-varying strengths of kicker magnets.
     def calculate_strengths(self, t):
 
         kick = self.max_kick * (np.array([
-               np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1), 
+               np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
                2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.kick_add)
 
-        return kick 
+        return kick
 
 
 class CollectData(object):
@@ -179,11 +180,11 @@ class CollectData(object):
         self.kickers = self.data.get_elements('kicker')
         self.detector = self.data.get_elements('detector')
         self.drifts = self.data.get_elements('drift')
-        self.p_coord = [[self.ids[0].s, 
+        self.p_coord = [[self.ids[0].s,
                          self.detector[0].s],
-                        [self.ids[1].s, 
+                        [self.ids[1].s,
                          self.detector[0].s]]
-        self.travel = [Drift(self.ids[0].s), 
+        self.travel = [Drift(self.ids[0].s),
                        Drift(self.ids[1].s)]
 
     def strength_setup(self, strength_values):
@@ -201,8 +202,8 @@ class CollectData(object):
 
     def send_electrons_through(self):
 
-        e_vector = np.array([0,0])
-        e_beam = np.zeros((len(self.path),2))
+        e_vector = np.array([0, 0])
+        e_beam = np.zeros((len(self.path), 2))
         p_vector = []
 
         # Send e_vector through system and create electron and photon beams
@@ -211,13 +212,14 @@ class CollectData(object):
                 e_vector = p.increment(e_vector)
                 e_beam[self.path.index(p)+1] = e_vector
             if p.get_type() == 'id':
-                p_vector.append(e_vector.tolist()) # here need it to be a list and indexes don't match up nicely anyway
+                p_vector.append(e_vector.tolist()) # here need it to be a list 
+                                      #and indexes don't match up nicely anyway
         p_beam = self.create_photon_beam(p_vector)
 
         return e_beam, p_beam
 
     # Create e and p beams at time t
-    def timestep(self,t):
+    def timestep(self, t):
 
         self.strength_setup(self.magnets.calculate_strengths(t))
 
@@ -230,7 +232,7 @@ class CollectData(object):
     # Calculate p beams for fixed magnet strengths
     def p_beam_range(self, strength_values):
 
-        self.strength_setup(self.magnets.max_kick 
+        self.strength_setup(self.magnets.max_kick
                             * (strength_values + self.magnets.kick_add))
 
         p_beam = self.send_electrons_through()[1]
@@ -264,8 +266,8 @@ class Plot(FigureCanvas):
     def data_setup(self):
 
         beams = [
-                self.axes.plot([], [])[0], 
-                self.axes.plot([], [], 'r')[0], 
+                self.axes.plot([], [])[0],
+                self.axes.plot([], [], 'r')[0],
                 self.axes.plot([], [], 'r')[0]
                 ]
 
@@ -281,13 +283,13 @@ class Plot(FigureCanvas):
     # Extract electron and photon beam positions for plotting.
     def beam_plot(self, t):
 
-        e_positions = np.array(self.info.timestep(t)[0])[:,0].tolist()
+        e_positions = np.array(self.info.timestep(t)[0])[:, 0].tolist()
         # Remove duplicates in data.
         for i in range(len(self.info.drifts)):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
-        p_positions = np.array(self.info.timestep(t)[1])[:,[0,2]]
+        p_positions = np.array(self.info.timestep(t)[1])[:, [0, 2]]
 
         return e_positions, p_positions
 
@@ -301,13 +303,14 @@ class Plot(FigureCanvas):
         p_data = data[1]
 
         xaxis = [0]
-        xaxis.extend([i.s for i in self.info.data.path if i.get_type() != 'drift'])
+        xaxis.extend([i.s for i in self.info.data.path
+                      if i.get_type() != 'drift'])
 
         beams = self.init_data()
         beams[0].set_data(xaxis, e_data)
-        for line, x, y in zip([beams[1],beams[2]], 
+        for line, x, y in zip([beams[1], beams[2]],
                           self.info.p_coord, p_data):
-            line.set_data(x,y)
+            line.set_data(x, y)
 
         return beams
 
@@ -320,27 +323,27 @@ class Plot(FigureCanvas):
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
         # Create animations
-        self.anim = animation.FuncAnimation(self.fig, self.animate, 
-                    init_func=self.init_data, frames=1000, interval=20)
+        anim = animation.FuncAnimation(self.fig, self.animate,
+                    init_func=self.init_data, frames=1000, interval=20) #self.??
 
     def update_colourin(self):
 
-        strengths1 = np.array([2,-2,2,0,0])
-        strengths2 = np.array([0,0,2,-2,2])
+        strengths1 = np.array([2, -2, 2, 0, 0])
+        strengths2 = np.array([0, 0, 2, -2, 2])
 
-        edges1 = np.array( self.info.p_beam_range(strengths1) )[:,[0,2]]
-        edges2 = np.array( self.info.p_beam_range(strengths2) )[:,[0,2]]
+        edges1 = np.array(self.info.p_beam_range(strengths1))[:, [0, 2]]
+        edges2 = np.array(self.info.p_beam_range(strengths2))[:, [0, 2]]
 
         beam1min = edges1[0]
         beam1max = edges2[0]
         beam2min = edges2[1]
         beam2max = edges1[1]
 
-        self.fill1 = self.axes.fill_between(self.info.p_coord[0], 
+        self.fill1 = self.axes.fill_between(self.info.p_coord[0],
                                beam1min, beam1max, facecolor='blue', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_coord[1], 
+        self.fill2 = self.axes.fill_between(self.info.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
-
+# define here or in init?
 
 class GaussPlot(FigureCanvas):
 
@@ -364,22 +367,24 @@ class GaussPlot(FigureCanvas):
 
             maxtrig = next(x for x in diff if x > stepvalue)
             mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [diff.index(maxtrig),diff.index(mintrig)]
+            edges = [diff.index(maxtrig), diff.index(mintrig)]
 
             trigger_length = (edges[1]-edges[0])*2
 
             if length < trigger_length:
                 raise RangeError
 
-            data1 = np.roll(self.trace[:trigger_length], - edges[0] - trigger_length/4)[:trigger_length/2]
-            data2 = np.roll(self.trace[:trigger_length], - edges[1] - trigger_length/4)[:trigger_length/2]
-            self.line1 = self.ax.plot(data1, 'b', label = integ.simps(data1))
-            self.line2 = self.ax.plot(data2, 'g', label = integ.simps(data2))
+            data1 = np.roll(self.trace[:trigger_length], - edges[0]
+                            - trigger_length/4)[:trigger_length/2]
+            data2 = np.roll(self.trace[:trigger_length], - edges[1]
+                            - trigger_length/4)[:trigger_length/2]
+            self.line1 = self.ax.plot(data1, 'b', label=integ.simps(data1))
+            self.line2 = self.ax.plot(data2, 'g', label=integ.simps(data2))
             self.ax.legend()
 
         except RangeError:
             print 'Trace is partially cut off'
-            self.line1 = self.ax.plot(float('nan'), label = 'Trace is partially cut off')
+            self.line1 = self.ax.plot(float('nan'), label='Trace is partially cut off')
             self.line2 = self.ax.plot(float('nan'))
             self.ax.legend()
 
@@ -410,8 +415,8 @@ class WaveformCanvas(FigureCanvas):
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
 #        self.scale+=1 # ??????????
-        self.ax.legend([self.lines[0], self.lines[1]], 
-                        [integ.simps(data1), integ.simps(data2)])
+        self.ax.legend([self.lines[0], self.lines[1]],
+                       [integ.simps(data1), integ.simps(data2)])
 
         self.draw()
 
@@ -427,15 +432,17 @@ class WaveformCanvas(FigureCanvas):
 
             maxtrig = next(x for x in diff if x > stepvalue)
             mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [diff.index(maxtrig),diff.index(mintrig)]
+            edges = [diff.index(maxtrig), diff.index(mintrig)]
 
             trigger_length = (edges[1]-edges[0])*2
 
             if length < trigger_length:
                 raise RangeError
 
-            data1 = np.roll(value[:trigger_length], - edges[0] - trigger_length/4)[:trigger_length/2]
-            data2 = np.roll(value[:trigger_length], - edges[1] - trigger_length/4)[:trigger_length/2]
+            data1 = np.roll(value[:trigger_length], - edges[0]
+                            - trigger_length/4)[:trigger_length/2]
+            data2 = np.roll(value[:trigger_length], - edges[1]
+                            - trigger_length/4)[:trigger_length/2]
             return data1, data2
 
         except RangeError:
@@ -457,7 +464,9 @@ class Trigger(FigureCanvas):
 
 
 class RangeError(Exception):
-    '''Raised when the trace data is partially cut off'''
+
+    """Raised when the trace data is partially cut off."""
+
     pass
 
 
@@ -474,7 +483,7 @@ class Gui(QMainWindow):
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
     I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
 
-    def __init__ (self):
+    def __init__(self):
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
@@ -491,18 +500,18 @@ class Gui(QMainWindow):
         self.ui.graphLayout2.addWidget(self.ui.gaussians)
         self.ui.graphLayout.addWidget(self.toolbar)
 
-        self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1,0))
-        self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1,0))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1,1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1,1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1,2))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1,2))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1,3))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1,3))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1,4))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1,4))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1,5))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1,5))
+        self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
+        self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 0))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1, 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1, 2))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 2))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1, 3))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 3))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1, 4))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 4))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1, 5))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 5))
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
