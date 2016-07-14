@@ -92,7 +92,7 @@ class InsertionDevice(Element):
     def get_type(self):
         return 'id'
 
-
+## will eventually be got from pvs
 class ButtonData(object):
     STEP_K3 = [0, 0, 0.1, 0, 0]
     BUMP_LEFT = [0.1, -0.1, 0.05, 0, 0]
@@ -121,9 +121,9 @@ class Layout(object):
         path = [element_classes[x[0]](float(x[1])) for x in raw_data]
 
         # Set drift lengths
-        for i in range(len(path)):
-            if path[i].get_type() == 'drift':
-                path[i].set_length(path[i+1].s-path[i].s)
+        for p in path:
+            if p.get_type() == 'drift':
+                p.set_length(path[path.index(p)+1].s - p.s)
 
         return path
 
@@ -133,6 +133,7 @@ class Layout(object):
 
 # Collect data on electron and photon beams at time t.
 class MagnetStrengths(object):
+
     BEAM_RIGIDITY = 3e9/c
     # Conversion values between current and tesla for the kickers.
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
@@ -141,9 +142,7 @@ class MagnetStrengths(object):
     FIELDS = CURRENTS*AMP_TO_TESLA
 
     def __init__(self):
-        self.path = Layout().path
         self.kick_add = np.array([0, 0, 0, 0, 0])
-
         self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.FIELDS])
 
@@ -173,7 +172,6 @@ class CollectData(object):
     def __init__(self):
 
         self.data = Layout()
-        self.path = self.data.path
         self.magnets = MagnetStrengths()
         self.ids = self.data.get_elements('id')
         self.kickers = self.data.get_elements('kicker')
@@ -202,17 +200,16 @@ class CollectData(object):
     def send_electrons_through(self):
 
         e_vector = np.array([0, 0])
-        e_beam = np.zeros((len(self.path), 2))
+        e_beam = np.zeros((len(self.data.path), 2))
         p_vector = []
 
         # Send e_vector through system and create electron and photon beams
-        for p in self.path:
+        for p in self.data.path:
             if p.get_type() != 'detector':
                 e_vector = p.increment(e_vector)
-                e_beam[self.path.index(p)+1] = e_vector
+                e_beam[self.data.path.index(p)+1] = e_vector
             if p.get_type() == 'id':
-                p_vector.append(e_vector.tolist()) # here need it to be a list
-                                      #and indexes don't match up nicely anyway
+                p_vector.append(e_vector.tolist())
         p_beam = self.create_photon_beam(p_vector)
 
         return e_beam, p_beam
@@ -221,7 +218,6 @@ class CollectData(object):
     def timestep(self, t):
 
         self.strength_setup(self.magnets.calculate_strengths(t))
-
         beams = self.send_electrons_through()
         e_beam = beams[0]
         p_beam = beams[1]
@@ -233,9 +229,7 @@ class CollectData(object):
 
         self.strength_setup(self.magnets.max_kick
                             * (strength_values + self.magnets.kick_add))
-
         p_beam = self.send_electrons_through()[1]
-
 
         return p_beam
 
@@ -243,19 +237,26 @@ class CollectData(object):
 ## Graph plotting ##
 ####################
 
-class Plot(FigureCanvas):
+class SetupPlotting(FigureCanvas): # inheritance works but graphs are tiny - to be worked out...
+
+    def __init__(self):
+        self.figure = plt.figure()
+        FigureCanvas.__init__(self, self.figure)
+
+class Plot(SetupPlotting):
 
     def __init__(self):
 
         self.info = CollectData()
-        self.fig = plt.figure()
-        FigureCanvas.__init__(self, self.fig)
+#        self.fig = plt.figure()
+#        FigureCanvas.__init__(self, self.fig)
+        SetupPlotting.__init__(self)
         self.axes = self.fig_setup()
         self.beams = self.data_setup()
 
     def fig_setup(self):
 
-        ax1 = self.fig.add_subplot(1, 1, 1)
+        ax1 = self.figure.add_subplot(3, 1, 1)
         ax1.set_xlim(self.info.drifts[0].s, self.info.detector[0].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-0.02, 0.02)
@@ -322,7 +323,7 @@ class Plot(FigureCanvas):
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
         # Create animations
-        self.anim = animation.FuncAnimation(self.fig, self.animate,
+        self.anim = animation.FuncAnimation(self.figure, self.animate,
                     init_func=self.init_data, frames=1000, interval=20)
 
     def update_colourin(self):
@@ -397,13 +398,14 @@ class GaussPlot(FigureCanvas):
             self.ax.legend()
 
 
-class WaveformCanvas(FigureCanvas):
+class WaveformCanvas(SetupPlotting):
 
     def __init__(self, pv1, pv2):
 #        self.scale = 1
-        self.figure = plt.figure()
-        FigureCanvas.__init__(self, self.figure)
-        self.ax = self.figure.add_subplot(1, 1, 1)
+#        self.figure = plt.figure()
+#        FigureCanvas.__init__(self, self.figure)
+        SetupPlotting.__init__(self)
+        self.ax = self.figure.add_subplot(3, 1, 3)
 
         # Initialise with real data the first time to set axis ranges
         self.trigger = caget(pv1)
@@ -464,12 +466,13 @@ class WaveformCanvas(FigureCanvas):
             data2 = [float('nan'), float('nan')]
             return data1, data2
 
-class Trigger(FigureCanvas):
+class Trigger(SetupPlotting):
 
     def __init__(self):
-        self.figure = plt.figure()
-        FigureCanvas.__init__(self, self.figure)
-        self.ax = self.figure.add_subplot(1, 1, 1)
+#        self.figure = plt.figure()
+#        FigureCanvas.__init__(self, self.figure)
+        SetupPlotting.__init__(self)
+        self.ax = self.figure.add_subplot(3, 1, 2)
 
     def plot_trigger(self, data):
 
