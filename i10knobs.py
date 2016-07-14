@@ -278,7 +278,7 @@ class KnobsUi(object):
         self.ui.cycling_textbox.setText(QtCore.QString('%s' % var.enums[var]))
 
     def plot_area(self):
-        self.ui.area_label.setText('Area here when I know how')
+        pass
 
     def update_magnet_led(self, var):
         '''Uses PV alarm status to choose color for qframe'''
