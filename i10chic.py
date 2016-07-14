@@ -256,7 +256,7 @@ class Plot(SetupPlotting):
 
     def fig_setup(self):
 
-        ax1 = self.figure.add_subplot(3, 1, 1)
+        ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.info.drifts[0].s, self.info.detector[0].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-0.02, 0.02)
@@ -405,7 +405,7 @@ class WaveformCanvas(SetupPlotting):
 #        self.figure = plt.figure()
 #        FigureCanvas.__init__(self, self.figure)
         SetupPlotting.__init__(self)
-        self.ax = self.figure.add_subplot(3, 1, 3)
+        self.ax = self.figure.add_subplot(1, 1, 1)
 
         # Initialise with real data the first time to set axis ranges
         self.trigger = caget(pv1)
@@ -472,7 +472,7 @@ class Trigger(SetupPlotting):
 #        self.figure = plt.figure()
 #        FigureCanvas.__init__(self, self.figure)
         SetupPlotting.__init__(self)
-        self.ax = self.figure.add_subplot(3, 1, 2)
+        self.ax = self.figure.add_subplot(1, 1, 1)
 
     def plot_trigger(self, data):
 
