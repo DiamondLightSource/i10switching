@@ -18,6 +18,7 @@ from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas,
     NavigationToolbar2QT as NavigationToolbar)
 from PyQt4 import uic
+from PyQt4 import QtGui
 from PyQt4.QtGui import QMainWindow
 import os
 import scipy.integrate as integ
@@ -346,16 +347,17 @@ class GaussPlot(FigureCanvas):
     def __init__(self):
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
-        self.ax1 = self.figure.add_subplot(1, 1, 1)
+        self.ax = self.figure.add_subplot(1, 1, 1)
         self.trigger = np.load('trigger.npy')
         self.trace = np.load('diode.npy')
 
-    def display(self):
+    def display(self, input1, input2):
 
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(self.trace)
-            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+#            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+            stepvalue = (input2-input1)/2 # THIS IS WRONG CURRENTLY
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
@@ -371,17 +373,16 @@ class GaussPlot(FigureCanvas):
 
             data1 = np.roll(self.trace[:trigger_length], - edges[0] - trigger_length/4)[:trigger_length/2]
             data2 = np.roll(self.trace[:trigger_length], - edges[1] - trigger_length/4)[:trigger_length/2]
-            self.ax1.plot(data1, label = integ.simps(data1))
-            self.ax1.plot(data2, label = integ.simps(data2))
-            self.ax1.legend()
+            self.line1 = self.ax.plot(data1, 'b', label = integ.simps(data1))
+            self.line2 = self.ax.plot(data2, 'g', label = integ.simps(data2))
+            self.ax.legend()
 
         except RangeError:
             print 'Trace is partially cut off'
-            self.ax1.plot(range(10), 'r', label = 'Trace is partially cut off')
-            self.ax1.plot(range(9,-1,-1), 'r')
-            self.ax1.legend()
+            self.line1 = self.ax.plot(float('nan'), label = 'Trace is partially cut off')
+            self.line2 = self.ax.plot(float('nan'))
+            self.ax.legend()
 
-#put in trace graph here
 
 class WaveformCanvas(FigureCanvas):
 
@@ -389,7 +390,7 @@ class WaveformCanvas(FigureCanvas):
 #        self.scale = 1
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
-        self.ax1 = self.figure.add_subplot(1, 1, 1)
+        self.ax = self.figure.add_subplot(1, 1, 1)
 
         # Initialise with real data the first time to set axis ranges
         self.trigger = caget(pv1)
@@ -397,8 +398,8 @@ class WaveformCanvas(FigureCanvas):
         data1, data2 = self.get_windowed_data(caget(pv2))
         x = range(len(data1))
         self.lines = [
-                     self.ax1.plot(x, data1, 'b')[0],
-                     self.ax1.plot(x, data2, 'g')[0]
+                     self.ax.plot(x, data1, 'b')[0],
+                     self.ax.plot(x, data2, 'g')[0]
                      ]
 
         camonitor(pv2, self.update_plot)
@@ -409,7 +410,7 @@ class WaveformCanvas(FigureCanvas):
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
 #        self.scale+=1 # ??????????
-        self.ax1.legend([self.lines[0], self.lines[1]], 
+        self.ax.legend([self.lines[0], self.lines[1]], 
                         [integ.simps(data1), integ.simps(data2)])
 
         self.draw()
@@ -443,6 +444,17 @@ class WaveformCanvas(FigureCanvas):
             data2 = [float('nan'), float('nan')]
             return data1, data2
 
+class Trigger(FigureCanvas):
+
+    def __init__(self):
+        self.figure = plt.figure()
+        FigureCanvas.__init__(self, self.figure)
+        self.ax = self.figure.add_subplot(1, 1, 1)
+
+    def plot_trigger(self, data):
+
+        self.ax.plot(caget(data))
+
 
 class RangeError(Exception):
     '''Raised when the trace data is partially cut off'''
@@ -467,15 +479,17 @@ class Gui(QMainWindow):
         filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
         self.ui = uic.loadUi(filename)
 
-        self.ui.graph = Plot()
-        self.ui.graph2 = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
-        self.ui.graph3 = GaussPlot()
-        self.toolbar = NavigationToolbar(self.ui.graph3, self)
+        self.ui.simulation = Plot()
+        self.ui.displaytrace = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.ui.gaussians = GaussPlot()
+        self.ui.trig = Trigger()
+        self.toolbar = NavigationToolbar(self.ui.gaussians, self)
 
-        self.ui.matplotlib_layout.addWidget(self.ui.graph)
-        self.ui.matplotlib_layout.addWidget(self.ui.graph2)
-        self.ui.matplotlib_layout.addWidget(self.ui.graph3)
-        self.ui.matplotlib_layout.addWidget(self.toolbar)
+        self.ui.graphLayout.addWidget(self.ui.simulation) # do I want tabs? if not go back to matplotlib_layout and just delete the tab thing in pyqt
+        self.ui.graphLayout.addWidget(self.ui.trig)
+        self.ui.graphLayout.addWidget(self.ui.displaytrace)
+        self.ui.graphLayout2.addWidget(self.ui.gaussians)
+        self.ui.graphLayout.addWidget(self.toolbar)
 
         self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1,0))
         self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1,0))
@@ -492,21 +506,35 @@ class Gui(QMainWindow):
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-        self.ui.graph.show_plot()
-        self.ui.graph.update_colourin()
-        self.ui.graph3.display()
+        self.ui.paramsButton.clicked.connect(self.set_params)
+
+        self.ui.simulation.show_plot()
+        self.ui.simulation.update_colourin()
+        self.ui.gaussians.display(0,0.2)
+        self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
+
+    def set_params(self):
+
+        mintrig, ok = QtGui.QInputDialog.getDouble(self, 'Input', 
+            'Trigger minimum:')
+        maxtrig, ok = QtGui.QInputDialog.getDouble(self, 'Input', 
+            'Trigger maximum:')
+        if ok:
+            self.ui.gaussians.line1.pop().remove()
+            self.ui.gaussians.line2.pop().remove()
+            self.ui.gaussians.display(mintrig, maxtrig) # BUT WHY DOES IT NOT CHANGE UNTIL GRAPH RESIZED??
 
     def btn_ctrls(self, factor, which_button):
-        self.ui.graph.info.magnets.buttons(factor, which_button)
-        self.ui.graph.axes.collections.remove(self.ui.graph.fill1)
-        self.ui.graph.axes.collections.remove(self.ui.graph.fill2)
-        self.ui.graph.update_colourin()
+        self.ui.simulation.info.magnets.buttons(factor, which_button)
+        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill2)
+        self.ui.simulation.update_colourin()
 
     def reset(self):
-        self.ui.graph.info.magnets.reset()
-        self.ui.graph.axes.collections.remove(self.ui.graph.fill1)
-        self.ui.graph.axes.collections.remove(self.ui.graph.fill2)
-        self.ui.graph.update_colourin()
+        self.ui.simulation.info.magnets.reset()
+        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill2)
+        self.ui.simulation.update_colourin()
 
 def main():
     cothread.iqt()
