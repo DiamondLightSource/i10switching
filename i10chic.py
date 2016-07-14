@@ -211,7 +211,7 @@ class CollectData(object):
                 e_vector = p.increment(e_vector)
                 e_beam[self.path.index(p)+1] = e_vector
             if p.get_type() == 'id':
-                p_vector.append(e_vector.tolist()) # here need it to be a list 
+                p_vector.append(e_vector.tolist()) # here need it to be a list
                                       #and indexes don't match up nicely anyway
         p_beam = self.create_photon_beam(p_vector)
 
@@ -322,8 +322,8 @@ class Plot(FigureCanvas):
             self.axes.axvline(x=i.s, color='r', linestyle='dashed')
 
         # Create animations
-        anim = animation.FuncAnimation(self.fig, self.animate,
-                    init_func=self.init_data, frames=1000, interval=20) #self.??
+        self.anim = animation.FuncAnimation(self.fig, self.animate,
+                    init_func=self.init_data, frames=1000, interval=20)
 
     def update_colourin(self):
 
@@ -518,14 +518,14 @@ class Gui(QMainWindow):
 
         self.ui.simulation.show_plot()
         self.ui.simulation.update_colourin()
-        self.ui.gaussians.display(0,0.2)
+        self.ui.gaussians.display(0, 0.2)
         self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
 
     def set_params(self):
 
-        mintrig, ok = QtGui.QInputDialog.getDouble(self, 'Input', 
+        mintrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
             'Trigger minimum:')
-        maxtrig, ok = QtGui.QInputDialog.getDouble(self, 'Input', 
+        maxtrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
             'Trigger maximum:')
         if ok:
             self.ui.gaussians.line1.pop().remove()
