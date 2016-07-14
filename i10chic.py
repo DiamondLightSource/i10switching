@@ -353,13 +353,12 @@ class GaussPlot(FigureCanvas):
         self.trigger = np.load('trigger.npy')
         self.trace = np.load('diode.npy')
 
-    def display(self, input1, input2):
+    def display(self):
 
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(self.trace)
-#            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
-            stepvalue = (input2-input1)/2 # THIS IS WRONG CURRENTLY
+            stepvalue = 0.1 # have i got exceptions in right places? should there be way to change it if it it's wrong?
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
@@ -373,18 +372,28 @@ class GaussPlot(FigureCanvas):
             if length < trigger_length:
                 raise RangeError
 
-            data1 = np.roll(self.trace[:trigger_length], - edges[0]
-                            - trigger_length/4)[:trigger_length/2]
-            data2 = np.roll(self.trace[:trigger_length], - edges[1]
-                            - trigger_length/4)[:trigger_length/2]
-            self.line1 = self.ax.plot(data1, 'b', label=integ.simps(data1))
-            self.line2 = self.ax.plot(data2, 'g', label=integ.simps(data2))
+#            data1 = np.roll(self.trace[:trigger_length], - edges[0]
+#                            - trigger_length/4)[:trigger_length/2]
+#            data2 = np.roll(self.trace[:trigger_length], - edges[1]
+#                            - trigger_length/4)[:trigger_length/2]
+#            self.line1 = self.ax.plot(data1, 'b', label=integ.simps(data1))
+#            self.line2 = self.ax.plot(data2, 'g', label=integ.simps(data2))
+
+            data = [[], []]
+            label = [[], []]
+            self.line = [[], []]
+            for i in range(2):
+                data[i] = np.roll(self.trace[:trigger_length], - edges[i]
+                                  - trigger_length/4)[:trigger_length/2]
+                label[i] = integ.simps(data[i])
+                if label[i] < 0.1:
+                    raise RangeError
+                self.line[i] = self.ax.plot(data[i], label=integ.simps(data[i]))
             self.ax.legend()
 
         except RangeError:
             print 'Trace is partially cut off'
-            self.line1 = self.ax.plot(float('nan'), label='Trace is partially cut off')
-            self.line2 = self.ax.plot(float('nan'))
+            self.line = [self.ax.plot(float('nan'), label='Trace is partially cut off'), self.ax.plot(float('nan'))]
             self.ax.legend()
 
 
@@ -408,14 +417,19 @@ class WaveformCanvas(FigureCanvas):
 
         camonitor(pv2, self.update_plot)
 
+
     def update_plot(self, value):
 
         data1, data2 = self.get_windowed_data(value)
         self.lines[0].set_ydata(data1)
         self.lines[1].set_ydata(data2)
 #        self.scale+=1 # ??????????
+        labels = [integ.simps(data1), integ.simps(data2)]
+        for area in labels:
+            if area < 0.1:
+                raise RangeError
         self.ax.legend([self.lines[0], self.lines[1]],
-                       [integ.simps(data1), integ.simps(data2)])
+                       labels)
 
         self.draw()
 
@@ -459,7 +473,7 @@ class Trigger(FigureCanvas):
 
     def plot_trigger(self, data):
 
-        self.ax.plot(caget(data))
+        self.ax.plot(np.load('trigger.npy')) #caget(data))
 
 
 class RangeError(Exception):
@@ -514,23 +528,24 @@ class Gui(QMainWindow):
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-        self.ui.paramsButton.clicked.connect(self.set_params)
+#        self.ui.paramsButton.clicked.connect(self.set_params)
 
         self.ui.simulation.show_plot()
         self.ui.simulation.update_colourin()
-        self.ui.gaussians.display(0, 0.2)
+        self.ui.gaussians.display()
         self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
 
-    def set_params(self):
-
-        mintrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
-            'Trigger minimum:')
-        maxtrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
-            'Trigger maximum:')
-        if ok:
-            self.ui.gaussians.line1.pop().remove()
-            self.ui.gaussians.line2.pop().remove()
-            self.ui.gaussians.display(mintrig, maxtrig) # BUT WHY DOES IT NOT CHANGE UNTIL GRAPH RESIZED??
+#    def set_params(self):
+#        mintrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
+#            'Trigger minimum:')
+#        maxtrig, ok = QtGui.QInputDialog.getDouble(self, 'Input',
+#            'Trigger maximum:')
+#        if ok:
+#            self.ui.gaussians.line1.pop().remove()
+#            self.ui.gaussians.line2.pop().remove()
+#            self.ui.gaussians.display(mintrig, maxtrig)
+#            self.ui.gaussians.draw()
+#            self.ui.displaytrace = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV, mintrig, maxtrig)
 
     def btn_ctrls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
