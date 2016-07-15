@@ -15,7 +15,7 @@ before_install:
   - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
   - tar -xvf sip-4.14.1.tar.gz
   - cd sip-4.14.1
-  - python configure.py
+  - python configure.py -e ${VIRTUAL_ENV}/include
   - make -j 2
   - make install
   - cd ..
