@@ -243,7 +243,7 @@ class CollectData(object):
 ## Graph plotting ##
 ####################
 
-class SetupPlotting(FigureCanvas): # inheritance works but graphs are tiny - to be worked out...
+class BaseFigureCanvas(FigureCanvas): # inheritance works but graphs are tiny - to be worked out...
 
     def __init__(self):
         self.figure = plt.figure()
@@ -253,12 +253,12 @@ class SetupPlotting(FigureCanvas): # inheritance works but graphs are tiny - to 
 #        self.ax3 = self.figure.add_subplot(313)
 
 
-class Plot(SetupPlotting):
+class Plot(BaseFigureCanvas):
 
     def __init__(self):
 
         self.info = CollectData()
-        SetupPlotting.__init__(self)
+        BaseFigureCanvas.__init__(self)
         self.ax = self.fig_setup()
         self.beams = self.data_setup()
 
@@ -349,10 +349,10 @@ class Plot(SetupPlotting):
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 # define here or in init?
 
-class GaussPlot(SetupPlotting):
+class GaussPlot(BaseFigureCanvas):
 
     def __init__(self):
-        SetupPlotting.__init__(self)
+        BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.trigger = np.load('trigger.npy')
         self.trace = np.load('diode.npy')
@@ -401,10 +401,10 @@ class GaussPlot(SetupPlotting):
             self.ax.legend()
 
 
-class WaveformCanvas(SetupPlotting):
+class WaveformCanvas(BaseFigureCanvas):
 
     def __init__(self, pv1, pv2):
-        SetupPlotting.__init__(self)
+        BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
 
         # Initialise with real data the first time to set axis ranges
@@ -466,10 +466,10 @@ class WaveformCanvas(SetupPlotting):
             data2 = [float('nan'), float('nan')]
             return data1, data2
 
-class Trigger(SetupPlotting):
+class Trigger(BaseFigureCanvas):
 
     def __init__(self):
-        SetupPlotting.__init__(self)
+        BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
 
     def plot_trigger(self, data):
