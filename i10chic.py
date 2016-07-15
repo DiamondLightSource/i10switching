@@ -489,10 +489,10 @@ class RangeError(Exception):
 ########### GUI ###########
 ###########################
 
-UI_FILENAME = 'i10chicgui.ui'
-
 
 class Gui(QMainWindow):
+
+    UI_FILENAME = 'i10chicgui.ui'
 
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
@@ -500,7 +500,7 @@ class Gui(QMainWindow):
 
     def __init__(self):
         QMainWindow.__init__(self)
-        filename = os.path.join(os.path.dirname(__file__), UI_FILENAME)
+        filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
 
         self.ui.simulation = Plot()
