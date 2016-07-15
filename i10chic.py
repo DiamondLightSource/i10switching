@@ -112,6 +112,13 @@ class Layout(object):
 
     def __init__(self):
         self.path = self.load()
+        self.ids = self.get_elements('id') # should these REALLY be here? is it any better?
+        self.kickers = self.get_elements('kicker')
+        self.detector = self.get_elements('detector')
+        self.p_coord = [[self.ids[0].s,
+                         self.detector[0].s],
+                        [self.ids[1].s,
+                         self.detector[0].s]]
 
     def load(self):
 
@@ -173,26 +180,25 @@ class CollectData(object):
 
         self.data = Layout()
         self.magnets = MagnetStrengths()
-        self.ids = self.data.get_elements('id')
-        self.kickers = self.data.get_elements('kicker')
-        self.detector = self.data.get_elements('detector')
-        self.drifts = self.data.get_elements('drift')
-        self.p_coord = [[self.ids[0].s,
-                         self.detector[0].s],
-                        [self.ids[1].s,
-                         self.detector[0].s]]
-        self.travel = [Drift(self.ids[0].s),
-                       Drift(self.ids[1].s)]
+#        self.ids = self.data.get_elements('id')
+#        self.kickers = self.data.get_elements('kicker')
+#        self.detector = self.data.get_elements('detector')
+#        self.p_coord = [[self.ids[0].s,
+#                         self.detector[0].s],
+#                        [self.ids[1].s,
+#                         self.detector[0].s]]
+        self.travel = [Drift(self.data.ids[0].s),
+                       Drift(self.data.ids[1].s)]
 
     def strength_setup(self, strength_values):
 
-        for kicker, strength in zip(self.kickers, strength_values):
+        for kicker, strength in zip(self.data.kickers, strength_values):
             kicker.set_strength(strength)
 
     def create_photon_beam(self, vector):
 
         for i in range(2):
-            self.travel[i].set_length(self.p_coord[i][1] - self.p_coord[i][0])
+            self.travel[i].set_length(self.data.p_coord[i][1] - self.data.p_coord[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector
@@ -242,33 +248,44 @@ class SetupPlotting(FigureCanvas): # inheritance works but graphs are tiny - to 
     def __init__(self):
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
+#        self.ax1 = self.figure.add_subplot(311)
+#        self.ax2 = self.figure.add_subplot(312)
+#        self.ax3 = self.figure.add_subplot(313)
+
 
 class Plot(SetupPlotting):
 
     def __init__(self):
 
         self.info = CollectData()
-#        self.fig = plt.figure()
-#        FigureCanvas.__init__(self, self.fig)
         SetupPlotting.__init__(self)
-        self.axes = self.fig_setup()
+        self.ax = self.fig_setup()
         self.beams = self.data_setup()
+
+        self.anim = animation.FuncAnimation(self.figure, self.animate,
+                    init_func=self.init_data, frames=1000, interval=20)
 
     def fig_setup(self):
 
+        # Set up axes
         ax1 = self.figure.add_subplot(1, 1, 1)
-        ax1.set_xlim(self.info.drifts[0].s, self.info.detector[0].s)
+        ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-0.02, 0.02)
+        # Plot positions of kickers and IDs.
+        for i in self.info.data.kickers:
+            ax1.axvline(x=i.s, color='k', linestyle='dashed')
+        for i in self.info.data.ids:
+            ax1.axvline(x=i.s, color='r', linestyle='dashed')
 
         return ax1
 
     def data_setup(self):
 
         beams = [
-                self.axes.plot([], [])[0],
-                self.axes.plot([], [], 'r')[0],
-                self.axes.plot([], [], 'r')[0]
+                self.ax.plot([], [], 'b')[0],
+                self.ax.plot([], [], 'r')[0],
+                self.ax.plot([], [], 'r')[0]
                 ]
 
         return beams
@@ -285,7 +302,7 @@ class Plot(SetupPlotting):
 
         e_positions = np.array(self.info.timestep(t)[0])[:, 0].tolist()
         # Remove duplicates in data.
-        for i in range(len(self.info.drifts)):
+        for i in range(len(self.info.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
@@ -309,47 +326,33 @@ class Plot(SetupPlotting):
         beams = self.init_data()
         beams[0].set_data(xaxis, e_data)
         for line, x, y in zip([beams[1], beams[2]],
-                          self.info.p_coord, p_data):
+                          self.info.data.p_coord, p_data):
             line.set_data(x, y)
 
         return beams
 
-    def show_plot(self):
-
-        # Plot positions of kickers and IDs.
-        for i in self.info.kickers:
-            self.axes.axvline(x=i.s, color='k', linestyle='dashed')
-        for i in self.info.ids:
-            self.axes.axvline(x=i.s, color='r', linestyle='dashed')
-
-        # Create animations
-        self.anim = animation.FuncAnimation(self.figure, self.animate,
-                    init_func=self.init_data, frames=1000, interval=20)
-
     def update_colourin(self):
 
-        strengths1 = np.array([2, -2, 2, 0, 0])
-        strengths2 = np.array([0, 0, 2, -2, 2])
+        strengths = [np.array([2, -2, 2, 0, 0]), np.array([0, 0, 2, -2, 2])]
+        edges = [[], []]
+        for s in range(2):
+            edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]
 
-        edges1 = np.array(self.info.p_beam_range(strengths1))[:, [0, 2]]
-        edges2 = np.array(self.info.p_beam_range(strengths2))[:, [0, 2]]
+        beam1min = edges[0][0]
+        beam1max = edges[1][0]
+        beam2min = edges[1][1]
+        beam2max = edges[0][1]
 
-        beam1min = edges1[0]
-        beam1max = edges2[0]
-        beam2min = edges2[1]
-        beam2max = edges1[1]
-
-        self.fill1 = self.axes.fill_between(self.info.p_coord[0],
+        self.fill1 = self.ax.fill_between(self.info.data.p_coord[0],
                                beam1min, beam1max, facecolor='blue', alpha=0.2)
-        self.fill2 = self.axes.fill_between(self.info.p_coord[1],
+        self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 # define here or in init?
 
-class GaussPlot(FigureCanvas):
+class GaussPlot(SetupPlotting):
 
     def __init__(self):
-        self.figure = plt.figure()
-        FigureCanvas.__init__(self, self.figure)
+        SetupPlotting.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.trigger = np.load('trigger.npy')
         self.trace = np.load('diode.npy')
@@ -401,9 +404,6 @@ class GaussPlot(FigureCanvas):
 class WaveformCanvas(SetupPlotting):
 
     def __init__(self, pv1, pv2):
-#        self.scale = 1
-#        self.figure = plt.figure()
-#        FigureCanvas.__init__(self, self.figure)
         SetupPlotting.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
 
@@ -469,8 +469,6 @@ class WaveformCanvas(SetupPlotting):
 class Trigger(SetupPlotting):
 
     def __init__(self):
-#        self.figure = plt.figure()
-#        FigureCanvas.__init__(self, self.figure)
         SetupPlotting.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
 
@@ -533,7 +531,6 @@ class Gui(QMainWindow):
 
 #        self.ui.paramsButton.clicked.connect(self.set_params)
 
-        self.ui.simulation.show_plot()
         self.ui.simulation.update_colourin()
         self.ui.gaussians.display()
         self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
@@ -552,14 +549,14 @@ class Gui(QMainWindow):
 
     def btn_ctrls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
-        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill1)
-        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill2)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()
-        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill1)
-        self.ui.simulation.axes.collections.remove(self.ui.simulation.fill2)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
 
 def main():
