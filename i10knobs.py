@@ -34,6 +34,8 @@ from matplotlib.figure import Figure
 
 import scipy.integrate as integ
 
+import i10plots
+
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
 ALARM_COLORS = [
@@ -48,7 +50,7 @@ class OverCurrentException(Exception):
     def __init__(self, magnet_index):
         self.magnet_index = magnet_index
 
-
+'''
 class WaveformCanvas(FigureCanvas):
     def __init__(self, pv1, pv2):
         self.figure = pylab.plt.figure()
@@ -92,7 +94,7 @@ class WaveformCanvas(FigureCanvas):
 
 #        print edges
         return data1, data2
-
+'''
 
 class Knobs(object):
 
@@ -267,18 +269,12 @@ class KnobsUi(object):
         camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.graph = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.ui.graph = i10plots.Plot()
         self.ui.graph_layout.addWidget(self.ui.graph)
-
-        self.plot_area()
-
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
         self.ui.cycling_textbox.setText(QtCore.QString('%s' % var.enums[var]))
-
-    def plot_area(self):
-        self.ui.area_label.setText('Area here when I know how')
 
     def update_magnet_led(self, var):
         '''Uses PV alarm status to choose color for qframe'''
