@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import cothread
 from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
@@ -154,7 +153,9 @@ class GaussPlot(BaseFigureCanvas):
 
         except RangeError:
             print 'Trace is partially cut off'
-            self.line = [self.ax.plot(float('nan'), label='Trace is partially cut off'), self.ax.plot(float('nan'))]
+            self.line = [self.ax.plot(float('nan'),
+                         label='Trace is partially cut off'),
+                         self.ax.plot(float('nan'))]
             self.ax.legend()
 
 

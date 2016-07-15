@@ -14,7 +14,6 @@ from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 from PyQt4 import uic
-from PyQt4 import QtGui
 from PyQt4.QtGui import QMainWindow
 import os
 
