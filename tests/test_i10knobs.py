@@ -1,5 +1,5 @@
 from pkg_resources import require
-require("cothread==2.10")
+require("cothread")
 require("mock")
 import unittest
 import cothread

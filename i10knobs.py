@@ -11,9 +11,9 @@ electron beams to maintain a closed bump.
 
 
 from pkg_resources import require
-require('cothread==2.10')
-require('scipy==0.10.1')
-require('matplotlib==1.3.1')
+require('cothread')
+require('scipy')
+require('matplotlib')
 
 import cothread
 from cothread.catools import caget, caput, camonitor, FORMAT_TIME, FORMAT_CTRL
