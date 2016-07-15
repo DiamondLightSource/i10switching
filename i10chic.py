@@ -198,7 +198,8 @@ class CollectData(object):
     def create_photon_beam(self, vector):
 
         for i in range(2):
-            self.travel[i].set_length(self.data.p_coord[i][1] - self.data.p_coord[i][0])
+            self.travel[i].set_length(self.data.p_coord[i][1]
+                                      - self.data.p_coord[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector
@@ -210,11 +211,11 @@ class CollectData(object):
         p_vector = []
 
         # Send e_vector through system and create electron and photon beams
-        for p in self.data.path:
-            if p.get_type() != 'detector':
-                e_vector = p.increment(e_vector)
-                e_beam[self.data.path.index(p)+1] = e_vector
-            if p.get_type() == 'id':
+        for x in self.data.path:
+            if x.get_type() != 'detector':
+                e_vector = x.increment(e_vector)
+                e_beam[self.data.path.index(x)+1] = e_vector
+            if x.get_type() == 'id':
                 p_vector.append(e_vector.tolist())
         p_beam = self.create_photon_beam(p_vector)
 
@@ -239,9 +240,9 @@ class CollectData(object):
 
         return p_beam
 
-####################
-## Graph plotting ##
-####################
+########################
+#### Graph plotting ####
+########################
 
 class SetupPlotting(FigureCanvas): # inheritance works but graphs are tiny - to be worked out...
 
