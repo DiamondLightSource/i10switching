@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1034</width>
-    <height>735</height>
+    <width>857</width>
+    <height>838</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="6" column="0" colspan="2">
+    <item row="7" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="kplusButton">
@@ -120,15 +120,12 @@
       </item>
      </layout>
     </item>
-    <item row="1" column="0" colspan="2">
-     <layout class="QVBoxLayout" name="matplotlib_layout"/>
-    </item>
     <item row="0" column="0" colspan="2">
      <layout class="QGridLayout" name="gridLayout_2">
       <property name="sizeConstraint">
        <enum>QLayout::SetDefaultConstraint</enum>
       </property>
-      <item row="0" column="4">
+      <item row="0" column="3">
        <widget class="QFrame" name="frame">
         <property name="frameShape">
          <enum>QFrame::StyledPanel</enum>
@@ -151,30 +148,62 @@
         </property>
        </spacer>
       </item>
-      <item row="0" column="2">
-       <widget class="QLabel" name="label">
+      <item row="0" column="1">
+       <widget class="QPushButton" name="paramsButton">
         <property name="maximumSize">
          <size>
-          <width>100</width>
-          <height>16777215</height>
+          <width>120</width>
+          <height>50</height>
          </size>
         </property>
         <property name="text">
-         <string>Config param</string>
-        </property>
-       </widget>
-      </item>
-      <item row="0" column="3">
-       <widget class="QPlainTextEdit" name="plainTextEdit">
-        <property name="maximumSize">
-         <size>
-          <width>100</width>
-          <height>50</height>
-         </size>
+         <string>Set parameters</string>
         </property>
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="6" column="0">
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Tab 1</string>
+       </attribute>
+       <widget class="QWidget" name="verticalLayoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>831</width>
+          <height>631</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="graphLayout"/>
+       </widget>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Tab 2</string>
+       </attribute>
+       <widget class="QWidget" name="verticalLayoutWidget_2">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>0</y>
+          <width>821</width>
+          <height>621</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="graphLayout2"/>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+    <item row="1" column="0" colspan="2">
+     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
    </layout>
   </widget>
@@ -183,7 +212,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1034</width>
+     <width>857</width>
      <height>25</height>
     </rect>
    </property>
