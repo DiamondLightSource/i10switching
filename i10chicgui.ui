@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="7" column="0" colspan="2">
+    <item row="7" column="0">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="kplusButton">
@@ -157,7 +157,7 @@
          </size>
         </property>
         <property name="text">
-         <string>Set parameters</string>
+         <string>Press this button</string>
         </property>
        </widget>
       </item>

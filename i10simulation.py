@@ -1,3 +1,6 @@
+#i10simulation
+# Contains Element classes, Layout (which now includes 'send_electrons_through')
+
 import numpy as np
 
 # Define matrices to modify the electron beam vector:

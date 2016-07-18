@@ -1,3 +1,7 @@
+#i10straight
+# Contains ButtonData, MagnetStrengths, CollectData
+# Calls i10simulation
+
 import numpy as np
 from scipy.constants import c
 

@@ -1,5 +1,6 @@
 #i10accelui.py
 #Gui linking to i10plots, straight, simulation
+# Contains Gui
 
 # Import libraries
 

@@ -1,3 +1,8 @@
+#i10plots
+# Contains BaseFigureCanvas, Plot, GaussPlot, WaveformCanvas, Trigger, RangeError
+# Calls i10straight
+# Need to rename classes to be more sensible
+
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
@@ -232,7 +237,7 @@ class Trigger(BaseFigureCanvas):
 
     def plot_trigger(self, data):
 
-        self.ax.plot(np.load('example_data/trigger.npy')) #caget(data))
+        self.ax.plot(caget(data)) #np.load('example_data/trigger.npy'))
 
 
 class RangeError(Exception):

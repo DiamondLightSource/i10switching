@@ -14,6 +14,7 @@ from pkg_resources import require
 require('cothread==2.10')
 require('scipy==0.10.1')
 require('matplotlib==1.3.1')
+require('numpy==1.11.1')
 
 import cothread
 from cothread.catools import caget, caput, camonitor, FORMAT_TIME, FORMAT_CTRL
@@ -226,6 +227,7 @@ class KnobsUi(object):
 
         self.ui.graph = i10plots.Plot()
         self.ui.graph_layout.addWidget(self.ui.graph)
+        self.ui.graph.update_colourin()
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
