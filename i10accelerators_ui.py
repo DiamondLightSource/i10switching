@@ -61,7 +61,7 @@ class Gui(QMainWindow):
 
         self.ui.simulation = i10plots.Plot()
         self.ui.gaussians = i10plots.GaussPlot()
-        self.toolbar = NavigationToolbar(self.ui.gaussians, self)
+        self.toolbar = NavigationToolbar(self.ui.simulation, self)
         self.knobs = i10buttons.Knobs()
 
         self.ui.graphLayout.addWidget(self.ui.simulation)
@@ -107,14 +107,79 @@ class Gui(QMainWindow):
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
+
         self.ui.simulation.update_colourin()
         self.ui.gaussians.display()
+
+        self.ui.simButton.setChecked(False)
+        self.ui.simButton.clicked.connect(self.toggle_simulation)
+
+    def toggle_simulation(self):
+        if self.ui.simButton.isChecked() == True:
+            self.ui.kplusButton.clicked.disconnect(self.k3_plus)
+            self.ui.kminusButton.clicked.disconnect(self.k3_minus)
+            self.ui.bumpleftplusButton.clicked.disconnect(self.bump1_plus)
+            self.ui.bumpleftminusButton.clicked.disconnect(self.bump1_minus)
+            self.ui.bumprightplusButton.clicked.disconnect(self.bump2_plus)
+            self.ui.bumprightminusButton.clicked.disconnect(self.bump2_minus)
+            self.ui.bpm1plusButton.clicked.disconnect(self.hbpm1_plus)
+            self.ui.bpm1minusButton.clicked.disconnect(self.hbpm1_minus)
+            self.ui.bpm2plusButton.clicked.disconnect(self.hbpm2_plus)
+            self.ui.bpm2minusButton.clicked.disconnect(self.hbpm2_minus)
+            self.ui.scaleplusButton.clicked.disconnect(self.scale_plus)
+            self.ui.scaleminusButton.clicked.disconnect(self.scale_minus)
+        else:
+            self.reset()
+            self.ui.kplusButton.clicked.connect(self.k3_plus)
+            self.ui.kminusButton.clicked.connect(self.k3_minus)
+            self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
+            self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
+            self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
+            self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
+            self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
+            self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
+            self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
+            self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
+            self.ui.scaleplusButton.clicked.connect(self.scale_plus)
+            self.ui.scaleminusButton.clicked.connect(self.scale_minus)
+
 
     def btn_ctrls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
+
+    def pv_disconnection(self, on):
+
+        if on == True:
+            self.ui.kplusButton.clicked.disconnect(self.k3_plus)
+            self.ui.kminusButton.clicked.disconnect(self.k3_minus)
+            self.ui.bumpleftplusButton.clicked.disconnect(self.bump1_plus)
+            self.ui.bumpleftminusButton.clicked.disconnect(self.bump1_minus)
+            self.ui.bumprightplusButton.clicked.disconnect(self.bump2_plus)
+            self.ui.bumprightminusButton.clicked.disconnect(self.bump2_minus)
+            self.ui.bpm1plusButton.clicked.disconnect(self.hbpm1_plus)
+            self.ui.bpm1minusButton.clicked.disconnect(self.hbpm1_minus)
+            self.ui.bpm2plusButton.clicked.disconnect(self.hbpm2_plus)
+            self.ui.bpm2minusButton.clicked.disconnect(self.hbpm2_minus)
+            self.ui.scaleplusButton.clicked.disconnect(self.scale_plus)
+            self.ui.scaleminusButton.clicked.disconnect(self.scale_minus)
+
+        if on == False:
+            self.reset()
+            self.ui.kplusButton.clicked.connect(self.k3_plus)
+            self.ui.kminusButton.clicked.connect(self.k3_minus)
+            self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
+            self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
+            self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
+            self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
+            self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
+            self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
+            self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
+            self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
+            self.ui.scaleplusButton.clicked.connect(self.scale_plus)
+            self.ui.scaleminusButton.clicked.connect(self.scale_minus)
 
     def hbpm1_plus(self):
         self.jog_handler(
@@ -135,22 +200,6 @@ class Gui(QMainWindow):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                     -self.knobs.right)
-
-#    def vbpm1_plus(self):
-#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
-#                self.knobs.trimleft)
-#
-#    def vbpm1_minus(self):
-#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
-#                -self.knobs.trimleft)
-#
-#    def vbpm2_plus(self):
-#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
-#               self.knobs.trimright)
-#
-#    def vbpm2_minus(self):
-#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
-#               -self.knobs.trimright)
 
     def k3_plus(self):
         self.jog_handler(
@@ -200,7 +249,7 @@ class Gui(QMainWindow):
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()
-        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1) # PROBLEM - HOW EXACTLY DO YOU WANT TO RESET SIMULATION AND IS IT JUST SIMULATION THAT YOU WANT TO RESET? CHECK...
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
 

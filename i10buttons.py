@@ -57,10 +57,10 @@ class Knobs(object):
         self.dk3 = dk3 * 1
 
         ## TODO: pick the correct parts from the file
-        self.left = S['ch'][:,0] * dbpm
-        self.right = S['ch'][:,1] * dbpm
-        self.trimleft = S['tv'][:,0] * dbpm
-        self.trimright = S['tv'][:,1] * dbpm
+        self.left = S['ch'][:, 0] * dbpm
+        self.right = S['ch'][:, 1] * dbpm
+        self.trimleft = S['tv'][:, 0] * dbpm
+        self.trimright = S['tv'][:, 1] * dbpm
 
         # 600 Clicks to move through entire range
         self.b1 = numpy.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600
