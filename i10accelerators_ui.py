@@ -68,6 +68,11 @@ class Gui(QMainWindow):
         self.ui.graphLayout2.addWidget(self.ui.gaussians)
         self.ui.graphLayout.addWidget(self.toolbar)
 
+        self.ui.small_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
+        self.ui.full_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(1.0))
+
         self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
         self.ui.kplusButton.clicked.connect(self.k3_plus)
 
@@ -114,7 +119,7 @@ class Gui(QMainWindow):
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
 
-    def toggle_simulation(self):
+    def toggle_simulation(self): # got to be a shorter way... list of buttons and functions?
         if self.ui.simButton.isChecked() == True:
             self.ui.kplusButton.clicked.disconnect(self.k3_plus)
             self.ui.kminusButton.clicked.disconnect(self.k3_minus)
@@ -143,43 +148,11 @@ class Gui(QMainWindow):
             self.ui.scaleplusButton.clicked.connect(self.scale_plus)
             self.ui.scaleminusButton.clicked.connect(self.scale_minus)
 
-
     def btn_ctrls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
-
-    def pv_disconnection(self, on):
-
-        if on == True:
-            self.ui.kplusButton.clicked.disconnect(self.k3_plus)
-            self.ui.kminusButton.clicked.disconnect(self.k3_minus)
-            self.ui.bumpleftplusButton.clicked.disconnect(self.bump1_plus)
-            self.ui.bumpleftminusButton.clicked.disconnect(self.bump1_minus)
-            self.ui.bumprightplusButton.clicked.disconnect(self.bump2_plus)
-            self.ui.bumprightminusButton.clicked.disconnect(self.bump2_minus)
-            self.ui.bpm1plusButton.clicked.disconnect(self.hbpm1_plus)
-            self.ui.bpm1minusButton.clicked.disconnect(self.hbpm1_minus)
-            self.ui.bpm2plusButton.clicked.disconnect(self.hbpm2_plus)
-            self.ui.bpm2minusButton.clicked.disconnect(self.hbpm2_minus)
-            self.ui.scaleplusButton.clicked.disconnect(self.scale_plus)
-            self.ui.scaleminusButton.clicked.disconnect(self.scale_minus)
-
-        if on == False:
-            self.reset()
-            self.ui.kplusButton.clicked.connect(self.k3_plus)
-            self.ui.kminusButton.clicked.connect(self.k3_minus)
-            self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
-            self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
-            self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
-            self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
-            self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
-            self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
-            self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
-            self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
-            self.ui.scaleplusButton.clicked.connect(self.scale_plus)
-            self.ui.scaleminusButton.clicked.connect(self.scale_minus)
 
     def hbpm1_plus(self):
         self.jog_handler(

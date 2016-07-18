@@ -101,7 +101,7 @@ class Plot(BaseFigureCanvas):
 
     def update_colourin(self):
 
-        strengths = [np.array([2, -2, 2, 0, 0]), np.array([0, 0, 2, -2, 2])]
+        strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
         edges = [[], []]
         for s in range(2):
             edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]

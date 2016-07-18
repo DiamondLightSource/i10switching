@@ -59,7 +59,7 @@ class KnobsUi(QtGui.QMainWindow):
 
         self.ui.small_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correcton_radiobutton.clicked.connect(
+        self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
         self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
