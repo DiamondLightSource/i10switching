@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: python
 python:
   - "2.7"
@@ -10,6 +10,8 @@ cache:
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
 
 before_install:
+  - sudo apt-get build-dep python-scipy
+  - pip install scipy
   - DIR=$(pwd)
   - cd ..
   - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
