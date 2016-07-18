@@ -65,9 +65,7 @@ class Knobs(object):
         'SR10S-PC-CTRL-05']
 
     def __init__(self):
-
         """Setup physics values from matlab files."""
-
         S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
         # knob deltas
@@ -101,12 +99,10 @@ class Knobs(object):
         return caget([name + ':ERRG' for name in self.NAMES])
 
     def jog(self, pvs, ofs):
-
         """
         Increments the list of PVs by the offset.
         Errors are created when a user is likley to exceed magnet tolerances.
         """
-
         ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
@@ -139,13 +135,11 @@ class Knobs(object):
 
 
 class KnobsUi(QtGui.QMainWindow):
-
     """
     Provides the GUI to the underlying Knobs class.
     Relevant status information is also gathered from PVs
     and shown to the user.
     """
-
     UI_FILENAME = 'i10beamlineui.ui'
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
@@ -154,12 +148,10 @@ class KnobsUi(QtGui.QMainWindow):
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     def __init__(self):
-
         """
         Setup UI.
         Connect components and setup all camonitors and associated callbacks.
         """
-
         self.knobs = Knobs()
         QtGui.QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
@@ -186,12 +178,10 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
 
     def jog_handler(self, pvs, ofs):
-
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.
         """
-
         try:
             self.knobs.jog(pvs, ofs)
         except OverCurrentException, e:
@@ -209,9 +199,7 @@ class KnobsUi(QtGui.QMainWindow):
             msgBox.exec_()
 
     def set_jog_scaling(self, scale):
-
         """Change the scaling applied to magnet corrections."""
-
         self.knobs.jog_scale = scale
 
     def bump1_plus(self):
