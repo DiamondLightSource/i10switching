@@ -355,8 +355,8 @@ class GaussPlot(BaseFigureCanvas):
     def __init__(self):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
-        self.trigger = np.load('trigger.npy')
-        self.trace = np.load('diode.npy')
+        self.trigger = np.load('example_data/trigger.npy')
+        self.trace = np.load('example_data/diode.npy')
 
     def display(self):
 
@@ -475,7 +475,7 @@ class Trigger(BaseFigureCanvas):
 
     def plot_trigger(self, data):
 
-        self.ax.plot(np.load('trigger.npy')) #caget(data))
+        self.ax.plot(caget(data)) #np.load('trigger.npy'))
 
 
 class RangeError(Exception):

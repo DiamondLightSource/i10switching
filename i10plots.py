@@ -130,7 +130,7 @@ class GaussPlot(BaseFigureCanvas):
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(self.trace)
-            stepvalue = 0.1 # have i got exceptions in right places? should there be way to change it if it it's wrong?
+            stepvalue = 0.1 # have I got exceptions in right places? should there be way to change it if it's wrong?
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
