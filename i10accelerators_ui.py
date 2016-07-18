@@ -18,6 +18,7 @@ from PyQt4 import uic
 from PyQt4 import QtGui
 from PyQt4.QtGui import QMainWindow
 import os
+import traceback
 
 import i10plots
 import i10buttons
