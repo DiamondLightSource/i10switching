@@ -118,19 +118,23 @@ class Gui(QMainWindow):
 
     def hbpm1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.left)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.left)
 
     def hbpm1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.left)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.left)
 
     def hbpm2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.right)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.right)
 
     def hbpm2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.right)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.right)
 
 #    def vbpm1_plus(self):
 #        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
@@ -150,39 +154,49 @@ class Gui(QMainWindow):
 
     def k3_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.dk3)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.dk3)
 
     def k3_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.dk3)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.dk3)
 
     def scale_plus(self):
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], self.knobs.dscale)
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
+                    self.knobs.dscale)
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.dscale)
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.dscale)
 
     def scale_minus(self):
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], -self.knobs.dscale)
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
+                    -self.knobs.dscale)
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.dscale)
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.dscale)
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.b1)
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.b1)
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    self.knobs.b2)
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                    -self.knobs.b2)
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()
