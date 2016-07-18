@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>857</width>
-    <height>838</height>
+    <width>849</width>
+    <height>805</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,7 +18,7 @@
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QGridLayout" name="gridLayout">
-    <item row="7" column="0">
+    <item row="8" column="0">
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="kplusButton">
@@ -166,7 +166,7 @@
     <item row="6" column="0">
      <widget class="QTabWidget" name="tabWidget">
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <widget class="QWidget" name="tab">
        <attribute name="title">
@@ -178,7 +178,7 @@
           <x>0</x>
           <y>0</y>
           <width>831</width>
-          <height>631</height>
+          <height>401</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="graphLayout"/>
@@ -194,7 +194,7 @@
           <x>0</x>
           <y>0</y>
           <width>821</width>
-          <height>621</height>
+          <height>401</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="graphLayout2"/>
@@ -205,6 +205,121 @@
     <item row="1" column="0" colspan="2">
      <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
+    <item row="7" column="0">
+     <widget class="QTableWidget" name="table_widget">
+      <property name="minimumSize">
+       <size>
+        <width>0</width>
+        <height>160</height>
+       </size>
+      </property>
+      <property name="maximumSize">
+       <size>
+        <width>16777215</width>
+        <height>200</height>
+       </size>
+      </property>
+      <property name="verticalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="horizontalScrollBarPolicy">
+       <enum>Qt::ScrollBarAlwaysOff</enum>
+      </property>
+      <property name="autoScroll">
+       <bool>false</bool>
+      </property>
+      <property name="tabKeyNavigation">
+       <bool>false</bool>
+      </property>
+      <property name="showDropIndicator" stdset="0">
+       <bool>false</bool>
+      </property>
+      <property name="dragDropOverwriteMode">
+       <bool>false</bool>
+      </property>
+      <property name="selectionMode">
+       <enum>QAbstractItemView::NoSelection</enum>
+      </property>
+      <property name="cornerButtonEnabled">
+       <bool>false</bool>
+      </property>
+      <property name="rowCount">
+       <number>5</number>
+      </property>
+      <property name="columnCount">
+       <number>7</number>
+      </property>
+      <row>
+       <property name="text">
+        <string>FCHIC-01</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>FCHIC-02</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>FCHIC-03</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>FCHIC-04</string>
+       </property>
+      </row>
+      <row>
+       <property name="text">
+        <string>FCHIC-05</string>
+       </property>
+      </row>
+      <column>
+       <property name="text">
+        <string>High
+Limit</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>High</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Target
+Offset</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Actual
+Offset</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Low</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Low
+Limit</string>
+       </property>
+      </column>
+      <column>
+       <property name="text">
+        <string>Errors</string>
+       </property>
+      </column>
+      <item row="0" column="0">
+       <property name="text">
+        <string/>
+       </property>
+      </item>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -212,7 +327,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>857</width>
+     <width>849</width>
      <height>25</height>
     </rect>
    </property>

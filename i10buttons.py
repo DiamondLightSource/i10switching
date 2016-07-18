@@ -1,12 +1,10 @@
 #i10buttons
 # Contains Knobs
 
-import cothread
-from cothread.catools import caget, caput, camonitor, FORMAT_TIME
+from cothread.catools import caget, caput, FORMAT_TIME
 import numpy
 import scipy.io
 import os
-import traceback
 
 
 class OverCurrentException(Exception):
@@ -81,17 +79,17 @@ class Knobs(object):
 
     def jog(self, pvs, ofs):
         """
-        Increments the list of PVs by the offset.
+        Increment the list of PVs by the offset.
         Errors are created when a user is likley to exceed magnet tolerances.
         """
         ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
-        values = old_values + ofs #;
+        values = old_values + ofs;
 
         print
         for name, old, new in zip(pvs, old_values, values):
-            print '%s:\t%f->%f' % (name, old, new) #;
+            print '%s:\t%f->%f' % (name, old, new);
 
         scales = [abs(scale) for scale in self.get_scale()]
         offsets = self.get_offset()
