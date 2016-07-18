@@ -75,7 +75,7 @@ class InsertionDevice(Element):
 # Assign locations of devices along the axis of the system.
 class Layout(object):
 
-    NAME = 'config.txt'
+    NAME = 'config.txt' # TAKE THIS AS AN ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
     def __init__(self):
         self.path = self.load()

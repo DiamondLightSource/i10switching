@@ -229,16 +229,33 @@ class WaveformCanvas(BaseFigureCanvas):
             data2 = [float('nan'), float('nan')]
             return data1, data2
 
-class Trigger(BaseFigureCanvas):
 
-    def __init__(self):
+class Traces(BaseFigureCanvas):
+
+    def __init__(self, pv1, pv2):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
 
-    def plot_trigger(self, data):
+        # Initialise with real data the first time to set axis ranges
+        trigger = caget(pv1)
+        trace = caget(pv2)
+        x = range(len(trace))
+        self.lines = [
+                     self.ax.plot(x, trigger, 'b')[0],
+                     self.ax.plot(x, trace, 'g')[0]
+                     ]
+        camonitor(pv1, self.update_trigger)
+        camonitor(pv2, self.update_trace)
 
-        self.ax.plot(caget(data)) #np.load('example_data/trigger.npy'))
+    def update_trigger(self, value):
 
+        self.lines[0].set_ydata(value)
+        self.draw()
+
+    def update_trace(self, value):
+
+        self.lines[1].set_ydata(value)
+        self.draw()
 
 class RangeError(Exception):
 

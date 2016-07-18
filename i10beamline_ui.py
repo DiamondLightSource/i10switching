@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python2.7
 
-# i10knobs simplified to see what it's like without the table...
+
 
 """
 Buttons to move I10 fast chicane magnet offsets and scales.
@@ -26,10 +26,6 @@ from PyQt4 import uic
 
 import i10plots
 import i10buttons
-
-#class OverCurrentException(Exception):
-#    def __init__(self, magnet_index):
-#        self.magnet_index = magnet_index
 
 
 class KnobsUi(QtGui.QMainWindow):
@@ -66,14 +62,12 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.full_correcton_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
-        self.ui.trig = i10plots.Trigger()
+        self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph = i10plots.WaveformCanvas(
                                         self.I10_ADC_1_PV, self.I10_ADC_2_PV)
 
-        self.ui.graph_layout.addWidget(self.ui.trig)
+        self.ui.graph_layout.addWidget(self.ui.traces)
         self.ui.graph_layout.addWidget(self.ui.graph)
-
-        self.ui.trig.plot_trigger(self.I10_ADC_1_PV)
 
     def jog_handler(self, pvs, ofs):
         """

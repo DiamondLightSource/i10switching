@@ -64,12 +64,15 @@ class Gui(QMainWindow):
         self.toolbar = NavigationToolbar(self.ui.gaussians, self)
         self.knobs = i10buttons.Knobs()
 
-        self.ui.graphLayout.addWidget(self.ui.simulation) # do I want tabs? if not go back to matplotlib_layout and just delete the tab thing in pyqt
+        self.ui.graphLayout.addWidget(self.ui.simulation)
         self.ui.graphLayout2.addWidget(self.ui.gaussians)
         self.ui.graphLayout.addWidget(self.toolbar)
 
         self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
+        self.ui.kplusButton.clicked.connect(self.k3_plus)
+
         self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 0))
+        self.ui.kminusButton.clicked.connect(self.k3_minus)
 
         self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1, 1))
         self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
@@ -84,11 +87,23 @@ class Gui(QMainWindow):
         self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
 
         self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1, 3))
+        self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
+
         self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 3))
+        self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
+
         self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1, 4))
+        self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
+
         self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 4))
+        self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
+
         self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1, 5))
+        self.ui.scaleplusButton.clicked.connect(self.scale_plus)
+
         self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 5))
+        self.ui.scaleminusButton.clicked.connect(self.scale_minus)
+
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.quitButton.clicked.connect(sys.exit)
 
@@ -100,6 +115,74 @@ class Gui(QMainWindow):
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
+
+    def hbpm1_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.left)
+
+    def hbpm1_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.left)
+
+    def hbpm2_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.right)
+
+    def hbpm2_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.right)
+
+#    def vbpm1_plus(self):
+#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+#                self.knobs.trimleft)
+#
+#    def vbpm1_minus(self):
+#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+#                -self.knobs.trimleft)
+#
+#    def vbpm2_plus(self):
+#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+#               self.knobs.trimright)
+#
+#    def vbpm2_minus(self):
+#        self.jog_handler([trimname + ':SETI' for trimname in Knobs.TRIMNAMES],
+#               -self.knobs.trimright)
+
+    def k3_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.dk3)
+
+    def k3_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.dk3)
+
+    def scale_plus(self):
+        self.jog_handler(
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], self.knobs.dscale)
+        self.jog_handler(
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.dscale)
+
+    def scale_minus(self):
+        self.jog_handler(
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], -self.knobs.dscale)
+        self.jog_handler(
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.dscale)
+
+    def bump1_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.b1)
+
+    def bump1_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.b1)
+
+    def bump2_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], self.knobs.b2)
+
+    def bump2_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -self.knobs.b2)
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()
@@ -227,21 +310,6 @@ class Gui(QMainWindow):
         self.update_float(high, int(ioc_1)-1, self.Columns.HIGH)
         self.update_float(low, int(ioc_1)-1, self.Columns.LOW)
 
-    def bump1_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], self.knobs.b1)
-
-    def bump1_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], -self.knobs.b1)
-
-    def bump2_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], self.knobs.b2)
-
-    def bump2_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], -self.knobs.b2)
 
 def main():
     cothread.iqt()
