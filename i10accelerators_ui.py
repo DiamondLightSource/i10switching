@@ -68,10 +68,10 @@ class Gui(QMainWindow):
         self.ui.graphLayout2.addWidget(self.ui.gaussians)
         self.ui.graphLayout.addWidget(self.toolbar)
 
-        self.ui.small_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
-        self.ui.full_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(1.0))
+#        self.ui.small_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
+#        self.ui.full_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(1.0))
 
         self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
         self.ui.kplusButton.clicked.connect(self.k3_plus)

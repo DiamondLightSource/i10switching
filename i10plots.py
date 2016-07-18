@@ -1,5 +1,8 @@
 #i10plots
-# Contains BaseFigureCanvas, Plot, GaussPlot, WaveformCanvas, Trigger, RangeError
+# Contains BaseFigureCanvas, Plot, GaussPlot, WaveformCanvas, Traces, RangeError
+# TODO Rename graphs thus: Simulation, (replace GaussPlot by a graph that 
+# actually plots a gaussian?? no, set functionality so you can overlay a 
+# gaussian on peaks?), OverlaidWaveforms, Traces, RangeError
 # Calls i10straight
 # Need to rename classes to be more sensible
 

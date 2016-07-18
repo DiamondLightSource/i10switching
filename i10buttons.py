@@ -91,11 +91,11 @@ class Knobs(object):
         ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
-        values = old_values + ofs;
+        values = old_values + ofs
 
         print
         for name, old, new in zip(pvs, old_values, values):
-            print '%s:\t%f->%f' % (name, old, new);
+            print '%s:\t%f->%f' % (name, old, new)
 
         scales = [abs(scale) for scale in self.get_scale()]
         offsets = self.get_offset()

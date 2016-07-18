@@ -75,11 +75,10 @@ class InsertionDevice(Element):
 # Assign locations of devices along the axis of the system.
 class Layout(object):
 
-    NAME = 'config.txt' # TAKE THIS AS AN ARGUMENT!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    def __init__(self):
+    def __init__(self, name):
+        self.NAME = name # best way to call it?
         self.path = self.load()
-        self.ids = self.get_elements('id') # should these REALLY be here? is it any better?
+        self.ids = self.get_elements('id') # should these REALLY be here?
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
         self.p_coord = [[self.ids[0].s,
