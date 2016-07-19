@@ -29,11 +29,11 @@ class MagnetStrengths(object):
     # Conversion values between current and tesla for the kickers.
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
                              0.045012/23, 0.035174/23])
-    CURRENTS = np.array([23.261, 23.2145, 10.188844, 23.106842, 23.037771])
+    CURRENTS = np.array([23.2610, 23.2145, 10.188844, 23.106842, 23.037771])
     FIELDS = CURRENTS*AMP_TO_TESLA
 
     def __init__(self):
-        self.fields_add = self.FIELDS
+        self.fields_add = np.array([0, 0, 0, 0, 0])
         self.offset = np.array([0, 0, 0, 0, 0])
         self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.FIELDS])
@@ -44,10 +44,11 @@ class MagnetStrengths(object):
         self.fields_add = self.fields_add + factor*np.array(
                           ButtonData.SHIFT[button])*self.AMP_TO_TESLA
         self.offset = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
-                                  for x in self.fields_add]) - self.max_kick # is this correct?
+                                  for x in self.fields_add])
 
     def reset(self):
 
+        self.fields_add = np.array([0, 0, 0, 0, 0])
         self.offset = np.array([0, 0, 0, 0, 0])
 
     # Define time-varying strengths of kicker magnets.

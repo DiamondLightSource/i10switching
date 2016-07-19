@@ -46,7 +46,7 @@ class Plot(BaseFigureCanvas):
         ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
         ax1.get_yaxis().set_visible(False)
-        ax1.set_ylim(-0.02, 0.02)
+        ax1.set_ylim(-0.01, 0.01)
         # Plot positions of kickers and IDs.
         for i in self.info.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
