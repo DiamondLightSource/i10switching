@@ -235,7 +235,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             return data1, data2
 
     def gaussian(self, a, sigma):
-        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x), 2500)-len(self.x)/2)**2/(2*sigma**2)), 'r')
+        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x), len(self.x))-len(self.x)/2)**2/(2*sigma**2)), 'r')
         self.lines.append(self.gauss)
         self.draw()
 
