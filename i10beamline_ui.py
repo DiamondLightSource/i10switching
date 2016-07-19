@@ -76,8 +76,17 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.ampminusButton.clicked.connect(self.amp_minus)
         self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
         self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
+        self.ui.ampplusButton.setEnabled(False)
+        self.ui.ampminusButton.setEnabled(False)
+        self.ui.sigmaplusButton.setEnabled(False)
+        self.ui.sigmaminusButton.setEnabled(False)
 
     def gauss_fit(self):
+        enabled = self.ui.checkBox.isChecked()
+        self.ui.ampplusButton.setEnabled(enabled)
+        self.ui.ampminusButton.setEnabled(enabled)
+        self.ui.sigmaplusButton.setEnabled(enabled)
+        self.ui.sigmaminusButton.setEnabled(enabled)
         if self.ui.checkBox.isChecked() == True:
             self.ui.graph.gaussian(self.amp, self.sig) # make this adjustable
         else:
