@@ -116,7 +116,7 @@ class Gui(QMainWindow):
         self.ui.simulation.update_colourin()
 
         self.ui.gaussians.display()
-        self.ui.gaussians.gaussian(2.5,900)
+        self.ui.gaussians.gaussian(2.5, 900)
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)

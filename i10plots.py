@@ -1,5 +1,6 @@
 #i10plots
-# Contains BaseFigureCanvas, Simulation, GaussPlot, OverlaidWaveforms, Traces, RangeError
+# Contains BaseFigureCanvas, Simulation, GaussPlot, OverlaidWaveforms, Traces, 
+# RangeError
 # TODO replace GaussPlot by a graph that actually plots a gaussian?? no, set 
 # functionality so you can overlay a gaussian on peaks?
 # Calls i10straight
@@ -165,8 +166,8 @@ class GaussPlot(BaseFigureCanvas):
                          self.ax.plot(float('nan'))]
             self.ax.legend()
 
-    def gaussian(self, a, sigma):
-        self.ax.plot(a*np.exp(-(np.linspace(0, len(self.trace), 2500)-len(self.trace)/2)**2/(2*sigma**2)))
+    def gaussian(self, amplitude, sigma):
+        self.ax.plot(amplitude*np.exp(-(np.linspace(0, len(self.trace), 2500)-len(self.trace)/2)**2/(2*sigma**2)))
 
 
 class OverlaidWaveforms(BaseFigureCanvas):

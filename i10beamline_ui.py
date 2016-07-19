@@ -72,7 +72,7 @@ class KnobsUi(QtGui.QMainWindow):
 
     def gauss_fit(self):
         if self.ui.checkBox.isChecked() == True:
-            self.ui.graph.gaussian(2.5,900) # make this adjustable
+            self.ui.graph.gaussian(2.5, 900) # make this adjustable
         else:
             self.ui.graph.clear_gaussian()
 
