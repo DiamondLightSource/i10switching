@@ -70,10 +70,10 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.graph_layout.addWidget(self.ui.graph)
         self.ui.checkBox.clicked.connect(self.gauss_fit)
 
-        self.ui.ampplusButton.clicked.connect(self.amp_plus)
-        self.ui.ampminusButton.clicked.connect(self.amp_minus)
-        self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
-        self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
+#        self.ui.ampplusButton.clicked.connect(self.amp_plus)
+#        self.ui.ampminusButton.clicked.connect(self.amp_minus)
+#        self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
+#        self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
 
     def gauss_fit(self):
         if self.ui.checkBox.isChecked() == True:
@@ -111,19 +111,19 @@ class KnobsUi(QtGui.QMainWindow):
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], -self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in self.knobs.CTRLS], -self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 
 
 if __name__ == '__main__':

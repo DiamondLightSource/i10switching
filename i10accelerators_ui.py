@@ -87,40 +87,40 @@ class Gui(QMainWindow):
         for button, function in zip(self.buttons, self.functions):
             button.clicked.connect(function)
 
-        self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
+        self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 'STEP_K3'))
 #        self.ui.kplusButton.clicked.connect(self.k3_plus)
 
-        self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 0))
+        self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'STEP_K3'))
 #        self.ui.kminusButton.clicked.connect(self.k3_minus)
 
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1, 1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1, 'BUMP_LEFT'))
 #        self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
 
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'BUMP_LEFT'))
 #        self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
 
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1, 2))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1, 'BUMP_RIGHT'))
 #        self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
 
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 2))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'BUMP_RIGHT'))
 #        self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
 
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1, 3))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1, 'BPM1'))
 #        self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
 
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 3))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'BPM1'))
 #        self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
 
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1, 4))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1, 'BPM2'))
 #        self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
 
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 4))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'BPM2'))
 #        self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
 
-        self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1, 5))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1, 'SCALE'))
 #        self.ui.scaleplusButton.clicked.connect(self.scale_plus)
 
-        self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 5))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 'SCALE'))
 #        self.ui.scaleminusButton.clicked.connect(self.scale_minus)
 
         self.ui.resetButton.clicked.connect(self.reset)
@@ -135,7 +135,7 @@ class Gui(QMainWindow):
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
 
-    def toggle_simulation(self): # got to be a shorter way... list of buttons and functions?
+    def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
@@ -158,68 +158,68 @@ class Gui(QMainWindow):
 
     def k3_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.STEP_K3)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['STEP_K3'])
 #                    self.knobs.dk3)
 
     def k3_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.STEP_K3)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['STEP_K3'])
 #                    -self.knobs.dk3)
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BUMP_LEFT)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 #                    self.knobs.b1)
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BUMP_LEFT)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 #                    -self.knobs.b1)
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BUMP_RIGHT)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 #                    self.knobs.b2)
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BUMP_RIGHT)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 #                    -self.knobs.b2)
 
     def hbpm1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BPM1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BPM1'])
 #                    self.knobs.left)
 
     def hbpm1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BPM1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BPM1'])
 #                    -self.knobs.left)
 
     def hbpm2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BPM2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BPM2'])
 #                    self.knobs.right)
 
     def hbpm2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BPM2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BPM2'])
 #                    -self.knobs.right)
 
     def scale_plus(self):
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], i10buttons.ButtonData.SCALE)
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], i10buttons.ButtonData.SHIFT['SCALE'])
 #                    self.knobs.dscale)
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SCALE)
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['SCALE'])
 #                    self.knobs.dscale)
 
     def scale_minus(self):
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], -i10buttons.ButtonData.SCALE)
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], -i10buttons.ButtonData.SHIFT['SCALE'])
 #                    -self.knobs.dscale)
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SCALE)
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['SCALE'])
 #                    -self.knobs.dscale)
 
     def reset(self):
