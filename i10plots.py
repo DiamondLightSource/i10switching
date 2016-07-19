@@ -122,57 +122,6 @@ class Simulation(BaseFigureCanvas):
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 # define here or in init?
 
-class GaussPlot(BaseFigureCanvas):
-
-    def __init__(self):
-        BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.trigger = np.load('example_data/trigger.npy')
-        self.trace = np.load('example_data/diode.npy')
-
-    def display(self):
-
-        try:
-            diff = np.diff(self.trigger).tolist()
-            length = len(self.trace)
-            stepvalue = 0.1 # have I got exceptions in right places? should there be way to change it if it's wrong?
-
-            if min(diff) > -1*stepvalue or max(diff) < stepvalue:
-                raise RangeError
-
-            maxtrig = next(x for x in diff if x > stepvalue)
-            mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [diff.index(maxtrig), diff.index(mintrig)]
-
-            trigger_length = (edges[1]-edges[0])*2
-
-            if length < trigger_length:
-                raise RangeError
-
-            data = [[], []]
-            label = [[], []]
-            self.line = [[], []]
-            for i in range(2):
-                data[i] = np.roll(self.trace[:trigger_length], - edges[i]
-                                  - trigger_length/4)[:trigger_length/2]
-                label[i] = integ.simps(data[i])
-                if label[i] < 0.1:
-                    raise RangeError
-                self.line[i] = self.ax.plot(data[i], label=integ.simps(data[i]))
-            self.ax.legend()
-
-        except RangeError:
-            print 'Trace is partially cut off'
-            self.line = [self.ax.plot(float('nan'),
-                         label='Trace is partially cut off'),
-                         self.ax.plot(float('nan'))]
-            self.ax.legend()
-
-    def gaussian(self, amplitude, sigma):
-        self.ax.plot(amplitude*np.exp(-(np.linspace(0, len(self.trace), 2500)
-                                        -len(self.trace)/2)**2/(2*sigma**2)))
-
-
 class OverlaidWaveforms(BaseFigureCanvas):
 
     def __init__(self, pv1, pv2):

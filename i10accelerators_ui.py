@@ -60,16 +60,14 @@ class Gui(QMainWindow):
         self.setup_table()
 
         self.ui.simulation = i10plots.Simulation()
-        self.ui.gaussians = i10plots.GaussPlot()
         self.toolbar = NavigationToolbar(self.ui.simulation, self)
         self.knobs = i10buttons.Knobs()
 
-        self.ui.graphLayout.addWidget(self.ui.simulation)
-        self.ui.graphLayout2.addWidget(self.ui.gaussians)
-        self.ui.graphLayout.addWidget(self.toolbar)
+        self.ui.matplotlib_layout.addWidget(self.ui.simulation)
+        self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.ui.small_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
+                                        lambda: self.set_jog_scaling(0.1))
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
@@ -102,16 +100,12 @@ class Gui(QMainWindow):
         self.ui.bpm2minusButton.clicked.connect(lambda: self.simulation_controls(-1, 'BPM2'))
         self.ui.scaleplusButton.clicked.connect(lambda: self.simulation_controls(1, 'SCALE'))
         self.ui.scaleminusButton.clicked.connect(lambda: self.simulation_controls(-1, 'SCALE'))
-#        self.ui.scaleminusButton.setStyleSheet("background-color: red")
 
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.resetButton.setEnabled(False)
         self.ui.quitButton.clicked.connect(sys.exit)
 
         self.ui.simulation.update_colourin()
-
-        self.ui.gaussians.display()
-        self.ui.gaussians.gaussian(2.5, 900)
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
@@ -125,7 +119,7 @@ class Gui(QMainWindow):
                 button.clicked.disconnect(function)
             self.ui.simulation.figure.patch.set_alpha(0.5)
         else:
-            self.reset()
+            self.reset() # NOT QUITE - WANT IT TO GO BACK TO HOW IT WAS BEFORE SIMULATION MODE ENABLED...
             for button, function in zip(self.buttons, self.beam_controls):
                 button.clicked.connect(function)
             self.ui.simulation.figure.patch.set_alpha(0.0)
