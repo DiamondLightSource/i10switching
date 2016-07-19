@@ -70,11 +70,19 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.graph_layout.addWidget(self.ui.graph)
         self.ui.checkBox.clicked.connect(self.gauss_fit)
 
+        self.ui.ampplusButton.clicked.connect(self.amp_plus)
+        self.ui.ampminusButton.clicked.connect(self.amp_minus)
+        self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
+        self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
+
     def gauss_fit(self):
         if self.ui.checkBox.isChecked() == True:
             self.ui.graph.gaussian(2.5, 900) # make this adjustable
         else:
             self.ui.graph.clear_gaussian()
+
+#    def amp_plus(self):
+
 
     def jog_handler(self, pvs, ofs):
         """

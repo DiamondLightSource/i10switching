@@ -167,7 +167,8 @@ class GaussPlot(BaseFigureCanvas):
             self.ax.legend()
 
     def gaussian(self, amplitude, sigma):
-        self.ax.plot(amplitude*np.exp(-(np.linspace(0, len(self.trace), 2500)-len(self.trace)/2)**2/(2*sigma**2)))
+        self.ax.plot(amplitude*np.exp(-(np.linspace(0, len(self.trace), 2500)
+                                        -len(self.trace)/2)**2/(2*sigma**2)))
 
 
 class OverlaidWaveforms(BaseFigureCanvas):
@@ -204,12 +205,12 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
         self.draw()
 
-    def get_windowed_data(self, value): # I think this works but hard to tell without trying it on real data not noise
+    def get_windowed_data(self, value): # I think this works...
 
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(value)
-            stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do?? # make it a config parameter
+            stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
@@ -236,7 +237,8 @@ class OverlaidWaveforms(BaseFigureCanvas):
             return data1, data2
 
     def gaussian(self, a, sigma):
-        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x), len(self.x))-len(self.x)/2)**2/(2*sigma**2)), 'r')
+        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x),
+                        len(self.x))-len(self.x)/2)**2/(2*sigma**2)), 'r')
         self.lines.append(self.gauss)
         self.draw()
 

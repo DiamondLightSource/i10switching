@@ -73,45 +73,59 @@ class Gui(QMainWindow):
 #        self.ui.full_correction_radiobutton.clicked.connect(
 #                                        lambda: self.set_jog_scaling(1.0))
 
+        self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
+                   self.ui.bumpleftplusButton, self.ui.bumpleftminusButton,
+                   self.ui.bumprightplusButton, self.ui.bumprightminusButton,
+                   self.ui.bpm1plusButton, self.ui.bpm1minusButton,
+                   self.ui.bpm2plusButton, self.ui.bpm2minusButton,
+                   self.ui.scaleplusButton, self.ui.scaleminusButton]
+        self.functions = [self.k3_plus, self.k3_minus, self.bump1_plus,
+                     self.bump1_minus, self.bump2_plus, self.bump2_minus,
+                     self.hbpm1_plus, self.hbpm1_minus, self.hbpm2_plus,
+                     self.hbpm2_minus, self.scale_plus, self.scale_minus]
+
+        for button, function in zip(self.buttons, self.functions):
+            button.clicked.connect(function)
+
         self.ui.kplusButton.clicked.connect(lambda: self.btn_ctrls(1, 0))
-        self.ui.kplusButton.clicked.connect(self.k3_plus)
+#        self.ui.kplusButton.clicked.connect(self.k3_plus)
 
         self.ui.kminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 0))
-        self.ui.kminusButton.clicked.connect(self.k3_minus)
+#        self.ui.kminusButton.clicked.connect(self.k3_minus)
 
         self.ui.bumpleftplusButton.clicked.connect(lambda: self.btn_ctrls(1, 1))
-        self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
+#        self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
 
         self.ui.bumpleftminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 1))
-        self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
+#        self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
 
         self.ui.bumprightplusButton.clicked.connect(lambda: self.btn_ctrls(1, 2))
-        self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
+#        self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
 
         self.ui.bumprightminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 2))
-        self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
+#        self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
 
         self.ui.bpm1plusButton.clicked.connect(lambda: self.btn_ctrls(1, 3))
-        self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
+#        self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
 
         self.ui.bpm1minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 3))
-        self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
+#        self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
 
         self.ui.bpm2plusButton.clicked.connect(lambda: self.btn_ctrls(1, 4))
-        self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
+#        self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
 
         self.ui.bpm2minusButton.clicked.connect(lambda: self.btn_ctrls(-1, 4))
-        self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
+#        self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
 
         self.ui.scaleplusButton.clicked.connect(lambda: self.btn_ctrls(1, 5))
-        self.ui.scaleplusButton.clicked.connect(self.scale_plus)
+#        self.ui.scaleplusButton.clicked.connect(self.scale_plus)
 
         self.ui.scaleminusButton.clicked.connect(lambda: self.btn_ctrls(-1, 5))
-        self.ui.scaleminusButton.clicked.connect(self.scale_minus)
+#        self.ui.scaleminusButton.clicked.connect(self.scale_minus)
 
         self.ui.resetButton.clicked.connect(self.reset)
+        self.ui.resetButton.setEnabled(False)
         self.ui.quitButton.clicked.connect(sys.exit)
-
 
         self.ui.simulation.update_colourin()
 
@@ -122,33 +136,19 @@ class Gui(QMainWindow):
         self.ui.simButton.clicked.connect(self.toggle_simulation)
 
     def toggle_simulation(self): # got to be a shorter way... list of buttons and functions?
+        enabled = self.ui.simButton.isChecked()
+        self.ui.resetButton.setEnabled(enabled)
+
         if self.ui.simButton.isChecked() == True:
-            self.ui.kplusButton.clicked.disconnect(self.k3_plus)
-            self.ui.kminusButton.clicked.disconnect(self.k3_minus)
-            self.ui.bumpleftplusButton.clicked.disconnect(self.bump1_plus)
-            self.ui.bumpleftminusButton.clicked.disconnect(self.bump1_minus)
-            self.ui.bumprightplusButton.clicked.disconnect(self.bump2_plus)
-            self.ui.bumprightminusButton.clicked.disconnect(self.bump2_minus)
-            self.ui.bpm1plusButton.clicked.disconnect(self.hbpm1_plus)
-            self.ui.bpm1minusButton.clicked.disconnect(self.hbpm1_minus)
-            self.ui.bpm2plusButton.clicked.disconnect(self.hbpm2_plus)
-            self.ui.bpm2minusButton.clicked.disconnect(self.hbpm2_minus)
-            self.ui.scaleplusButton.clicked.disconnect(self.scale_plus)
-            self.ui.scaleminusButton.clicked.disconnect(self.scale_minus)
+
+            for button, function in zip(self.buttons, self.functions):
+                button.clicked.disconnect(function)
+
         else:
             self.reset()
-            self.ui.kplusButton.clicked.connect(self.k3_plus)
-            self.ui.kminusButton.clicked.connect(self.k3_minus)
-            self.ui.bumpleftplusButton.clicked.connect(self.bump1_plus)
-            self.ui.bumpleftminusButton.clicked.connect(self.bump1_minus)
-            self.ui.bumprightplusButton.clicked.connect(self.bump2_plus)
-            self.ui.bumprightminusButton.clicked.connect(self.bump2_minus)
-            self.ui.bpm1plusButton.clicked.connect(self.hbpm1_plus)
-            self.ui.bpm1minusButton.clicked.connect(self.hbpm1_minus)
-            self.ui.bpm2plusButton.clicked.connect(self.hbpm2_plus)
-            self.ui.bpm2minusButton.clicked.connect(self.hbpm2_minus)
-            self.ui.scaleplusButton.clicked.connect(self.scale_plus)
-            self.ui.scaleminusButton.clicked.connect(self.scale_minus)
+
+            for button, function in zip(self.buttons, self.functions):
+                button.clicked.connect(function)
 
     def btn_ctrls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
@@ -156,71 +156,71 @@ class Gui(QMainWindow):
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
 
-    def hbpm1_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.left)
-
-    def hbpm1_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.left)
-
-    def hbpm2_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.right)
-
-    def hbpm2_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.right)
-
     def k3_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.dk3)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.STEP_K3)
+#                    self.knobs.dk3)
 
     def k3_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.dk3)
-
-    def scale_plus(self):
-        self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
-                    self.knobs.dscale)
-        self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.dscale)
-
-    def scale_minus(self):
-        self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
-                    -self.knobs.dscale)
-        self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.dscale)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.STEP_K3)
+#                    -self.knobs.dk3)
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BUMP_LEFT)
+#                    self.knobs.b1)
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.b1)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BUMP_LEFT)
+#                    -self.knobs.b1)
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BUMP_RIGHT)
+#                    self.knobs.b2)
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                    -self.knobs.b2)
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BUMP_RIGHT)
+#                    -self.knobs.b2)
+
+    def hbpm1_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BPM1)
+#                    self.knobs.left)
+
+    def hbpm1_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BPM1)
+#                    -self.knobs.left)
+
+    def hbpm2_plus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.BPM2)
+#                    self.knobs.right)
+
+    def hbpm2_minus(self):
+        self.jog_handler(
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.BPM2)
+#                    -self.knobs.right)
+
+    def scale_plus(self):
+        self.jog_handler(
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], i10buttons.ButtonData.SCALE)
+#                    self.knobs.dscale)
+        self.jog_handler(
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SCALE)
+#                    self.knobs.dscale)
+
+    def scale_minus(self):
+        self.jog_handler(
+               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES], -i10buttons.ButtonData.SCALE)
+#                    -self.knobs.dscale)
+        self.jog_handler(
+               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SCALE)
+#                    -self.knobs.dscale)
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()
