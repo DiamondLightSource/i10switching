@@ -68,10 +68,10 @@ class Gui(QMainWindow):
         self.ui.graphLayout2.addWidget(self.ui.gaussians)
         self.ui.graphLayout.addWidget(self.toolbar)
 
-#        self.ui.small_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
-#        self.ui.full_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(1.0))
+        self.ui.small_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(0.1)) # not connected up to the simulation yet # also issue with the simulation radiobutton - need to put them in separate domains or something
+        self.ui.full_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(1.0))
 
         # Connect buttons to PVs
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
@@ -102,6 +102,7 @@ class Gui(QMainWindow):
         self.ui.bpm2minusButton.clicked.connect(lambda: self.simulation_controls(-1, 'BPM2'))
         self.ui.scaleplusButton.clicked.connect(lambda: self.simulation_controls(1, 'SCALE'))
         self.ui.scaleminusButton.clicked.connect(lambda: self.simulation_controls(-1, 'SCALE'))
+#        self.ui.scaleminusButton.setStyleSheet("background-color: red")
 
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.resetButton.setEnabled(False)
@@ -245,7 +246,7 @@ class Gui(QMainWindow):
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
-        self.knobs.jog_scale = scale
+        i10buttons.jog_scale = scale
 
     def setup_table(self):
         '''Initalise all values required for the currents table'''

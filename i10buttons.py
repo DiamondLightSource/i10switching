@@ -6,19 +6,21 @@ import numpy as np
 import scipy.io
 import os
 
+jog_scale = 1.0 # don't want to keep this here...
+
 ## will eventually be got from pvs
 class ButtonData(object):
 
     SHIFT = {
-             'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
-             'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
-             'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
-             'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
-                               -127.34037684])*1e-4,
-             'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
-                                135.24691079])*1e-4,
-             'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
-             }
+            'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
+            'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
+            'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
+            'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
+                              -127.34037684])*1e-4,
+            'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
+                               135.24691079])*1e-4,
+            'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
+            }
 
 class OverCurrentException(Exception):
     def __init__(self, magnet_index):
@@ -57,8 +59,8 @@ class Knobs(object):
         'SR10S-PC-CTRL-05']
 
     def __init__(self):
-        """Setup physics values from matlab files."""
-        S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
+#        """Setup physics values from matlab files."""
+#        S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
         # knob deltas
 #        dbpm = 1e-4  # 1e-4 mm = 100 nm
@@ -79,7 +81,8 @@ class Knobs(object):
 #        self.b1 = np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600
 #        self.b2 = np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600
 
-        self.jog_scale = 1.0
+#        self.jog_scale = 1.0
+        pass
 
     def get_imin(self):
         return caget([name + ':IMIN' for name in self.NAMES])
@@ -99,9 +102,9 @@ class Knobs(object):
     def jog(self, pvs, ofs):
         """
         Increment the list of PVs by the offset.
-        Errors are created when a user is likley to exceed magnet tolerances.
+        Errors are created when a user is likely to exceed magnet tolerances.
         """
-        ofs = ofs * self.jog_scale
+        ofs = ofs * jog_scale
 
         old_values = caget(pvs)
         values = old_values + ofs

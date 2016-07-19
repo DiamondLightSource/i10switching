@@ -22,6 +22,9 @@
      <layout class="QGridLayout" name="gridLayout_3">
       <item row="0" column="0">
        <widget class="QPushButton" name="kplusButton">
+        <property name="styleSheet">
+         <string notr="true"/>
+        </property>
         <property name="text">
          <string>K3 +</string>
         </property>
@@ -328,21 +331,40 @@ Limit</string>
      </widget>
     </item>
     <item row="9" column="0">
-     <layout class="QGridLayout" name="gridLayout_4">
-      <item row="0" column="0">
-       <spacer name="horizontalSpacer_3">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
-        </property>
-        <property name="sizeHint" stdset="0">
-         <size>
-          <width>40</width>
-          <height>20</height>
-         </size>
-        </property>
-       </spacer>
-      </item>
-     </layout>
+     <widget class="QGroupBox" name="groupBox">
+      <property name="title">
+       <string/>
+      </property>
+      <widget class="QRadioButton" name="small_correction_radiobutton">
+       <property name="geometry">
+        <rect>
+         <x>700</x>
+         <y>0</y>
+         <width>127</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>0.1x Correction</string>
+       </property>
+      </widget>
+      <widget class="QRadioButton" name="full_correction_radiobutton">
+       <property name="geometry">
+        <rect>
+         <x>570</x>
+         <y>0</y>
+         <width>121</width>
+         <height>22</height>
+        </rect>
+       </property>
+       <property name="text">
+        <string>Full Correction</string>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>

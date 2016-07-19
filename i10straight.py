@@ -23,11 +23,12 @@ class MagnetStrengths(object):
         self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.FIELDS])
 
+
     # Define alterations to the kickers.
     def buttons(self, factor, button):
 
         self.fields_add = self.fields_add + factor*np.array(
-                          i10buttons.ButtonData.SHIFT[button])*self.AMP_TO_TESLA
+                          i10buttons.ButtonData.SHIFT[button])*self.AMP_TO_TESLA*i10buttons.jog_scale
         self.offset = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.fields_add])
 
@@ -43,7 +44,6 @@ class MagnetStrengths(object):
                np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
                2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
                + 1]) + self.offset
-
         return kick
 
 
