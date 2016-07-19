@@ -16,7 +16,7 @@ require('scipy==0.10.1')
 require('matplotlib==1.3.1')
 
 import cothread
-from cothread.catools import caget, caput, camonitor, FORMAT_TIME #, FORMAT_CTRL
+from cothread.catools import caput, camonitor, FORMAT_TIME
 
 import os
 import traceback
@@ -63,11 +63,18 @@ class KnobsUi(QtGui.QMainWindow):
                                         lambda: self.set_jog_scaling(1.0))
 
         self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
-        self.ui.graph = i10plots.WaveformCanvas(
+        self.ui.graph = i10plots.OverlaidWaveforms(
                                         self.I10_ADC_1_PV, self.I10_ADC_2_PV)
 
         self.ui.graph_layout.addWidget(self.ui.traces)
         self.ui.graph_layout.addWidget(self.ui.graph)
+        self.ui.checkBox.clicked.connect(self.gauss_fit)
+
+    def gauss_fit(self):
+        if self.ui.checkBox.isChecked() == True:
+            self.ui.graph.gaussian(2.5,900) # make this adjustable
+        else:
+            self.ui.graph.clear_gaussian()
 
     def jog_handler(self, pvs, ofs):
         """

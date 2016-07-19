@@ -1,8 +1,7 @@
 #i10plots
-# Contains BaseFigureCanvas, Plot, GaussPlot, WaveformCanvas, Traces, RangeError
-# TODO Rename graphs thus: Simulation, (replace GaussPlot by a graph that 
-# actually plots a gaussian?? no, set functionality so you can overlay a 
-# gaussian on peaks?), OverlaidWaveforms, Traces, RangeError
+# Contains BaseFigureCanvas, Simulation, GaussPlot, OverlaidWaveforms, Traces, RangeError
+# TODO replace GaussPlot by a graph that actually plots a gaussian?? no, set 
+# functionality so you can overlay a gaussian on peaks?
 # Calls i10straight
 # Need to rename classes to be more sensible
 
@@ -28,7 +27,7 @@ class BaseFigureCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.figure)
 
 
-class Plot(BaseFigureCanvas):
+class Simulation(BaseFigureCanvas):
 
     def __init__(self):
 
@@ -166,8 +165,11 @@ class GaussPlot(BaseFigureCanvas):
                          self.ax.plot(float('nan'))]
             self.ax.legend()
 
+    def gaussian(self, a, sigma):
+        self.ax.plot(a*np.exp(-(np.linspace(0, len(self.trace), 2500)-len(self.trace)/2)**2/(2*sigma**2)))
 
-class WaveformCanvas(BaseFigureCanvas):
+
+class OverlaidWaveforms(BaseFigureCanvas):
 
     def __init__(self, pv1, pv2):
         BaseFigureCanvas.__init__(self)
@@ -177,10 +179,10 @@ class WaveformCanvas(BaseFigureCanvas):
         self.trigger = caget(pv1)
 
         data1, data2 = self.get_windowed_data(caget(pv2))
-        x = range(len(data1))
+        self.x = range(len(data1))
         self.lines = [
-                     self.ax.plot(x, data1, 'b')[0],
-                     self.ax.plot(x, data2, 'g')[0]
+                     self.ax.plot(self.x, data1, 'b')[0],
+                     self.ax.plot(self.x, data2, 'g')[0]
                      ]
 
         camonitor(pv2, self.update_plot)
@@ -206,7 +208,7 @@ class WaveformCanvas(BaseFigureCanvas):
         try:
             diff = np.diff(self.trigger).tolist()
             length = len(value)
-            stepvalue = 0.1 # hard coded as assumed step will be larger than this and noise smaller - ok to do?? # make it a config parameter
+            stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do?? # make it a config parameter
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
@@ -232,6 +234,16 @@ class WaveformCanvas(BaseFigureCanvas):
             data2 = [float('nan'), float('nan')]
             return data1, data2
 
+    def gaussian(self, a, sigma):
+        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x), 2500)-len(self.x)/2)**2/(2*sigma**2)), 'r')
+        self.lines.append(self.gauss)
+        self.draw()
+
+    def clear_gaussian(self):
+        self.ax.lines.pop(-1)
+        self.ax.relim()
+        self.ax.autoscale_view()
+        self.draw()
 
 class Traces(BaseFigureCanvas):
 

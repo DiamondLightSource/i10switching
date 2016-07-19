@@ -59,7 +59,7 @@ class Gui(QMainWindow):
         self.parent = QtGui.QMainWindow()
         self.setup_table()
 
-        self.ui.simulation = i10plots.Plot()
+        self.ui.simulation = i10plots.Simulation()
         self.ui.gaussians = i10plots.GaussPlot()
         self.toolbar = NavigationToolbar(self.ui.simulation, self)
         self.knobs = i10buttons.Knobs()
@@ -114,7 +114,9 @@ class Gui(QMainWindow):
 
 
         self.ui.simulation.update_colourin()
+
         self.ui.gaussians.display()
+        self.ui.gaussians.gaussian(2.5,900)
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
