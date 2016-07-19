@@ -123,10 +123,12 @@ class Gui(QMainWindow):
         if self.ui.simButton.isChecked() == True:
             for button, function in zip(self.buttons, self.beam_controls):
                 button.clicked.disconnect(function)
+            self.ui.simulation.figure.patch.set_alpha(0.5)
         else:
             self.reset()
             for button, function in zip(self.buttons, self.beam_controls):
                 button.clicked.connect(function)
+            self.ui.simulation.figure.patch.set_alpha(0.0)
 
     def simulation_controls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)

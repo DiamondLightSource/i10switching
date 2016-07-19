@@ -25,6 +25,8 @@ class BaseFigureCanvas(FigureCanvas):
 
     def __init__(self):
         self.figure = plt.figure()
+        self.figure.patch.set_facecolor('blue')
+        self.figure.patch.set_alpha(0.0)
         FigureCanvas.__init__(self, self.figure)
 
 

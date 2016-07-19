@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>849</width>
-    <height>805</height>
+    <width>859</width>
+    <height>827</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -107,17 +107,17 @@
         </property>
        </widget>
       </item>
-      <item row="0" column="7">
-       <widget class="QPushButton" name="resetButton">
-        <property name="text">
-         <string>Reset simulation</string>
-        </property>
-       </widget>
-      </item>
       <item row="1" column="7">
        <widget class="QPushButton" name="quitButton">
         <property name="text">
          <string>Quit</string>
+        </property>
+       </widget>
+      </item>
+      <item row="0" column="7">
+       <widget class="QPushButton" name="resetButton">
+        <property name="text">
+         <string>Reset simulation</string>
         </property>
        </widget>
       </item>
@@ -373,7 +373,7 @@ Limit</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>849</width>
+     <width>859</width>
      <height>25</height>
     </rect>
    </property>

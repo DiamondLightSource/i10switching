@@ -87,8 +87,8 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.ampminusButton.setEnabled(enabled)
         self.ui.sigmaplusButton.setEnabled(enabled)
         self.ui.sigmaminusButton.setEnabled(enabled)
-        if self.ui.checkBox.isChecked() == True:
-            self.ui.graph.gaussian(self.amp, self.sig) # make this adjustable
+        if enabled == True:
+            self.ui.graph.gaussian(self.amp, self.sig)
         else:
             self.ui.graph.clear_gaussian()
 
