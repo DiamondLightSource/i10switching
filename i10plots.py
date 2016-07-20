@@ -50,7 +50,7 @@ class Simulation(BaseFigureCanvas):
         for i in self.info.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.info.data.ids:
-            ax1.axvline(x=i.s, color='r', linestyle='dashed')
+            ax1.axvline(x=i.s, color='b', linestyle='dashed')
 
         return ax1
 
@@ -108,16 +108,28 @@ class Simulation(BaseFigureCanvas):
         for s in range(2):
             edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]
 
-        beam1min = edges[0][0]
-        beam1max = edges[1][0]
-        beam2min = edges[1][1]
-        beam2max = edges[0][1]
+        beam1max = edges[0][0]
+        beam1min = edges[1][0]
+        beam2max = edges[1][1]
+        beam2min = edges[0][1]
 
         self.fill1 = self.ax.fill_between(self.info.data.p_coord[0],
                                beam1min, beam1max, facecolor='blue', alpha=0.2)
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
-# define here or in init?
+
+    def magnet_limits(self):
+
+        strengths = [2*np.array([1, -1, 1, 0, 0]), 2*np.array([0, 0, 1, -1, 1])] # put in real limits here
+        edges = [[], []]
+        for s in range(2):
+            edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]
+
+        beam1max = edges[0][0]
+        beam2max = edges[1][1]
+
+        self.limit1 = self.ax.plot(self.info.data.p_coord[0], beam1max, 'r--')
+        self.limit2 = self.ax.plot(self.info.data.p_coord[1], beam2max, 'r--')
 
 class OverlaidWaveforms(BaseFigureCanvas):
 

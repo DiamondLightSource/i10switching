@@ -25,10 +25,7 @@ import numpy as np
 
 import i10plots
 import i10buttons
-import i10straight
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
 
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
@@ -66,26 +63,7 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
         self.setup_table()
-
-        camonitor(self.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(self.MAGNET_STATUS_PV,
-                self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(self.CYCLING_STATUS_PV,
-                self.update_cycling_textbox, format=FORMAT_CTRL)
-
-        self.ui.simulation = i10plots.Simulation()
-        self.toolbar = NavigationToolbar(self.ui.simulation, self)
         self.knobs = i10buttons.Knobs()
-
-        self.ui.matplotlib_layout.addWidget(self.ui.simulation)
-        self.ui.matplotlib_layout.addWidget(self.toolbar)
-
-        self.ui.small_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(1.0))
-
-        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
         # Connect buttons to PVs
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
@@ -116,18 +94,60 @@ class Gui(QMainWindow):
         self.ui.bpm2minusButton.clicked.connect(lambda: self.simulation_controls(-1, 'BPM2'))
         self.ui.scaleplusButton.clicked.connect(lambda: self.simulation_controls(1, 'SCALE'))
         self.ui.scaleminusButton.clicked.connect(lambda: self.simulation_controls(-1, 'SCALE'))
-
+        self.ui.simButton.setChecked(False)
+        self.ui.simButton.clicked.connect(self.toggle_simulation)
         self.ui.resetButton.clicked.connect(self.reset)
         self.ui.resetButton.setEnabled(False)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-        self.ui.simulation.update_colourin()
+        self.ui.small_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(0.1))
+        self.ui.full_correction_radiobutton.clicked.connect(
+                                        lambda: self.set_jog_scaling(1.0))
 
-        self.ui.simButton.setChecked(False)
-        self.ui.simButton.clicked.connect(self.toggle_simulation)
+        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+        camonitor(self.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(self.MAGNET_STATUS_PV,
+                self.update_magnet_led, format=FORMAT_CTRL)
+        camonitor(self.CYCLING_STATUS_PV,
+                self.update_cycling_textbox, format=FORMAT_CTRL)
+
+        self.ui.simulation = i10plots.Simulation()
+        self.toolbar = NavigationToolbar(self.ui.simulation, self)
+
+        self.ui.matplotlib_layout.addWidget(self.ui.simulation)
+        self.ui.matplotlib_layout.addWidget(self.toolbar)
+
+        self.ui.simulation.update_colourin()
+        self.ui.simulation.magnet_limits()
 
     def store_settings(self, button):
         self.offset += np.array(button)*i10buttons.jog_scale
+
+    def jog_handler(self, pvs, ofs):
+        """
+        Wrap the Knobs.jog method to provide exception handling
+        in callbacks.
+        """
+        try:
+            self.knobs.jog(pvs, ofs)
+        except i10buttons.OverCurrentException, e:
+            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
+        except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
+            print 'Cothread Exception:', e
+            msgBox = QtGui.QMessageBox(self.parent)
+            msgBox.setText('Cothread Exception: %s' % e)
+            msgBox.exec_()
+        except Exception, e:
+            print 'Unexpected Exception:', e
+            msgBox = QtGui.QMessageBox(self.parent)
+            msgBox.setText('Unexpected Exception: %s' % e)
+            msgBox.setInformativeText(traceback.format_exc(3))
+            msgBox.exec_()
+
+    def set_jog_scaling(self, scale):
+        """Change the scaling applied to magnet corrections."""
+        i10buttons.jog_scale = scale
 
     def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
@@ -139,7 +159,7 @@ class Gui(QMainWindow):
             self.ui.simulation.figure.patch.set_alpha(0.5)
             #######################################################
             # For my own amusement - to be removed.
-            pixmap = QtGui.QPixmap("unicorn-face.png").scaled(50,50)
+            pixmap = QtGui.QPixmap("unicorn-face.png").scaled(50, 50)
             self.lbl = QtGui.QLabel(self)
             self.lbl.setPixmap(pixmap)
             self.ui.matplotlib_layout.addWidget(self.lbl)
@@ -263,7 +283,7 @@ class Gui(QMainWindow):
 
         # BURT PV is one if okay, zero if bad:
         #    set no alarm (0) or major alarm(2)
-        alarm_state = 0 if var==1 else 2
+        alarm_state = 0 if var == 1 else 2
 
         palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
         self.ui.burt_led_2.setPalette(palette)
@@ -284,31 +304,6 @@ class Gui(QMainWindow):
                 800, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
         QtCore.QTimer.singleShot(
                 900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
-
-    def jog_handler(self, pvs, ofs): # move into buttons?
-        """
-        Wrap the Knobs.jog method to provide exception handling
-        in callbacks.
-        """
-        try:
-            self.knobs.jog(pvs, ofs)
-        except i10buttons.OverCurrentException, e:
-            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
-        except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
-            print 'Cothread Exception:', e
-            msgBox = QtGui.QMessageBox(self.parent)
-            msgBox.setText('Cothread Exception: %s' % e)
-            msgBox.exec_()
-        except Exception, e:
-            print 'Unexpected Exception:', e
-            msgBox = QtGui.QMessageBox(self.parent)
-            msgBox.setText('Unexpected Exception: %s' % e)
-            msgBox.setInformativeText(traceback.format_exc(3))
-            msgBox.exec_()
-
-    def set_jog_scaling(self, scale):
-        """Change the scaling applied to magnet corrections."""
-        i10buttons.jog_scale = scale
 
     def setup_table(self):
         '''Initalise all values required for the currents table'''

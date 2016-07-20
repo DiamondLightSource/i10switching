@@ -52,15 +52,27 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
+        self.amp = 2.5
+        self.sig = 900
+
         self.ui.bump_left_plus_button.clicked.connect(self.bump1_plus)
         self.ui.bump_left_minus_button.clicked.connect(self.bump1_minus)
         self.ui.bump_right_plus_button.clicked.connect(self.bump2_plus)
         self.ui.bump_right_minus_button.clicked.connect(self.bump2_minus)
-
+        self.ui.ampplusButton.clicked.connect(self.amp_plus)
+        self.ui.ampminusButton.clicked.connect(self.amp_minus)
+        self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
+        self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
+        self.ui.checkBox.clicked.connect(self.gauss_fit)
+        self.ui.ampplusButton.setEnabled(False)
+        self.ui.ampminusButton.setEnabled(False)
+        self.ui.sigmaplusButton.setEnabled(False)
+        self.ui.sigmaminusButton.setEnabled(False)
         self.ui.small_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(0.1))
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
+        self.ui.checkBox.clicked.connect(self.gauss_fit)
 
         self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph = i10plots.OverlaidWaveforms(
@@ -68,18 +80,6 @@ class KnobsUi(QtGui.QMainWindow):
 
         self.ui.graph_layout.addWidget(self.ui.traces)
         self.ui.graph_layout.addWidget(self.ui.graph)
-        self.amp = 2.5
-        self.sig = 900
-        self.ui.checkBox.clicked.connect(self.gauss_fit)
-
-        self.ui.ampplusButton.clicked.connect(self.amp_plus)
-        self.ui.ampminusButton.clicked.connect(self.amp_minus)
-        self.ui.sigmaplusButton.clicked.connect(self.sig_plus)
-        self.ui.sigmaminusButton.clicked.connect(self.sig_minus)
-        self.ui.ampplusButton.setEnabled(False)
-        self.ui.ampminusButton.setEnabled(False)
-        self.ui.sigmaplusButton.setEnabled(False)
-        self.ui.sigmaminusButton.setEnabled(False)
 
     def gauss_fit(self):
         enabled = self.ui.checkBox.isChecked()

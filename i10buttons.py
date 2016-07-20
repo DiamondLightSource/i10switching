@@ -2,10 +2,13 @@
 #i10buttons
 # Contains ButtonData, OverCurrentException, Knobs
 
+import cothread
+#from cothread.catools import *
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
 import scipy.io
 import os
+from PyQt4 import QtGui
 
 jog_scale = 1.0 # don't want to keep this here...
 
@@ -134,4 +137,5 @@ class Knobs(object):
                         % (pvs[n], high, low, max, min))
                 raise OverCurrentException(n)
         caput(pvs, values)
+
 
