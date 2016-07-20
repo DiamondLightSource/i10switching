@@ -23,6 +23,7 @@ class MagnetStrengths(object):
         self.offset = np.array([0, 0, 0, 0, 0])
         self.max_kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.FIELDS])
+        print 'max_kick', self.max_kick
 
 
     # Define alterations to the kickers.
@@ -32,6 +33,7 @@ class MagnetStrengths(object):
                           i10buttons.ButtonData.SHIFT[button])*self.AMP_TO_TESLA*i10buttons.jog_scale
         self.offset = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.fields_add])
+        print 'offset', self.max_kick + self.offset
 
     def reconfigure(self, settings):
 
@@ -85,5 +87,14 @@ class CollectData(object):
 
         return p_beam
 
+    def p_beam_lim(self, currents):
 
+        fields = currents * self.magnets.AMP_TO_TESLA
+        kick_limits = np.array([2 * np.arcsin(x/(2*self.magnets.BEAM_RIGIDITY))
+                                  for x in fields])
+        print 'kick_limits', kick_limits
+        self.strength_setup(kick_limits)
+        p_beam = self.data.send_electrons_through()[1]
+
+        return p_beam
 

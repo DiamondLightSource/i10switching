@@ -45,7 +45,7 @@ class Simulation(BaseFigureCanvas):
         ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
         ax1.get_yaxis().set_visible(False)
-        ax1.set_ylim(-0.01, 0.01)
+#        ax1.set_ylim(-0.01, 0.01)
         # Plot positions of kickers and IDs.
         for i in self.info.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
@@ -120,10 +120,26 @@ class Simulation(BaseFigureCanvas):
 
     def magnet_limits(self):
 
-        strengths = [2*np.array([1, -1, 1, 0, 0]), 2*np.array([0, 0, 1, -1, 1])] # put in real limits here
+        strengths = [np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
+                              -caget('SR09A-PC-FCHIC-02:IMAX'),
+                               caget('SR10S-PC-FCHIC-03:IMAX'), 0, 0]),
+                     np.array([0, 0, caget('SR10S-PC-FCHIC-03:IMAX'),
+                              -caget('SR10S-PC-FCHIC-04:IMAX'), 
+                               caget('SR10S-PC-FCHIC-05:IMAX')])]
+
+#        strengths = np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
+#                              caget('SR09A-PC-FCHIC-02:IMAX'),
+#                              caget('SR10S-PC-FCHIC-03:IMAX'),
+#                              caget('SR10S-PC-FCHIC-04:IMAX'), 
+#                              caget('SR10S-PC-FCHIC-05:IMAX')])
+
+        # problem with plotting - currently incorrect but how to make it right??
+        # takes 30 clicks of bump left + to go out of magnet range...
         edges = [[], []]
         for s in range(2):
-            edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]
+            edges[s] = np.array(self.info.p_beam_lim(strengths[s]))[:, [0, 2]]
+
+        edges = np.array(self.info.p_beam_lim(strengths))[:, [0, 2]]
 
         beam1max = edges[0][0]
         beam2max = edges[1][1]
