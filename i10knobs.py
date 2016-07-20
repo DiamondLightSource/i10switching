@@ -217,7 +217,7 @@ class KnobsUi(object):
 
         self.ui.reenable_checkbox.clicked.connect(self.toggle_forbidden_buttons)
         self.ui.small_correction_radiobutton.clicked.connect(lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correcton_radiobutton.clicked.connect(lambda: self.set_jog_scaling(1.0))
+        self.ui.full_correction_radiobutton.clicked.connect(lambda: self.set_jog_scaling(1.0))
 
         camonitor(self.BURT_STATUS_PV, self.update_burt_led)
         camonitor(self.MAGNET_STATUS_PV,
@@ -225,7 +225,7 @@ class KnobsUi(object):
         camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.graph = i10plots.Plot()
+        self.ui.graph = i10plots.Simulation()
         self.ui.graph_layout.addWidget(self.ui.graph)
         self.ui.graph.update_colourin()
 

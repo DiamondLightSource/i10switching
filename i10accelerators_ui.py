@@ -1,3 +1,4 @@
+#!/usr/bin/env dls-python2.7
 #i10accelui.py
 #Gui linking to i10plots, straight, simulation
 # Contains Gui
@@ -20,9 +21,14 @@ from PyQt4 import QtCore
 from PyQt4.QtGui import QMainWindow
 import os
 import traceback
+import numpy as np
 
 import i10plots
 import i10buttons
+import i10straight
+
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
@@ -37,7 +43,9 @@ ALARM_COLORS = [
 class Gui(QMainWindow):
 
     UI_FILENAME = 'i10chicgui.ui'
-
+    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
+    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
+    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
     I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
@@ -59,6 +67,12 @@ class Gui(QMainWindow):
         self.parent = QtGui.QMainWindow()
         self.setup_table()
 
+        camonitor(self.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(self.MAGNET_STATUS_PV,
+                self.update_magnet_led, format=FORMAT_CTRL)
+        camonitor(self.CYCLING_STATUS_PV,
+                self.update_cycling_textbox, format=FORMAT_CTRL)
+
         self.ui.simulation = i10plots.Simulation()
         self.toolbar = NavigationToolbar(self.ui.simulation, self)
         self.knobs = i10buttons.Knobs()
@@ -70,6 +84,8 @@ class Gui(QMainWindow):
                                         lambda: self.set_jog_scaling(0.1))
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
+
+        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
 
         # Connect buttons to PVs
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
@@ -110,6 +126,9 @@ class Gui(QMainWindow):
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
 
+    def store_settings(self, button):
+        self.offset += np.array(button)*i10buttons.jog_scale
+
     def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
@@ -118,11 +137,21 @@ class Gui(QMainWindow):
             for button, function in zip(self.buttons, self.beam_controls):
                 button.clicked.disconnect(function)
             self.ui.simulation.figure.patch.set_alpha(0.5)
+            #######################################################
+            # For my own amusement - to be removed.
+            pixmap = QtGui.QPixmap("unicorn-face.png").scaled(50,50)
+            self.lbl = QtGui.QLabel(self)
+            self.lbl.setPixmap(pixmap)
+            self.ui.matplotlib_layout.addWidget(self.lbl)
+            #######################################################
         else:
-            self.reset() # NOT QUITE - WANT IT TO GO BACK TO HOW IT WAS BEFORE SIMULATION MODE ENABLED...
+            self.reconfigure(self.offset) # ARE SETTINGS FOR SCALING OK WITH THIS? THINK SO BUT NEED ROBUST WAY OF CHECKING
             for button, function in zip(self.buttons, self.beam_controls):
                 button.clicked.connect(function)
             self.ui.simulation.figure.patch.set_alpha(0.0)
+            #######################################################
+            self.lbl.setParent(None)
+            #######################################################
 
     def simulation_controls(self, factor, which_button):
         self.ui.simulation.info.magnets.buttons(factor, which_button)
@@ -134,53 +163,63 @@ class Gui(QMainWindow):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 i10buttons.ButtonData.SHIFT['STEP_K3'])
+        self.store_settings(i10buttons.ButtonData.SHIFT['STEP_K3'])
 
     def k3_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 -i10buttons.ButtonData.SHIFT['STEP_K3'])
+        self.store_settings(-i10buttons.ButtonData.SHIFT['STEP_K3'])
 
     def bump1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+        self.store_settings(i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 -i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+        self.store_settings(-i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+        self.store_settings(i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+        self.store_settings(-i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 
     def hbpm1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 i10buttons.ButtonData.SHIFT['BPM1'])
+        self.store_settings(i10buttons.ButtonData.SHIFT['BPM1'])
 
     def hbpm1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 -i10buttons.ButtonData.SHIFT['BPM1'])
+        self.store_settings(-i10buttons.ButtonData.SHIFT['BPM1'])
 
     def hbpm2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 i10buttons.ButtonData.SHIFT['BPM2'])
+        self.store_settings(i10buttons.ButtonData.SHIFT['BPM2'])
 
     def hbpm2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
                 -i10buttons.ButtonData.SHIFT['BPM2'])
+        self.store_settings(-i10buttons.ButtonData.SHIFT['BPM2'])
 
-    def scale_plus(self):
+    def scale_plus(self): # am I doing the simulation right for this??
         self.jog_handler(
                [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
                 i10buttons.ButtonData.SHIFT['SCALE'])
@@ -202,6 +241,33 @@ class Gui(QMainWindow):
         self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
         self.ui.simulation.update_colourin()
 
+    def reconfigure(self, value):
+        self.ui.simulation.info.magnets.reconfigure(value)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill1)
+        self.ui.simulation.ax.collections.remove(self.ui.simulation.fill2)
+        self.ui.simulation.update_colourin()
+
+    def update_cycling_textbox(self, var):
+        '''Updates cycling status from enum attached to pv'''
+        self.ui.cycling_textbox_2.setText(QtCore.QString('%s' % var.enums[var]))
+
+    def update_magnet_led(self, var):
+        '''Uses PV alarm status to choose color for qframe'''
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
+        self.ui.magnet_led_2.setPalette(palette) # why does it name it with _2? Because it already exists in i10knobs??
+
+    def update_burt_led(self, var):
+        '''Uses burt valid PV to determine qframe color'''
+        palette = QtGui.QPalette()
+
+        # BURT PV is one if okay, zero if bad:
+        #    set no alarm (0) or major alarm(2)
+        alarm_state = 0 if var==1 else 2
+
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
+        self.ui.burt_led_2.setPalette(palette)
+
     def flash_table_cell(self, row, column):
         '''Flash a cell twice, with the major alarm color'''
         table = self.ui.table_widget
@@ -219,7 +285,7 @@ class Gui(QMainWindow):
         QtCore.QTimer.singleShot(
                 900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
 
-    def jog_handler(self, pvs, ofs):
+    def jog_handler(self, pvs, ofs): # move into buttons?
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.

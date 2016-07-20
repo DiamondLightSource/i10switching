@@ -1,5 +1,6 @@
+#!/usr/bin/env dls-python2.7
 #i10buttons
-# Contains Knobs
+# Contains ButtonData, OverCurrentException, Knobs
 
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np

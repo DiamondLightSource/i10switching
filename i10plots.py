@@ -1,10 +1,7 @@
+#!/usr/bin/env dls-python2.7
 #i10plots
-# Contains BaseFigureCanvas, Simulation, GaussPlot, OverlaidWaveforms, Traces, 
-# RangeError
-# TODO replace GaussPlot by a graph that actually plots a gaussian?? no, set 
-# functionality so you can overlay a gaussian on peaks?
+# Contains BaseFigureCanvas, Simulation, OverlaidWaveforms, Traces, RangeError
 # Calls i10straight
-# Need to rename classes to be more sensible
 
 import numpy as np
 import matplotlib.pyplot as plt

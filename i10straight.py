@@ -1,3 +1,4 @@
+#!/usr/bin/env dls-python2.7
 #i10straight
 # Contains ButtonData, MagnetStrengths, CollectData
 # Calls i10simulation
@@ -29,6 +30,12 @@ class MagnetStrengths(object):
 
         self.fields_add = self.fields_add + factor*np.array(
                           i10buttons.ButtonData.SHIFT[button])*self.AMP_TO_TESLA*i10buttons.jog_scale
+        self.offset = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
+                                  for x in self.fields_add])
+
+    def reconfigure(self, settings):
+
+        self.fields_add = settings*self.AMP_TO_TESLA
         self.offset = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
                                   for x in self.fields_add])
 

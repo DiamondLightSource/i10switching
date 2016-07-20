@@ -1,3 +1,4 @@
+#!/usr/bin/env dls-python2.7
 #i10simulation
 # Contains Element classes, Layout (which now includes 'send_electrons_through')
 

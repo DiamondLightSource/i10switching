@@ -1,3 +1,4 @@
+#!/usr/bin/env dls-python2.7
 # i10chic.py
 # Animated simulation of chicane magnets
 
