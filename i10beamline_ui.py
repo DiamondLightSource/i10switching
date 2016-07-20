@@ -16,16 +16,27 @@ require('scipy==0.10.1')
 require('matplotlib==1.3.1')
 
 import cothread
-from cothread.catools import caput, camonitor, FORMAT_TIME
+from cothread.catools import caput, camonitor, FORMAT_TIME, FORMAT_CTRL
 
 import os
 import traceback
 
 from PyQt4 import QtGui
+from PyQt4 import QtCore
 from PyQt4 import uic
 
 import i10plots
 import i10buttons
+
+
+# Alarm colours
+ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
+ALARM_COLORS = [
+        QtGui.QColor(  0, 215,  20), # None
+        QtGui.QColor(255, 140,   0), # Minor
+        QtGui.QColor(255,   0,   0), # Major
+        QtGui.QColor(255,   0, 255), # Invalid
+        ]
 
 
 class KnobsUi(QtGui.QMainWindow):
@@ -35,6 +46,9 @@ class KnobsUi(QtGui.QMainWindow):
     and shown to the user.
     """
     UI_FILENAME = 'i10beamlineui.ui'
+    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
+    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
+    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
     I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
@@ -72,7 +86,12 @@ class KnobsUi(QtGui.QMainWindow):
                                         lambda: self.set_jog_scaling(0.1))
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
-        self.ui.checkBox.clicked.connect(self.gauss_fit)
+
+        camonitor(self.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(self.MAGNET_STATUS_PV,
+                self.update_magnet_led, format=FORMAT_CTRL)
+        camonitor(self.CYCLING_STATUS_PV,
+                self.update_cycling_textbox, format=FORMAT_CTRL)
 
         self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.ui.graph = i10plots.OverlaidWaveforms(
@@ -153,6 +172,26 @@ class KnobsUi(QtGui.QMainWindow):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
 
+    def update_cycling_textbox(self, var):
+        '''Updates cycling status from enum attached to pv'''
+        self.ui.cycling_textbox_3.setText(QtCore.QString('%s' % var.enums[var]))
+
+    def update_magnet_led(self, var):
+        '''Uses PV alarm status to choose color for qframe'''
+        palette = QtGui.QPalette()
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
+        self.ui.magnet_led_3.setPalette(palette) # why does it name it with _2? Because it already exists in i10knobs??
+
+    def update_burt_led(self, var):
+        '''Uses burt valid PV to determine qframe color'''
+        palette = QtGui.QPalette()
+
+        # BURT PV is one if okay, zero if bad:
+        #    set no alarm (0) or major alarm(2)
+        alarm_state = 0 if var == 1 else 2
+
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
+        self.ui.burt_led_3.setPalette(palette)
 
 if __name__ == '__main__':
     # ui business
