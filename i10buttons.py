@@ -63,30 +63,17 @@ class Knobs(object):
         'SR10S-PC-CTRL-05']
 
     def __init__(self):
-#        """Setup physics values from matlab files."""
-#        S = scipy.io.loadmat(os.path.join(self.I10_PATH, 'knobsi10.mat'))
 
-        # knob deltas
-#        dbpm = 1e-4  # 1e-4 mm = 100 nm
-#        dscale = np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
-#        dk3 = np.array([0, 0, 1e-2, 0, 0])
-
-#        self.dscale = dscale * 1
-#        self.dbpm = dbpm * 1
-#        self.dk3 = dk3 * 1
-
-        ## TODO: pick the correct parts from the file
-#        self.left = S['ch'][:, 0] * dbpm # cryptic...
-#        self.right = S['ch'][:, 1] * dbpm
-#        self.trimleft = S['tv'][:, 0] * dbpm
-#        self.trimright = S['tv'][:, 1] * dbpm
-
-        # 600 Clicks to move through entire range
-#        self.b1 = np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600
-#        self.b2 = np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600
-
-#        self.jog_scale = 1.0
-        pass
+        self.button_data = {
+            'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
+            'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
+            'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
+            'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
+                              -127.34037684])*1e-4,
+            'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
+                               135.24691079])*1e-4,
+            'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
+            } #not used yet
 
     def get_imin(self):
         return caget([name + ':IMIN' for name in self.NAMES])

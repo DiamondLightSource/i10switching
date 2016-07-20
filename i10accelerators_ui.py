@@ -119,7 +119,7 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.ui.simulation.update_colourin()
-        self.ui.simulation.magnet_limits()
+#        self.ui.simulation.magnet_limits() # suddenly broken somehow??
 
     def store_settings(self, button):
         self.offset += np.array(button)*i10buttons.jog_scale
