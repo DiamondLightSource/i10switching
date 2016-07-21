@@ -8,6 +8,19 @@ import numpy as np
 import scipy.io
 import os
 from PyQt4 import QtGui
+from scipy.constants import c
+
+import i10accelerators_ui
+import i10beamline_ui
+
+# Alarm colours
+ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
+ALARM_COLORS = [
+        QtGui.QColor(0, 215, 20), # None
+        QtGui.QColor(255, 140, 0), # Minor
+        QtGui.QColor(255, 0, 0), # Major
+        QtGui.QColor(255, 0, 255), # Invalid
+        ]
 
 
 class OverCurrentException(Exception):
@@ -23,12 +36,6 @@ class Knobs(object):
     steering of the photon and electron beams.
     """
 
-    # PV names
-    TRIMNAMES = [
-        'SR10I-MO-VSTR-21',
-        'SR10I-MO-VSTR-22',
-        'SR10I-MO-VSTR-11',
-        'SR10I-MO-VSTR-12']
     NAMES = [
         'SR09A-PC-FCHIC-01',
         'SR09A-PC-FCHIC-02',
@@ -41,6 +48,21 @@ class Knobs(object):
         'SR10S-PC-CTRL-03',
         'SR10S-PC-CTRL-04',
         'SR10S-PC-CTRL-05']
+
+    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
+    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
+    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
+
+    BUTTON_DATA = {
+        'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
+        'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
+        'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
+        'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
+                          -127.34037684])*1e-4,
+        'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
+                           135.24691079])*1e-4,
+        'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
+        }
 
     jog_scale = 1.0 # right place?
 
@@ -107,4 +129,24 @@ class Knobs(object):
                 raise OverCurrentException(n)
         caput(pvs, values)
 
+
+class SimulationButtons(object):
+
+    def __init__(self, straight):
+
+        self.knobs = Knobs()
+        self.straight = straight
+
+    def buttons(self, factor, button):
+
+        self.straight.currents_add = self.straight.currents_add + (factor*np.array(
+                            Knobs.BUTTON_DATA[button]) * self.knobs.jog_scale)
+
+    def reconfigure(self, settings):
+
+        self.straight.currents_add = settings
+
+    def reset(self):
+
+        self.straight.currents_add = np.array([0, 0, 0, 0, 0])
 

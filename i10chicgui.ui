@@ -468,16 +468,11 @@ Limit</string>
         <property name="midLineWidth">
          <number>0</number>
         </property>
+        <zorder>checkBox</zorder>
        </widget>
       </item>
       <item row="0" column="9">
-       <widget class="QRadioButton" name="simButton">
-        <property name="maximumSize">
-         <size>
-          <width>16777215</width>
-          <height>30</height>
-         </size>
-        </property>
+       <widget class="QCheckBox" name="simButton">
         <property name="text">
          <string>Simulation only</string>
         </property>

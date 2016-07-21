@@ -29,9 +29,9 @@ class BaseFigureCanvas(FigureCanvas):
 
 class Simulation(BaseFigureCanvas):
 
-    def __init__(self):
+    def __init__(self, collectdata):
 
-        self.info = i10straight.CollectData()
+        self.info = collectdata
         BaseFigureCanvas.__init__(self)
         self.ax = self.fig_setup()
         self.beams = self.data_setup()
@@ -45,7 +45,7 @@ class Simulation(BaseFigureCanvas):
         ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
         ax1.get_yaxis().set_visible(False)
-#        ax1.set_ylim(-0.01, 0.01)
+        ax1.set_ylim(-0.01, 0.01)
         # Plot positions of kickers and IDs.
         for i in self.info.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')

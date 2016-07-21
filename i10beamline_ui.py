@@ -29,16 +29,6 @@ import i10plots
 import i10buttons
 
 
-# Alarm colours
-ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
-ALARM_COLORS = [
-        QtGui.QColor(0, 215, 20), # None
-        QtGui.QColor(255, 140, 0), # Minor
-        QtGui.QColor(255, 0, 0), # Major
-        QtGui.QColor(255, 0, 255), # Invalid
-        ]
-
-
 class KnobsUi(QtGui.QMainWindow):
     """
     Provides the GUI to the underlying Knobs class.
@@ -46,9 +36,6 @@ class KnobsUi(QtGui.QMainWindow):
     and shown to the user.
     """
     UI_FILENAME = 'i10beamlineui.ui'
-    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
-    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
-    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
     I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3' # unused??
@@ -87,18 +74,17 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
-        camonitor(self.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(self.MAGNET_STATUS_PV,
+        camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
                 self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(self.CYCLING_STATUS_PV,
+        camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
-        self.ui.graph = i10plots.OverlaidWaveforms(
+        self.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.graph = i10plots.OverlaidWaveforms(
                                         self.I10_ADC_1_PV, self.I10_ADC_2_PV)
 
-        self.ui.graph_layout.addWidget(self.ui.traces)
-        self.ui.graph_layout.addWidget(self.ui.graph)
+        self.ui.graph_layout.addWidget(self.traces)
+        self.ui.graph_layout.addWidget(self.graph)
 
     def gauss_fit(self):
         enabled = self.ui.checkBox.isChecked()
@@ -107,29 +93,29 @@ class KnobsUi(QtGui.QMainWindow):
         self.ui.sigmaplusButton.setEnabled(enabled)
         self.ui.sigmaminusButton.setEnabled(enabled)
         if enabled == True:
-            self.ui.graph.gaussian(self.amp, self.sig)
+            self.graph.gaussian(self.amp, self.sig)
         else:
-            self.ui.graph.clear_gaussian()
+            self.graph.clear_gaussian()
 
     def amp_plus(self):
         self.amp = self.amp + 0.1
-        self.ui.graph.clear_gaussian()
-        self.ui.graph.gaussian(self.amp, self.sig)
+        self.graph.clear_gaussian()
+        self.graph.gaussian(self.amp, self.sig)
 
     def amp_minus(self):
         self.amp = self.amp - 0.1
-        self.ui.graph.clear_gaussian()
-        self.ui.graph.gaussian(self.amp, self.sig)
+        self.graph.clear_gaussian()
+        self.graph.gaussian(self.amp, self.sig)
 
     def sig_plus(self):
         self.sig = self.sig + 10
-        self.ui.graph.clear_gaussian()
-        self.ui.graph.gaussian(self.amp, self.sig)
+        self.graph.clear_gaussian()
+        self.graph.gaussian(self.amp, self.sig)
 
     def sig_minus(self):
         self.sig = self.sig - 10
-        self.ui.graph.clear_gaussian()
-        self.ui.graph.gaussian(self.amp, self.sig)
+        self.graph.clear_gaussian()
+        self.graph.gaussian(self.amp, self.sig)
 
     def jog_handler(self, pvs, ofs):
         """
@@ -183,19 +169,9 @@ class KnobsUi(QtGui.QMainWindow):
     def update_magnet_led(self, var):
         '''Uses PV alarm status to choose color for qframe'''
         palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
+        palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
         self.ui.magnet_led_3.setPalette(palette)
 
-    def update_burt_led(self, var):
-        '''Uses burt valid PV to determine qframe color'''
-        palette = QtGui.QPalette()
-
-        # BURT PV is one if okay, zero if bad:
-        #    set no alarm (0) or major alarm(2)
-        alarm_state = 0 if var == 1 else 2
-
-        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
-        self.ui.burt_led_3.setPalette(palette)
 
 if __name__ == '__main__':
     # ui business
