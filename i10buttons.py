@@ -68,16 +68,7 @@ class Knobs(object):
 
     def __init__(self):
 
-        self.button_data = {
-            'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
-            'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
-            'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
-            'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
-                              -127.34037684])*1e-4,
-            'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
-                               135.24691079])*1e-4,
-            'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
-            }
+        pass
 
     def get_imin(self):
         return caget([name + ':IMIN' for name in self.NAMES])

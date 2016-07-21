@@ -145,22 +145,22 @@ class KnobsUi(QtGui.QMainWindow):
     def bump1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                self.knobs.button_data['BUMP_LEFT'])
+                i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -self.knobs.button_data['BUMP_LEFT'])
+                -i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                self.knobs.button_data['BUMP_RIGHT'])
+                i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -self.knobs.button_data['BUMP_RIGHT'])
+                -i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
