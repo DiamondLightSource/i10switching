@@ -27,7 +27,7 @@ from PyQt4 import uic
 
 import i10plots
 import i10buttons
-
+import i10straight
 
 class KnobsUi(QtGui.QMainWindow):
     """
@@ -47,7 +47,7 @@ class KnobsUi(QtGui.QMainWindow):
         Setup UI.
         Connect components and setup all camonitors and associated callbacks.
         """
-        self.knobs = i10buttons.Knobs()
+        self.knobs = i10buttons.Knobs(None)
         QtGui.QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
@@ -140,7 +140,7 @@ class KnobsUi(QtGui.QMainWindow):
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
-        i10buttons.Knobs.jog_scale = scale
+        self.knobs.jog_scale = scale
 
     def bump1_plus(self):
         self.jog_handler(

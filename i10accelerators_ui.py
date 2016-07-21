@@ -48,10 +48,11 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
         self.setup_table()
-        self.knobs = i10buttons.Knobs()
+
 
         self.straight = i10straight.Straight()
-        self.simulationbuttons = i10buttons.SimulationButtons(self.straight)
+        self.knobs = i10buttons.Knobs(self.straight)
+#        self.simulationbuttons = i10buttons.SimulationButtons(self.straight)
 
         # Connect buttons to PVs
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
@@ -122,7 +123,7 @@ class Gui(QMainWindow):
         self.simulation.magnet_limits()
 
     def store_settings(self, button):
-        self.offset += np.array(button)*i10buttons.Knobs.jog_scale
+        self.offset += np.array(button)*self.knobs.jog_scale
 
     def jog_handler(self, pvs, ofs):
         """
@@ -147,7 +148,7 @@ class Gui(QMainWindow):
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
-        i10buttons.Knobs.jog_scale = scale
+        self.knobs.jog_scale = scale
 
     def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
@@ -164,7 +165,7 @@ class Gui(QMainWindow):
             self.simulation.figure.patch.set_alpha(0.0)
 
     def simulation_controls(self, factor, which_button):
-        self.simulationbuttons.buttons(factor, which_button)
+        self.knobs.sim_buttons(factor, which_button)
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
@@ -246,13 +247,13 @@ class Gui(QMainWindow):
                 -i10buttons.Knobs.BUTTON_DATA['SCALE'])
 
     def reset(self):
-        self.simulationbuttons.reset()
+        self.knobs.sim_reset()
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
 
     def reconfigure(self, value):
-        self.simulationbuttons.reconfigure(value)
+        self.knobs.sim_reconfigure(value)
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()

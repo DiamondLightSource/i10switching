@@ -64,11 +64,11 @@ class Knobs(object):
         'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
         }
 
-    jog_scale = 1.0 # right place?
 
-    def __init__(self):
+    def __init__(self, straight):
 
-        pass
+        self.jog_scale = 1.0
+        self.straight = straight # do I need to add something to deal with when straight = None??
 
     def get_imin(self):
         return caget([name + ':IMIN' for name in self.NAMES])
@@ -120,24 +120,16 @@ class Knobs(object):
                 raise OverCurrentException(n)
         caput(pvs, values)
 
-
-class SimulationButtons(object):
-
-    def __init__(self, straight):
-
-        self.knobs = Knobs()
-        self.straight = straight
-
-    def buttons(self, factor, button):
+    def sim_buttons(self, factor, button):
 
         self.straight.currents_add = self.straight.currents_add + (factor*np.array(
-                            Knobs.BUTTON_DATA[button]) * self.knobs.jog_scale)
+                            self.BUTTON_DATA[button]) * self.jog_scale)
 
-    def reconfigure(self, settings):
+    def sim_reconfigure(self, settings):
 
         self.straight.currents_add = settings
 
-    def reset(self):
+    def sim_reset(self):
 
         self.straight.currents_add = np.array([0, 0, 0, 0, 0])
 
