@@ -4,17 +4,19 @@
 
 import numpy as np
 
-# Define matrices to modify the electron beam vector:
-# drift, kicker magnets, insertion devices.
+
 
 class Element(object):
 
+"""Define matrices to modify the electron beam vector."""
 
     def __init__(self, s):
         self.where = s
 
 
 class Detector(Element):
+
+"""End of the straight where the sample is located."""
 
     def __init__(self, s):
         self.s = s
@@ -25,6 +27,7 @@ class Detector(Element):
 
 class Drift(Element):
 
+"""Allow electron beam to move along path described by its beam vector."""
 
     def __init__(self, s, step=0):
         self.step = step
@@ -44,6 +47,7 @@ class Drift(Element):
 
 class Kicker(Element):
 
+"""Magnet responsible for deflecting the electron beam."""
 
     def __init__(self, s, k=0):
         self.k = k
@@ -62,6 +66,7 @@ class Kicker(Element):
 
 class InsertionDevice(Element):
 
+"""Generates x-ray beam."""
 
     def __init__(self, s):
         self.s = s
@@ -75,6 +80,9 @@ class InsertionDevice(Element):
 
 # Assign locations of devices along the axis of the system.
 class Layout(object):
+
+"""Set up layout of the straight using the information in the 
+configuration file."""
 
     def __init__(self, name):
         self.NAME = name # best way to call it?
@@ -94,6 +102,8 @@ class Layout(object):
 
     def load(self):
 
+        """Load data from configuration file, set lengths of drifts."""
+
         raw_data = [line.split() for line in open(self.NAME)]
         element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
@@ -107,9 +117,15 @@ class Layout(object):
         return path
 
     def get_elements(self, which):
+
+        """Return list of elements of a particular type from the straight."""
+
         return [x for x in self.path if x.get_type() == which]
 
     def send_electrons_through(self):
+
+        """Send electron beam vector through straight to generate electron beam
+        and photon beams, which are initialised at the two insertion devices."""
 
         e_vector = np.array([0, 0])
         e_beam = np.zeros((len(self.path), 2))
@@ -127,6 +143,8 @@ class Layout(object):
         return e_beam, p_beam
 
     def create_photon_beam(self, vector):
+
+        """Take initialised photon beams and extend them to the detector."""
 
         for i in range(2):
             self.travel[i].set_length(self.p_coord[i][1]

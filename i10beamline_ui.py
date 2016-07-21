@@ -27,7 +27,7 @@ from PyQt4 import uic
 
 import i10plots
 import i10buttons
-import i10straight
+
 
 class KnobsUi(QtGui.QMainWindow):
     """
