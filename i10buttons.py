@@ -3,28 +3,12 @@
 # Contains ButtonData, OverCurrentException, Knobs
 
 import cothread
-#from cothread.catools import *
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
 import scipy.io
 import os
 from PyQt4 import QtGui
 
-jog_scale = 1.0 # don't want to keep this here...
-
-## will eventually be got from pvs
-class ButtonData(object):
-
-    SHIFT = {
-            'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
-            'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
-            'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
-            'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
-                              -127.34037684])*1e-4,
-            'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
-                               135.24691079])*1e-4,
-            'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
-            }
 
 class OverCurrentException(Exception):
     def __init__(self, magnet_index):
@@ -35,13 +19,9 @@ class Knobs(object):
 
     """
     Provides an interface to control the I10 Fast Chicane.
-    Values stored in the mat file are obtained through a matlab
-    middle layer simulation. The values are calculated to enable
+    The values are calculated to enable
     steering of the photon and electron beams.
     """
-
-    # Path for matfile loading
-    I10_PATH = '/dls_sw/work/common/matlab/i10'
 
     # PV names
     TRIMNAMES = [
@@ -62,6 +42,8 @@ class Knobs(object):
         'SR10S-PC-CTRL-04',
         'SR10S-PC-CTRL-05']
 
+    jog_scale = 1.0 # right place?
+
     def __init__(self):
 
         self.button_data = {
@@ -73,7 +55,7 @@ class Knobs(object):
             'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
                                135.24691079])*1e-4,
             'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
-            } #not used yet
+            }
 
     def get_imin(self):
         return caget([name + ':IMIN' for name in self.NAMES])
@@ -95,7 +77,7 @@ class Knobs(object):
         Increment the list of PVs by the offset.
         Errors are created when a user is likely to exceed magnet tolerances.
         """
-        ofs = ofs * jog_scale
+        ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
         values = old_values + ofs

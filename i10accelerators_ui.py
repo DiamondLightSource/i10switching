@@ -119,10 +119,10 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.ui.simulation.update_colourin()
-#        self.ui.simulation.magnet_limits() # suddenly broken somehow??
+        self.ui.simulation.magnet_limits()
 
     def store_settings(self, button):
-        self.offset += np.array(button)*i10buttons.jog_scale
+        self.offset += np.array(button)*i10buttons.Knobs.jog_scale
 
     def jog_handler(self, pvs, ofs):
         """
@@ -147,7 +147,7 @@ class Gui(QMainWindow):
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
-        i10buttons.jog_scale = scale
+        i10buttons.Knobs.jog_scale = scale
 
     def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
@@ -182,78 +182,78 @@ class Gui(QMainWindow):
     def k3_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['STEP_K3'])
-        self.store_settings(i10buttons.ButtonData.SHIFT['STEP_K3'])
+                self.knobs.button_data['STEP_K3'])
+        self.store_settings(self.knobs.button_data['STEP_K3'])
 
     def k3_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['STEP_K3'])
-        self.store_settings(-i10buttons.ButtonData.SHIFT['STEP_K3'])
+                -self.knobs.button_data['STEP_K3'])
+        self.store_settings(-self.knobs.button_data['STEP_K3'])
 
     def bump1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
-        self.store_settings(i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+                self.knobs.button_data['BUMP_LEFT'])
+        self.store_settings(self.knobs.button_data['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
-        self.store_settings(-i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+                -self.knobs.button_data['BUMP_LEFT'])
+        self.store_settings(-self.knobs.button_data['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
-        self.store_settings(i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+                self.knobs.button_data['BUMP_RIGHT'])
+        self.store_settings(self.knobs.button_data['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
-        self.store_settings(-i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+                -self.knobs.button_data['BUMP_RIGHT'])
+        self.store_settings(-self.knobs.button_data['BUMP_RIGHT'])
 
     def hbpm1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['BPM1'])
-        self.store_settings(i10buttons.ButtonData.SHIFT['BPM1'])
+                self.knobs.button_data['BPM1'])
+        self.store_settings(self.knobs.button_data['BPM1'])
 
     def hbpm1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['BPM1'])
-        self.store_settings(-i10buttons.ButtonData.SHIFT['BPM1'])
+                -self.knobs.button_data['BPM1'])
+        self.store_settings(-self.knobs.button_data['BPM1'])
 
     def hbpm2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['BPM2'])
-        self.store_settings(i10buttons.ButtonData.SHIFT['BPM2'])
+                self.knobs.button_data['BPM2'])
+        self.store_settings(self.knobs.button_data['BPM2'])
 
     def hbpm2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['BPM2'])
-        self.store_settings(-i10buttons.ButtonData.SHIFT['BPM2'])
+                -self.knobs.button_data['BPM2'])
+        self.store_settings(-self.knobs.button_data['BPM2'])
 
     def scale_plus(self): # am I doing the simulation right for this??
         self.jog_handler(
                [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
-                i10buttons.ButtonData.SHIFT['SCALE'])
+                self.knobs.button_data['SCALE'])
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
-                i10buttons.ButtonData.SHIFT['SCALE'])
+                self.knobs.button_data['SCALE'])
 
     def scale_minus(self):
         self.jog_handler(
                [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
-                -i10buttons.ButtonData.SHIFT['SCALE'])
+                -self.knobs.button_data['SCALE'])
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
-                -i10buttons.ButtonData.SHIFT['SCALE'])
+                -self.knobs.button_data['SCALE'])
 
     def reset(self):
         self.ui.simulation.info.magnets.reset()

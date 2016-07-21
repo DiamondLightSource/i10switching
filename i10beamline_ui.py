@@ -32,10 +32,10 @@ import i10buttons
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
 ALARM_COLORS = [
-        QtGui.QColor(  0, 215,  20), # None
-        QtGui.QColor(255, 140,   0), # Minor
-        QtGui.QColor(255,   0,   0), # Major
-        QtGui.QColor(255,   0, 255), # Invalid
+        QtGui.QColor(0, 215, 20), # None
+        QtGui.QColor(255, 140, 0), # Minor
+        QtGui.QColor(255, 0, 0), # Major
+        QtGui.QColor(255, 0, 255), # Invalid
         ]
 
 
@@ -51,7 +51,7 @@ class KnobsUi(QtGui.QMainWindow):
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
     I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
     I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
-    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3'
+    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3' # unused??
 
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
@@ -139,7 +139,7 @@ class KnobsUi(QtGui.QMainWindow):
         try:
             self.knobs.jog(pvs, ofs)
         except i10buttons.OverCurrentException, e:
-            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
+            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index) # no table in this gui - put something else in to warn?
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
             print 'Cothread Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
@@ -154,23 +154,27 @@ class KnobsUi(QtGui.QMainWindow):
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
-        self.knobs.jog_scale = scale
+        i10buttons.Knobs.jog_scale = scale
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                self.knobs.button_data['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_LEFT'])
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                -self.knobs.button_data['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                self.knobs.button_data['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS], -i10buttons.ButtonData.SHIFT['BUMP_RIGHT'])
+               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+                -self.knobs.button_data['BUMP_RIGHT'])
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
@@ -180,7 +184,7 @@ class KnobsUi(QtGui.QMainWindow):
         '''Uses PV alarm status to choose color for qframe'''
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
-        self.ui.magnet_led_3.setPalette(palette) # why does it name it with _2? Because it already exists in i10knobs??
+        self.ui.magnet_led_3.setPalette(palette)
 
     def update_burt_led(self, var):
         '''Uses burt valid PV to determine qframe color'''

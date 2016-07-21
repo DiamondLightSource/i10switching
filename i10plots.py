@@ -139,8 +139,6 @@ class Simulation(BaseFigureCanvas):
         for s in range(2):
             edges[s] = np.array(self.info.p_beam_lim(strengths[s]))[:, [0, 2]]
 
-        edges = np.array(self.info.p_beam_lim(strengths))[:, [0, 2]]
-
         beam1max = edges[0][0]
         beam2max = edges[1][1]
 
@@ -164,7 +162,6 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      ]
 
         camonitor(pv2, self.update_plot)
-
 
     def update_plot(self, value):
 
