@@ -221,32 +221,46 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.ax.autoscale_view()
         self.draw()
 
-class Traces(BaseFigureCanvas):
+class Traces(BaseFigureCanvas): # can't get cothread to work - threading issue??
 
-    def __init__(self, pv1, pv2):
+    def __init__(self):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
+#        pv1 = i10straight.i10controls.TRACES[0] #'BL10I-EA-USER-01:WAI1'
+#        pv2 = i10straight.i10controls.TRACES[1]
 
         # Initialise with real data the first time to set axis ranges
-        trigger = caget(pv1)
-        trace = caget(pv2)
-        x = range(len(trace))
-        self.lines = [
-                     self.ax.plot(x, trigger, 'b')[0],
-                     self.ax.plot(x, trace, 'g')[0]
-                     ]
-        camonitor(pv1, self.update_trigger)
-        camonitor(pv2, self.update_trace)
+#        i10controls.register_listener(self.update_traces)
+#        trigger = i10controls.arrays[i10controls.ARRAYS.TRIGGER]
+#        trace = i10controls.arrays[i10controls.ARRAYS.TRACE]
+#        x = range(len(trace))
+#        self.lines = [
+#                     self.ax.plot(x, trigger, 'b')[0],
+#                     self.ax.plot(x, trace, 'g')[0]
+#                     ]
 
-    def update_trigger(self, value):
 
-        self.lines[0].set_ydata(value)
-        self.draw()
+#        camonitor(pv1, self.update_trigger)
+#        camonitor(pv2, self.update_trace)
 
-    def update_trace(self, value):
+#    def update_traces(self, key, index):
 
-        self.lines[1].set_ydata(value)
-        self.draw()
+#        if key == i10controls.ARRAYS.TRIGGER:
+#            self.lines[0].set_ydata(i10controls.arrays[key])
+#            self.draw()
+#        elif key == i10controls.ARRAYS.TRACES:
+#            self.lines[1].set_ydata(i10controls.arrays[key])
+#            self.draw()
+
+#    def update_trigger(self, value):
+
+#        self.lines[0].set_ydata(value)
+#        self.draw()
+
+#    def update_trace(self, value):
+
+#        self.lines[1].set_ydata(value)
+#        self.draw()
 
 class RangeError(Exception):
 

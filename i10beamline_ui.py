@@ -79,7 +79,7 @@ class KnobsUi(QtGui.QMainWindow):
         camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.traces = i10plots.Traces(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.traces = i10plots.Traces() #self.I10_ADC_1_PV, self.I10_ADC_2_PV)
         self.graph = i10plots.OverlaidWaveforms(
                                         self.I10_ADC_1_PV, self.I10_ADC_2_PV)
 

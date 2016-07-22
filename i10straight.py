@@ -40,7 +40,7 @@ class Straight(object):
         if key == i10controls.ARRAYS.OFFSETS:
             self.offsets[index] = i10controls.arrays[key][index]
 
-    def get_scales(self, scales):
+    def get_scales(self, key, index):
 
         """Gets magnet scales from i10controls; 
         if a scale changes it is updated."""
