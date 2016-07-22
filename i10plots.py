@@ -14,11 +14,9 @@ import scipy.integrate as integ
 import i10straight
 
 
-########################
-#### Graph plotting ####
-########################
-
 class BaseFigureCanvas(FigureCanvas):
+
+    """Initialise the figures for plotting."""
 
     def __init__(self):
         self.figure = plt.figure()
@@ -28,6 +26,8 @@ class BaseFigureCanvas(FigureCanvas):
 
 
 class Simulation(BaseFigureCanvas):
+
+    """Plot the simulation of the I10 fast chicane."""
 
     def __init__(self, collectdata):
 

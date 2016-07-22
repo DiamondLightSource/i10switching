@@ -31,9 +31,8 @@ class OverCurrentException(Exception):
 class Knobs(object):
 
     """
-    Provides an interface to control the I10 Fast Chicane.
-    The values are calculated to enable
-    steering of the photon and electron beams.
+    Interface to control the I10 Fast Chicane and its simulation,
+    enabling steering of the photon and electron beams.
     """
 
     NAMES = [
@@ -86,10 +85,10 @@ class Knobs(object):
         return caget([name + ':ERRG' for name in self.NAMES])
 
     def jog(self, pvs, ofs):
-        """
-        Increment the list of PVs by the offset.
-        Errors are created when a user is likely to exceed magnet tolerances.
-        """
+
+        """Increment the list of PVs by the offset. Errors are created 
+        when a user is likely to exceed magnet tolerances."""
+
         ofs = ofs * self.jog_scale
 
         old_values = caget(pvs)
@@ -122,14 +121,21 @@ class Knobs(object):
 
     def sim_buttons(self, factor, button):
 
+        """Increment the simulation magnet strengths by the offset."""
+
         self.straight.currents_add = self.straight.currents_add + (factor*np.array(
                             self.BUTTON_DATA[button]) * self.jog_scale)
 
     def sim_reconfigure(self, settings):
 
+        """Return the simulation to its settings before simulation-only mode
+        was enabled."""
+
         self.straight.currents_add = settings
 
     def sim_reset(self):
+
+        """Remove all offsets in simulation-only mode."""
 
         self.straight.currents_add = np.array([0, 0, 0, 0, 0])
 

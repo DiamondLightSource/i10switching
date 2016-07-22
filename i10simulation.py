@@ -8,7 +8,7 @@ import numpy as np
 
 class Element(object):
 
-"""Define matrices to modify the electron beam vector."""
+    """Define matrices to modify the electron beam vector."""
 
     def __init__(self, s):
         self.where = s
@@ -16,7 +16,7 @@ class Element(object):
 
 class Detector(Element):
 
-"""End of the straight where the sample is located."""
+    """End of the straight where the sample is located."""
 
     def __init__(self, s):
         self.s = s
@@ -27,7 +27,7 @@ class Detector(Element):
 
 class Drift(Element):
 
-"""Allow electron beam to move along path described by its beam vector."""
+    """Allow electron beam to move along path described by its beam vector."""
 
     def __init__(self, s, step=0):
         self.step = step
@@ -47,7 +47,7 @@ class Drift(Element):
 
 class Kicker(Element):
 
-"""Magnet responsible for deflecting the electron beam."""
+    """Magnet responsible for deflecting the electron beam."""
 
     def __init__(self, s, k=0):
         self.k = k
@@ -66,7 +66,7 @@ class Kicker(Element):
 
 class InsertionDevice(Element):
 
-"""Generates x-ray beam."""
+    """Generates x-ray beam."""
 
     def __init__(self, s):
         self.s = s
@@ -81,8 +81,10 @@ class InsertionDevice(Element):
 # Assign locations of devices along the axis of the system.
 class Layout(object):
 
-"""Set up layout of the straight using the information in the 
-configuration file."""
+    """
+    Set up layout of the straight using the information in the 
+    configuration file.
+    """
 
     def __init__(self, name):
         self.NAME = name # best way to call it?

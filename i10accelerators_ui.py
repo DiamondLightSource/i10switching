@@ -26,7 +26,7 @@ import numpy as np
 import i10plots
 import i10buttons
 import i10straight
-
+import i10controls
 
 class Gui(QMainWindow):
 
@@ -47,8 +47,8 @@ class Gui(QMainWindow):
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
-        self.setup_table()
 
+        self.setup_table()
 
         self.straight = i10straight.Straight()
         self.knobs = i10buttons.Knobs(self.straight)
@@ -112,6 +112,11 @@ class Gui(QMainWindow):
                 self.update_magnet_led, format=FORMAT_CTRL)
         camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
+
+
+
+        #in here is an i10controls callback function which puts my function that I want updating into the list "listeners" by doing i10controls.register_listener(functionhandle)
+        # needs to take an argument to identify which magnet(s) change
 
         self.simulation = i10plots.Simulation(self.straight)# pass i10straight
         self.toolbar = NavigationToolbar(self.simulation, self)
@@ -335,7 +340,7 @@ class Gui(QMainWindow):
         alarm_pvs = [name + ':ERRGSTR' for name in i10buttons.Knobs.NAMES]
         camonitor(alarm_pvs,
                 lambda x, i: self.update_alarm(x, i, self.Columns.ERRORS),
-                format=FORMAT_TIME)
+               format=FORMAT_TIME)
 
         # Callbacks: High and low values store PVs in a cache for calculations
         self.cache_pvs = (
