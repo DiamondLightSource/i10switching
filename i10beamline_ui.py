@@ -11,9 +11,10 @@ electron beams to maintain a closed bump.
 """
 
 from pkg_resources import require
-require('cothread==2.10')
+require('numpy==1.11.1')
 require('scipy==0.10.1')
 require('matplotlib==1.3.1')
+require('cothread==2.13')
 
 import cothread
 from cothread.catools import caput, camonitor, FORMAT_TIME, FORMAT_CTRL
@@ -27,6 +28,7 @@ from PyQt4 import uic
 
 import i10plots
 import i10buttons
+import i10controls
 
 
 class KnobsUi(QtGui.QMainWindow):
@@ -36,9 +38,6 @@ class KnobsUi(QtGui.QMainWindow):
     and shown to the user.
     """
     UI_FILENAME = 'i10beamlineui.ui'
-    I10_ADC_1_PV = 'BL10I-EA-USER-01:WAI1'
-    I10_ADC_2_PV = 'BL10I-EA-USER-01:WAI2'
-    I10_ADC_3_PV = 'BL10I-EA-USER-01:WAI3' # unused??
 
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
@@ -52,6 +51,8 @@ class KnobsUi(QtGui.QMainWindow):
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
+
+        self.controls = i10controls.Controls()
 
         self.amp = 2.5
         self.sig = 900
@@ -79,9 +80,8 @@ class KnobsUi(QtGui.QMainWindow):
         camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.traces = i10plots.Traces() #self.I10_ADC_1_PV, self.I10_ADC_2_PV)
-        self.graph = i10plots.OverlaidWaveforms(
-                                        self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.traces = i10plots.Traces(self.controls)
+        self.graph = i10plots.OverlaidWaveforms(self.controls)
 
         self.ui.graph_layout.addWidget(self.traces)
         self.ui.graph_layout.addWidget(self.graph)

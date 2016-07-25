@@ -4,17 +4,6 @@ import cothread
 from cothread.catools import *
 
 
-
-#print TRACES
-#cothread.Yield()
-#print caget('SR09A-PC-CTRL-01:WFSCA')
-#cothread.Yield()
-#print caget('SR-DI-EBPM-01:SA:X', timeout=5)
-
-#caget(TRACES)
-#cothread.Yield()
-
-
 class Controls(object):
 
     CTRLS = [
@@ -32,12 +21,16 @@ class Controls(object):
     class ARRAYS(object):
         OFFSETS = 'offsets'
         SCALES = 'scales'
-        TRIGGER = 'trigger'
-        TRACE = 'trace'
+        WAVEFORMS = 'waveforms'
 
     def __init__(self):
-        self.arrays = {'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]), 'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]), 'traces': caget(self.TRACES)}
+        self.arrays = {'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]), 'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]), 'waveforms': caget(self.TRACES)}
         self.listeners = []
+        for i in range(len(self.CTRLS)):
+            camonitor(self.CTRLS[i] + ':OFFSET', lambda x, i=i: self.update_values(x, 'offsets', i))
+            camonitor(self.CTRLS[i] + ':WFSCA', lambda x, i=i: self.update_values(x, 'scales', i))
+        for i in range(len(self.TRACES)):
+            camonitor(self.TRACES[i], lambda x, i=i: self.update_values(x, 'waveforms', i))
 
     def register_listener(self, l):
         self.listeners.append(l)
@@ -46,10 +39,6 @@ class Controls(object):
         self.arrays[key][index] = val # this updates arrays
         [l(key, index) for l in self.listeners] # this tells listener which value has changed
 
-    def get_values(self):
-        for i in range(len(self.CTRLS)):
-            camonitor(self.CTRLS[i] + ':OFFSET', lambda x: update_values(x, 'offsets', i))
-            camonitor(self.CTRLS[i] + ':WFSCA', lambda x: update_values(x, 'scales', i))
 
 
 

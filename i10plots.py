@@ -11,7 +11,6 @@ from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
 
-#import i10straight
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -147,42 +146,42 @@ class Simulation(BaseFigureCanvas):
 
 class OverlaidWaveforms(BaseFigureCanvas):
 
-    def __init__(self, pv1, pv2):
+    def __init__(self, controls):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
-
+        self.controls = controls
+        self.controls.register_listener(self.update_plot)
         # Initialise with real data the first time to set axis ranges
-        self.trigger = caget(pv1)
-
-        data1, data2 = self.get_windowed_data(caget(pv2))
+        self.trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        self.trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+        data1, data2 = self.get_windowed_data(self.trigger, self.trace)
         self.x = range(len(data1))
         self.lines = [
                      self.ax.plot(self.x, data1, 'b')[0],
                      self.ax.plot(self.x, data2, 'g')[0]
                      ]
 
-        camonitor(pv2, self.update_plot)
-
-    def update_plot(self, value):
-
-        data1, data2 = self.get_windowed_data(value)
-        self.lines[0].set_ydata(data1)
-        self.lines[1].set_ydata(data2)
-#        self.scale+=1 # ??????????
-        labels = [integ.simps(data1), integ.simps(data2)]
-        for area in labels:
-            if area < 0.1:
-                raise RangeError
-        self.ax.legend([self.lines[0], self.lines[1]],
-                       labels)
+    def update_plot(self, key, index):
+        waveforms = [self.trigger, self.trace]
+        if key == self.controls.ARRAYS.WAVEFORMS:
+            waveforms[index] = self.controls.arrays[key][index]
+            data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
+            self.lines[0].set_ydata(data1)
+            self.lines[1].set_ydata(data2)
+            labels = [integ.simps(data1), integ.simps(data2)]
+            for area in labels:
+                if area < 0.1:
+                    raise RangeError
+            self.ax.legend([self.lines[0], self.lines[1]],
+                           labels)
 
         self.draw()
 
-    def get_windowed_data(self, value): # I think this works...
+    def get_windowed_data(self, trigger, trace):
 
         try:
-            diff = np.diff(self.trigger).tolist()
-            length = len(value)
+            diff = np.diff(trigger).tolist()
+            length = len(trace)
             stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
@@ -197,9 +196,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
             if length < trigger_length:
                 raise RangeError
 
-            data1 = np.roll(value[:trigger_length], - edges[0]
+            data1 = np.roll(trace[:trigger_length], - edges[0]
                             - trigger_length/4)[:trigger_length/2]
-            data2 = np.roll(value[:trigger_length], - edges[1]
+            data2 = np.roll(trace[:trigger_length], - edges[1]
                             - trigger_length/4)[:trigger_length/2]
             return data1, data2
 
@@ -221,46 +220,28 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.ax.autoscale_view()
         self.draw()
 
-class Traces(BaseFigureCanvas): # can't get cothread to work - threading issue??
 
-    def __init__(self):
+class Traces(BaseFigureCanvas):
+
+    def __init__(self, controls):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
-#        pv1 = i10straight.i10controls.TRACES[0] #'BL10I-EA-USER-01:WAI1'
-#        pv2 = i10straight.i10controls.TRACES[1]
+        self.controls = controls
+        self.controls.register_listener(self.update_waveforms)
+        trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
 
-        # Initialise with real data the first time to set axis ranges
-#        i10controls.register_listener(self.update_traces)
-#        trigger = i10controls.arrays[i10controls.ARRAYS.TRIGGER]
-#        trace = i10controls.arrays[i10controls.ARRAYS.TRACE]
-#        x = range(len(trace))
-#        self.lines = [
-#                     self.ax.plot(x, trigger, 'b')[0],
-#                     self.ax.plot(x, trace, 'g')[0]
-#                     ]
+        x = range(len(trace))
+        self.lines = [
+                     self.ax.plot(x, trigger, 'b')[0],
+                     self.ax.plot(x, trace, 'g')[0]
+                     ]
 
+    def update_waveforms(self, key, index):
+        if key == self.controls.ARRAYS.WAVEFORMS:
+            self.lines[index].set_ydata(self.controls.arrays[key][index])
+            self.draw()
 
-#        camonitor(pv1, self.update_trigger)
-#        camonitor(pv2, self.update_trace)
-
-#    def update_traces(self, key, index):
-
-#        if key == i10controls.ARRAYS.TRIGGER:
-#            self.lines[0].set_ydata(i10controls.arrays[key])
-#            self.draw()
-#        elif key == i10controls.ARRAYS.TRACES:
-#            self.lines[1].set_ydata(i10controls.arrays[key])
-#            self.draw()
-
-#    def update_trigger(self, value):
-
-#        self.lines[0].set_ydata(value)
-#        self.draw()
-
-#    def update_trace(self, value):
-
-#        self.lines[1].set_ydata(value)
-#        self.draw()
 
 class RangeError(Exception):
 

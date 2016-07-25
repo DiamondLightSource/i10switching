@@ -26,12 +26,9 @@ import os
 import traceback
 import numpy as np
 
-
-
 import i10plots
 import i10buttons
 import i10straight
-#import i10controls
 
 class Gui(QMainWindow):
 
