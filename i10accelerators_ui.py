@@ -6,10 +6,13 @@
 # Import libraries
 
 from pkg_resources import require
-require('cothread==2.10')
+require('numpy==1.11.1')
 require('scipy==0.10.1')
 require('matplotlib==1.3.1')
-require('numpy==1.11.1') # is this right? # 1.7.0 not working?
+require('cothread==2.13')
+#import sys
+#sys.path.append('/home/qzn68189/cothread')
+
 import sys
 import cothread
 from cothread.catools import *
@@ -23,10 +26,12 @@ import os
 import traceback
 import numpy as np
 
+
+
 import i10plots
 import i10buttons
 import i10straight
-import i10controls
+#import i10controls
 
 class Gui(QMainWindow):
 

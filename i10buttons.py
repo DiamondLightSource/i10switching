@@ -10,8 +10,8 @@ import os
 from PyQt4 import QtGui
 from scipy.constants import c
 
-import i10accelerators_ui
-import i10beamline_ui
+#import i10accelerators_ui
+#import i10beamline_ui
 
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)

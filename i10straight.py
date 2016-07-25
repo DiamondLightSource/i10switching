@@ -24,29 +24,31 @@ class Straight(object):
 #    FIELDS = CURRENTS*AMP_TO_TESLA
 
     def __init__(self):
+
         self.data = i10simulation.Layout('config.txt')
+        self.controls = i10controls.Controls()
         self.currents_add = np.array([0, 0, 0, 0, 0]) # not currently used... will be needed for simulation mode
 
-        i10controls.register_listener(self.get_offsets)
-        i10controls.register_listener(self.get_scales)
-        self.offsets = i10controls.arrays[i10controls.ARRAYS.OFFSETS]
-        self.scales = i10controls.arrays[i10controls.ARRAYS.SCALES]
+        self.controls.register_listener(self.get_offsets)
+        self.controls.register_listener(self.get_scales)
+        self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS]
+        self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
 
     def get_offsets(self, key, index):
 
         """Gets magnet offsets from i10controls; 
         if an offset changes it is updated."""
 
-        if key == i10controls.ARRAYS.OFFSETS:
-            self.offsets[index] = i10controls.arrays[key][index]
+        if key == self.controls.ARRAYS.OFFSETS:
+            self.offsets[index] = self.controls.arrays[key][index]
 
     def get_scales(self, key, index):
 
         """Gets magnet scales from i10controls; 
         if a scale changes it is updated."""
 
-        if key == i10controls.ARRAYS.SCALES:
-            self.scales[index] = i10controls.arrays[key][index]
+        if key == self.controls.ARRAYS.SCALES:
+            self.scales[index] = self.controls.arrays[key][index]
 
     def current_to_kick(self, current):
 

@@ -11,7 +11,7 @@ from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
 
-import i10straight
+#import i10straight
 
 
 class BaseFigureCanvas(FigureCanvas):

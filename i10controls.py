@@ -4,34 +4,60 @@ import cothread
 from cothread.catools import *
 
 
-class ARRAYS(object):
-    OFFSETS = 'offsets'
-    SCALES = 'scales'
-    TRIGGER = 'trigger'
-    TRACE = 'trace'
 
-CTRLS = [
-    'SR09A-PC-CTRL-01',
-    'SR09A-PC-CTRL-02',
-    'SR10S-PC-CTRL-03',
-    'SR10S-PC-CTRL-04',
-    'SR10S-PC-CTRL-05']
+#print TRACES
+#cothread.Yield()
+#print caget('SR09A-PC-CTRL-01:WFSCA')
+#cothread.Yield()
+#print caget('SR-DI-EBPM-01:SA:X', timeout=5)
+
+#caget(TRACES)
+#cothread.Yield()
 
 
-arrays = {'offsets': caget([ctrl + ':OFFSET' for ctrl in CTRLS]), 'scales': caget([ctrl + ':WFSCA' for ctrl in CTRLS])}
-#arrays = {'trigger': caget(TRACES[0]), 'trace': caget(TRACES[1])}
-listeners = []
+class Controls(object):
 
-def register_listener(l):
-    listeners.append(l)
+    CTRLS = [
+        'SR09A-PC-CTRL-01',
+        'SR09A-PC-CTRL-02',
+        'SR10S-PC-CTRL-03',
+        'SR10S-PC-CTRL-04',
+        'SR10S-PC-CTRL-05']
 
-def update_values(val, key, index):
-    arrays[key][index] = val # this updates arrays
-    [l(key, index) for l in listeners] # this tells listener which value has changed
+    TRACES = [
+        'BL10I-EA-USER-01:WAI1',
+        'BL10I-EA-USER-01:WAI2']
 
-for i in range(len(CTRLS)):
-    camonitor(CTRLS[i] + ':OFFSET', lambda x: update_values(x, 'offsets', i))
-    camonitor(CTRLS[i] + ':WFSCA', lambda x: update_values(x, 'scales', i))
+
+    class ARRAYS(object):
+        OFFSETS = 'offsets'
+        SCALES = 'scales'
+        TRIGGER = 'trigger'
+        TRACE = 'trace'
+
+    def __init__(self):
+        self.arrays = {'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]), 'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]), 'traces': caget(self.TRACES)}
+        self.listeners = []
+
+    def register_listener(self, l):
+        self.listeners.append(l)
+
+    def update_values(self, val, key, index):
+        self.arrays[key][index] = val # this updates arrays
+        [l(key, index) for l in self.listeners] # this tells listener which value has changed
+
+    def get_values(self):
+        for i in range(len(self.CTRLS)):
+            camonitor(self.CTRLS[i] + ':OFFSET', lambda x: update_values(x, 'offsets', i))
+            camonitor(self.CTRLS[i] + ':WFSCA', lambda x: update_values(x, 'scales', i))
+
+
+
+
+
+
+
+
 
 # need to sort out how scale buttons update in simulation
 
