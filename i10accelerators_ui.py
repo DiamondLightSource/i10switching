@@ -30,6 +30,21 @@ import i10plots
 import i10buttons
 import i10straight
 
+# THIS IS TEMPORARY UNTIL I WORK OUT THE BEST PLACE TO KEEP THEM
+NAMES = [
+    'SR09A-PC-FCHIC-01',
+    'SR09A-PC-FCHIC-02',
+    'SR10S-PC-FCHIC-03',
+    'SR10S-PC-FCHIC-04',
+    'SR10S-PC-FCHIC-05']
+
+CTRLS = [
+    'SR09A-PC-CTRL-01',
+    'SR09A-PC-CTRL-02',
+    'SR10S-PC-CTRL-03',
+    'SR10S-PC-CTRL-04',
+    'SR10S-PC-CTRL-05']
+
 class Gui(QMainWindow):
 
     UI_FILENAME = 'i10chicgui.ui'
@@ -132,13 +147,13 @@ class Gui(QMainWindow):
     def store_settings(self, button):
         self.offset += np.array(button)*self.knobs.jog_scale
 
-    def jog_handler(self, pvs, ofs):
+    def jog_handler(self, pvs, old_values, ofs):
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.
         """
         try:
-            self.knobs.jog(pvs, ofs)
+            self.knobs.jog(pvs, old_values, ofs)
         except i10buttons.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
@@ -179,78 +194,92 @@ class Gui(QMainWindow):
 
     def k3_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
+        self.store_settings(i10buttons.Knobs.BUTTON_DATA['STEP_K3']) # silly to be passing this in here when it's already in i10buttons...
 
     def k3_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
+                self.straight.offsets, #camonitored values
                 i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def hbpm1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 i10buttons.Knobs.BUTTON_DATA['BPM1'])
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BPM1'])
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 i10buttons.Knobs.BUTTON_DATA['BPM2'])
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def hbpm2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BPM2'])
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def scale_plus(self): # am I doing the simulation right for this??
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
+               [name + ':SETWFSCA' for name in NAMES],
+                self.straight.set_scales,
                 i10buttons.Knobs.BUTTON_DATA['SCALE'])
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':WFSCA' for ctrl in CTRLS],
+                self.straight.scales,
                 i10buttons.Knobs.BUTTON_DATA['SCALE'])
 
     def scale_minus(self):
         self.jog_handler(
-               [name + ':SETWFSCA' for name in i10buttons.Knobs.NAMES],
+               [name + ':SETWFSCA' for name in NAMES],
+                self.straight.set_scales
                 -i10buttons.Knobs.BUTTON_DATA['SCALE'])
         self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':WFSCA' for ctrl in CTRLS],
+                self.straight.scales,
                 -i10buttons.Knobs.BUTTON_DATA['SCALE'])
 
     def reset(self):
@@ -325,10 +354,10 @@ class Gui(QMainWindow):
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
         # Callbacks: Min and Max
-        max_pvs = [name + ':IMAX' for name in i10buttons.Knobs.NAMES]
-        min_pvs = [name + ':IMIN' for name in i10buttons.Knobs.NAMES]
-        offset_pvs = [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS]
-        seti_pvs = [name + ':SETI' for name in i10buttons.Knobs.NAMES]
+        max_pvs = [name + ':IMAX' for name in NAMES]
+        min_pvs = [name + ':IMIN' for name in NAMES]
+        offset_pvs = [ctrl + ':OFFSET' for ctrl in CTRLS]
+        seti_pvs = [name + ':SETI' for name in NAMES]
         camonitor(max_pvs,
                 lambda x, i: self.update_float(x, i, self.Columns.MAX))
         camonitor(min_pvs,
@@ -339,15 +368,15 @@ class Gui(QMainWindow):
                 lambda x, i: self.update_float(x, i, self.Columns.SETI))
 
         # Callbacks: Alarm status for each IOC
-        alarm_pvs = [name + ':ERRGSTR' for name in i10buttons.Knobs.NAMES]
+        alarm_pvs = [name + ':ERRGSTR' for name in NAMES]
         camonitor(alarm_pvs,
                 lambda x, i: self.update_alarm(x, i, self.Columns.ERRORS),
                format=FORMAT_TIME)
 
         # Callbacks: High and low values store PVs in a cache for calculations
         self.cache_pvs = (
-                [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS] +
-                [ctrl + ':WFSCA' for ctrl in i10buttons.Knobs.CTRLS])
+                [ctrl + ':OFFSET' for ctrl in CTRLS] +
+                [ctrl + ':WFSCA' for ctrl in CTRLS])
         self.cache = c = {}
         for i in range(1, 6):
             c['%02d' % i] = {}

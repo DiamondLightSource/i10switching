@@ -29,7 +29,23 @@ from PyQt4 import uic
 import i10plots
 import i10buttons
 import i10controls
+#TEMPORARY
+import i10straight
 
+# THIS IS TEMPORARY UNTIL I WORK OUT THE BEST PLACE TO KEEP THEM
+NAMES = [
+    'SR09A-PC-FCHIC-01',
+    'SR09A-PC-FCHIC-02',
+    'SR10S-PC-FCHIC-03',
+    'SR10S-PC-FCHIC-04',
+    'SR10S-PC-FCHIC-05']
+
+CTRLS = [
+    'SR09A-PC-CTRL-01',
+    'SR09A-PC-CTRL-02',
+    'SR10S-PC-CTRL-03',
+    'SR10S-PC-CTRL-04',
+    'SR10S-PC-CTRL-05']
 
 class KnobsUi(QtGui.QMainWindow):
     """
@@ -46,13 +62,15 @@ class KnobsUi(QtGui.QMainWindow):
         Setup UI.
         Connect components and setup all camonitors and associated callbacks.
         """
-        self.knobs = i10buttons.Knobs(None)
+        self.knobs = i10buttons.Knobs(None) #NOT CURRENTLY WORKING BECAUSE NOT TAKING THE SCALES FROM I10STRAIGHT, BUT I THINK BUTTON STUFF SHOULD BE MOVED FROM THERE ANYWAY
         QtGui.QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
         self.controls = i10controls.Controls()
+        #TEMPORARY
+        self.straight = i10straight.Straight()
 
         self.amp = 2.5
         self.sig = 900
@@ -117,13 +135,13 @@ class KnobsUi(QtGui.QMainWindow):
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
-    def jog_handler(self, pvs, ofs):
+    def jog_handler(self, pvs, old_values, ofs):
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.
         """
         try:
-            self.knobs.jog(pvs, ofs)
+            self.knobs.jog(pvs, old_values, ofs)
         except i10buttons.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index) # no table in this gui - put something else in to warn?
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
@@ -144,22 +162,26 @@ class KnobsUi(QtGui.QMainWindow):
 
     def bump1_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
+                self.straight.offsets, #camonitored values
                 i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in i10buttons.Knobs.CTRLS],
+               [ctrl + ':OFFSET' for ctrl in CTRLS],
+                self.straight.offsets,
                 -i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def update_cycling_textbox(self, var):

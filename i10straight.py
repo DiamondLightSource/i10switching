@@ -31,8 +31,16 @@ class Straight(object):
 
         self.controls.register_listener(self.get_offsets)
         self.controls.register_listener(self.get_scales)
+        self.controls.register_listener(self.get_setscales)
+        self.controls.register_listener(self.get_imin)
+        self.controls.register_listener(self.get_imax)
+        self.controls.register_listener(self.get_errors)
         self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS]
         self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
+        self.set_scales = self.controls.arrays[self.controls.ARRAYS.SET_SCALES]
+        self.imin = self.controls.arrays[self.controls.ARRAYS.IMIN]
+        self.imax = self.controls.arrays[self.controls.ARRAYS.IMAX]
+        self.errors = self.controls.arrays[self.controls.ARRAYS.ERRORS]
 
     def get_offsets(self, key, index):
 
@@ -49,6 +57,29 @@ class Straight(object):
 
         if key == self.controls.ARRAYS.SCALES:
             self.scales[index] = self.controls.arrays[key][index]
+
+    def get_setscales(self, key, index):
+
+        """Gets magnet scales from i10controls; 
+        if a scale changes it is updated."""
+
+        if key == self.controls.ARRAYS.SET_SCALES:
+            self.set_scales[index] = self.controls.arrays[key][index]
+
+    def get_imin(self, key, index):
+
+        if key == self.controls.ARRAYS.IMIN:
+            self.imin[index] = self.controls.arrays[key][index]
+
+    def get_imax(self, key, index):
+
+        if key == self.controls.ARRAYS.IMAX:
+            self.imax[index] = self.controls.arrays[key][index]
+
+    def get_errors(self, key, index):
+
+        if key == self.controls.ARRAYS.ERRORS:
+            self.errors[index] = self.controls.arrays[key][index]
 
     def current_to_kick(self, current):
 

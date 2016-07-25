@@ -6,6 +6,13 @@ from cothread.catools import *
 
 class Controls(object):
 
+    NAMES = [
+        'SR09A-PC-FCHIC-01',
+        'SR09A-PC-FCHIC-02',
+        'SR10S-PC-FCHIC-03',
+        'SR10S-PC-FCHIC-04',
+        'SR10S-PC-FCHIC-05']
+
     CTRLS = [
         'SR09A-PC-CTRL-01',
         'SR09A-PC-CTRL-02',
@@ -21,14 +28,32 @@ class Controls(object):
     class ARRAYS(object):
         OFFSETS = 'offsets'
         SCALES = 'scales'
+        SET_SCALES = 'set_scales'
         WAVEFORMS = 'waveforms'
+        IMIN = 'imin'
+        IMAX = 'imax'
+        ERRORS = 'errors'
 
     def __init__(self):
-        self.arrays = {'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]), 'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]), 'waveforms': caget(self.TRACES)}
+        self.arrays = {
+               'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]),
+               'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]),
+               'set_scales': caget([name + ':SETWFSCA' for name in self.NAMES]),
+               'waveforms': caget(self.TRACES),
+               'imin': caget([name + ':IMIN' for name in self.NAMES]),
+               'imax': caget([name + ':IMAX' for name in self.NAMES]),
+               'errors': caget([name + ':ERRG' for name in self.NAMES])
+               }
+
         self.listeners = []
+
         for i in range(len(self.CTRLS)):
             camonitor(self.CTRLS[i] + ':OFFSET', lambda x, i=i: self.update_values(x, 'offsets', i))
             camonitor(self.CTRLS[i] + ':WFSCA', lambda x, i=i: self.update_values(x, 'scales', i))
+            camonitor(self.NAMES[i] + ':SETWFSCA', lambda x, i=i: self.update_values(x, 'set_scales', i)) #setwfsca vs wfsca...
+            camonitor(self.NAMES[i] + ':IMIN', lambda x, i=i: self.update_values(x, 'imin', i))
+            camonitor(self.NAMES[i] + ':IMAX', lambda x, i=i: self.update_values(x, 'imax', i))
+            camonitor(self.NAMES[i] + ':ERRG', lambda x, i=i: self.update_values(x, 'errors', i))
         for i in range(len(self.TRACES)):
             camonitor(self.TRACES[i], lambda x, i=i: self.update_values(x, 'waveforms', i))
 
@@ -46,13 +71,8 @@ class Controls(object):
 
 
 
-
-
 # need to sort out how scale buttons update in simulation
 
 
-
-#for i in range(len(TRACES)):
-#    camonitor(TRACES[i], lambda x: update_values(x, 'traces', i))
 
 

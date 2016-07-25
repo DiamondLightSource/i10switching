@@ -33,19 +33,6 @@ class Knobs(object):
     enabling steering of the photon and electron beams.
     """
 
-    NAMES = [
-        'SR09A-PC-FCHIC-01',
-        'SR09A-PC-FCHIC-02',
-        'SR10S-PC-FCHIC-03',
-        'SR10S-PC-FCHIC-04',
-        'SR10S-PC-FCHIC-05']
-    CTRLS = [
-        'SR09A-PC-CTRL-01',
-        'SR09A-PC-CTRL-02',
-        'SR10S-PC-CTRL-03',
-        'SR10S-PC-CTRL-04',
-        'SR10S-PC-CTRL-05']
-
     MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
@@ -65,41 +52,25 @@ class Knobs(object):
     def __init__(self, straight):
 
         self.jog_scale = 1.0
-        self.straight = straight # do I need to add something to deal with when straight = None??
+        self.straight = straight
 
-    def get_imin(self):
-        return caget([name + ':IMIN' for name in self.NAMES])
-
-    def get_imax(self):
-        return caget([name + ':IMAX' for name in self.NAMES])
-
-    def get_offset(self):
-        return caget([ctrl + ':OFFSET' for ctrl in self.CTRLS])
-
-    def get_scale(self):
-        return caget([name + ':SETWFSCA' for name in self.NAMES])
-
-    def get_error(self):
-        return caget([name + ':ERRG' for name in self.NAMES])
-
-    def jog(self, pvs, ofs):
+    def jog(self, pvs, old_values, ofs):
 
         """Increment the list of PVs by the offset. Errors are created 
         when a user is likely to exceed magnet tolerances."""
 
         ofs = ofs * self.jog_scale
 
-        old_values = caget(pvs)
         values = old_values + ofs
 
         print
         for name, old, new in zip(pvs, old_values, values):
             print '%s:\t%f->%f' % (name, old, new)
 
-        scales = [abs(scale) for scale in self.get_scale()]
-        offsets = self.get_offset()
-        imaxs = self.get_imax()
-        imins = self.get_imin()
+        scales = [abs(scale) for scale in self.straight.scales]
+        offsets = self.straight.offsets
+        imaxs = self.straight.imax
+        imins = self.straight.imin
 
         # Check errors on limits.
         for n in range(len(pvs)):
