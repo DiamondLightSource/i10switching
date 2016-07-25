@@ -1,4 +1,4 @@
-sudo: false
+sudo: required
 language: python
 python:
   - "2.7"
@@ -8,7 +8,30 @@ cache:
     - $HOME/.cache/pip
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
+    - $HOME/build/dls-controls
 
+before_install:
+  - sudo apt-get build-dep python-scipy
+  - pip install scipy
+  - DIR=$(pwd)
+  - cd ..
+  - curl -L -O http://sourceforge.net/projects/pyqt/files/sip/sip-4.14.1/sip-4.14.1.tar.gz
+  - tar -xvf sip-4.14.1.tar.gz
+  - cd sip-4.14.1
+  - python configure.py -e ${VIRTUAL_ENV}/include
+  - make -j 2
+  - make install
+  - cd ..
+  - curl -L -O http://sourceforge.net/projects/pyqt/files/PyQt4/PyQt-4.9.5/PyQt-x11-gpl-4.9.5.tar.gz
+  - tar -xvf PyQt-x11-gpl-4.9.5.tar.gz
+  - cd PyQt-x11-gpl-4.9.5
+  - python configure.py --confirm-license
+  - make -j 2
+  - make install
+  - cd $DIR
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3 # give xvfb some time to start
 install:
   - env
   - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
@@ -17,7 +40,6 @@ install:
   - pip install coveralls
   - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
   - ls -al $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
-  - python setup.py bdist_egg
 
 # command to run tests
 script: nosetests
