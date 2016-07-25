@@ -10,8 +10,6 @@ require('numpy==1.11.1')
 require('scipy==0.10.1')
 require('matplotlib==1.3.1')
 require('cothread==2.13')
-#import sys
-#sys.path.append('/home/qzn68189/cothread')
 
 import sys
 import cothread
@@ -69,7 +67,6 @@ class Gui(QMainWindow):
 
         self.straight = i10straight.Straight()
         self.knobs = i10buttons.Knobs(self.straight)
-#        self.simulationbuttons = i10buttons.SimulationButtons(self.straight)
 
         # Connect buttons to PVs
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
@@ -108,10 +105,10 @@ class Gui(QMainWindow):
                                      self.simulation_controls(1, 'BPM2'))
         self.ui.bpm2minusButton.clicked.connect(lambda:
                                      self.simulation_controls(-1, 'BPM2'))
-        self.ui.scaleplusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'SCALE')) # different pv called so maybe simulation is incorrect... what does the pv do?
-        self.ui.scaleminusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'SCALE'))
+#        self.ui.scaleplusButton.clicked.connect(lambda:
+#                                     self.simulation_controls(1, 'SCALE'))
+#        self.ui.scaleminusButton.clicked.connect(lambda:
+#                                     self.simulation_controls(-1, 'SCALE'))
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
         self.ui.resetButton.clicked.connect(self.reset)
@@ -123,19 +120,14 @@ class Gui(QMainWindow):
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
-        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
+#        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
         camonitor(i10buttons.Knobs.BURT_STATUS_PV, self.update_burt_led)
         camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
                 self.update_magnet_led, format=FORMAT_CTRL)
         camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-
-
-        #in here is an i10controls callback function which puts my function that I want updating into the list "listeners" by doing i10controls.register_listener(functionhandle)
-        # needs to take an argument to identify which magnet(s) change
-
-        self.simulation = i10plots.Simulation(self.straight)# pass i10straight
+        self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
 
         self.ui.matplotlib_layout.addWidget(self.simulation)
@@ -144,123 +136,125 @@ class Gui(QMainWindow):
         self.simulation.update_colourin()
         self.simulation.magnet_limits()
 
-    def store_settings(self, button):
-        self.offset += np.array(button)*self.knobs.jog_scale
+#    def store_settings(self, button):
+#        self.offset += np.array(button)*self.knobs.jog_scale
 
     def jog_handler(self, pvs, old_values, ofs, factor):
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.
         """
-        try:
-            self.knobs.jog(pvs, old_values, ofs, factor)
-        except i10buttons.OverCurrentException, e:
-            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
-        except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
-            print 'Cothread Exception:', e
-            msgBox = QtGui.QMessageBox(self.parent)
-            msgBox.setText('Cothread Exception: %s' % e)
-            msgBox.exec_()
-        except Exception, e:
-            print 'Unexpected Exception:', e
-            msgBox = QtGui.QMessageBox(self.parent)
-            msgBox.setText('Unexpected Exception: %s' % e)
-            msgBox.setInformativeText(traceback.format_exc(3))
-            msgBox.exec_()
+        if self.ui.simButton.isChecked() == False:
+            try:
+                jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
+                self.straight.controls.set_new_pvs(jog_pvs[0], jog_pvs[1])
+            except i10buttons.OverCurrentException, e:
+                self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
+            except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
+                print 'Cothread Exception:', e
+                msgBox = QtGui.QMessageBox(self.parent)
+                msgBox.setText('Cothread Exception: %s' % e)
+                msgBox.exec_()
+            except Exception, e:
+                print 'Unexpected Exception:', e
+                msgBox = QtGui.QMessageBox(self.parent)
+                msgBox.setText('Unexpected Exception: %s' % e)
+                msgBox.setInformativeText(traceback.format_exc(3))
+                msgBox.exec_()
+        else:
+            print 'Simulation mode' ######################################################################################
+            self.knobs.sim_offsets(ofs, factor)
+            self.simulation.ax.collections.remove(self.simulation.fill1)
+            self.simulation.ax.collections.remove(self.simulation.fill2)
+            self.simulation.update_colourin()
+
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
         self.knobs.jog_scale = scale
 
-    def toggle_simulation(self):
+    def toggle_simulation(self): # THIS NEEDS SOME WORK
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
         if self.ui.simButton.isChecked() == True:
-            for button, function in zip(self.buttons, self.beam_controls):
-                button.clicked.disconnect(function)
+#            for button, function in zip(self.buttons, self.beam_controls):
+#                button.clicked.disconnect(function)
+            self.straight.switch_to_sim = True
             self.simulation.figure.patch.set_alpha(0.5)
         else:
-            self.reconfigure(self.offset) # ARE SETTINGS FOR SCALING OK WITH THIS? THINK SO BUT NEED ROBUST WAY OF CHECKING
-            for button, function in zip(self.buttons, self.beam_controls):
-                button.clicked.connect(function)
+#            self.reconfigure(self.straight.offsets) # RETURN TO CAMONITORED VALUE
+#            for button, function in zip(self.buttons, self.beam_controls):
+#                button.clicked.connect(function)
+            self.straight.switch_to_sim = False
             self.simulation.figure.patch.set_alpha(0.0)
 
     def simulation_controls(self, factor, which_button):
-        self.knobs.sim_buttons(factor, which_button)
-        self.simulation.ax.collections.remove(self.simulation.fill1)
-        self.simulation.ax.collections.remove(self.simulation.fill2)
-        self.simulation.update_colourin()
+        print 'Need to disconnect this' ######################################################################################
+#        self.knobs.sim_offsets(factor, which_button)
+#        self.simulation.ax.collections.remove(self.simulation.fill1)
+#        self.simulation.ax.collections.remove(self.simulation.fill2)
+#        self.simulation.update_colourin()
 
     def k3_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'STEP_K3', 1)
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['STEP_K3']) # silly to be passing this in here when it's already in i10buttons...
 
     def k3_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'STEP_K3', -1)
-        self.store_settings(-i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
 
     def bump1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
                 self.straight.offsets, #camonitored values
                 'BUMP_LEFT', 1)
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BUMP_LEFT', -1)
-        self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BUMP_RIGHT', 1)
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BUMP_RIGHT', -1)
-        self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def hbpm1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BPM1', 1)
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BPM1', -1)
-        self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BPM2', 1)
-        self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def hbpm2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
                 'BPM2', -1)
-        self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def scale_plus(self): # am I doing the simulation right for this??
         self.jog_handler(
@@ -288,7 +282,7 @@ class Gui(QMainWindow):
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
 
-    def reconfigure(self, value):
+    def reconfigure(self, value): #not currently right
         self.knobs.sim_reconfigure(value)
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)

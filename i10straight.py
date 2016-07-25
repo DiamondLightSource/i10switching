@@ -14,7 +14,8 @@ class Straight(object):
     """
     Convert currents applied to kickers to time dependent kicks,
     apply these kicks to electron beam and produce photon beams at the
-    insertion devices.
+    insertion devices. Controls the pvs for both the beam itself and the
+    simulation.
     """
 
     BEAM_RIGIDITY = 3e9/c
@@ -26,7 +27,8 @@ class Straight(object):
     def __init__(self):
 
         self.data = i10simulation.Layout('config.txt')
-        self.currents_add = np.array([0, 0, 0, 0, 0]) # not currently used... will be needed for simulation mode
+
+        self.switch_to_sim = False
 
         self.controls = i10controls.Controls()
 
@@ -42,6 +44,10 @@ class Straight(object):
         self.imin = self.controls.arrays[self.controls.ARRAYS.IMIN]
         self.imax = self.controls.arrays[self.controls.ARRAYS.IMAX]
         self.errors = self.controls.arrays[self.controls.ARRAYS.ERRORS]
+
+        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
+        self.simulated_scales = np.array([23.2610, 23.2145, 10.188844,
+                                          23.106842, 23.037771])
 
     def get_offsets(self, key, index):
 
@@ -96,10 +102,18 @@ class Straight(object):
 
         """Calculate time-varying strengths of kicker magnets."""
 
-        kick = self.current_to_kick(self.scales) * 0.5 * np.array([
-               np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
-               2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-               + 1]) + self.current_to_kick(self.offsets)
+        kick = [[],[],[],[],[]]
+        if self.switch_to_sim == False:
+            kick = self.current_to_kick(self.scales) * 0.5 * np.array([ # have I got the physics right for the scales and offsets?
+                   np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
+                   2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
+                   + 1]) + self.current_to_kick(self.offsets)
+
+        elif self.switch_to_sim == True:
+            kick = self.current_to_kick(self.simulated_scales) * 0.5 * np.array([
+                   np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
+                   2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
+                   + 1]) + self.current_to_kick(self.simulated_offsets)
 
         return kick
 
@@ -126,14 +140,17 @@ class Straight(object):
 
         """Calculate beams defining maximum range through which the
         photon beams sweep during a cycle."""
-
-        self.strength_setup(self.current_to_kick(self.scales) * strength_values
-                            + self.current_to_kick(self.offsets))
+        if self.switch_to_sim == False:
+            self.strength_setup(self.current_to_kick(self.scales) * strength_values
+                                + self.current_to_kick(self.offsets))
+        elif self.switch_to_sim == True:
+            self.strength_setup(self.current_to_kick(self.simulated_scales) * strength_values
+                                    + self.current_to_kick(self.simulated_offsets))
         p_beam = self.data.send_electrons_through()[1]
 
         return p_beam
 
-    def p_beam_lim(self, currents):
+    def p_beam_lim(self, currents): # use camonitor values...
 
         """Calculate the photon beam produced by magnets at their maximum
         strength settings."""

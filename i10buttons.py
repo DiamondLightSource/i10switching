@@ -86,16 +86,17 @@ class Knobs(object):
                 print ('%s: High: %f\tLow: %f\tMin: %f\tMax: %f\n'
                         % (pvs[n], high, low, max, min))
                 raise OverCurrentException(n)
-        caput(pvs, values)
 
-    def sim_buttons(self, factor, button):
+        return pvs, values
+
+    def sim_offsets(self, button, factor):
 
         """Increment the simulation magnet strengths by the offset."""
 
-        self.straight.currents_add = self.straight.currents_add + (factor*np.array(
-                            self.BUTTON_DATA[button]) * self.jog_scale)
+        self.straight.simulated_offsets = self.straight.simulated_offsets + (
+                            factor*self.BUTTON_DATA[button] * self.jog_scale)
 
-    def sim_reconfigure(self, settings):
+    def sim_reconfigure(self, settings): #not currently correct
 
         """Return the simulation to its settings before simulation-only mode
         was enabled."""
@@ -104,7 +105,9 @@ class Knobs(object):
 
     def sim_reset(self):
 
-        """Remove all offsets in simulation-only mode."""
+        """Remove all offsets and scale factors in simulation-only mode."""
 
-        self.straight.currents_add = np.array([0, 0, 0, 0, 0])
+        self.straight.simulated_offsets = np.array([0, 0, 0, 0, 0])
+        self.straight.simulated_scales =  np.array([23.2610, 23.2145, 
+                                          10.188844, 23.106842, 23.037771])
 
