@@ -19,6 +19,9 @@ import i10knobs
 class I10KnobsTest(unittest.TestCase):
 
 
+    def test_import(self):
+        pass
+
     def test_init(self):
         cothread.iqt()
         window = QtGui.QMainWindow()
