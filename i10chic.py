@@ -1,3 +1,4 @@
+#!/usr/bin/env dls-python2.7
 # i10chic.py
 # Animated simulation of chicane magnets
 
@@ -198,7 +199,8 @@ class CollectData(object):
     def create_photon_beam(self, vector):
 
         for i in range(2):
-            self.travel[i].set_length(self.data.p_coord[i][1] - self.data.p_coord[i][0])
+            self.travel[i].set_length(self.data.p_coord[i][1]
+                                      - self.data.p_coord[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector
@@ -210,11 +212,11 @@ class CollectData(object):
         p_vector = []
 
         # Send e_vector through system and create electron and photon beams
-        for p in self.data.path:
-            if p.get_type() != 'detector':
-                e_vector = p.increment(e_vector)
-                e_beam[self.data.path.index(p)+1] = e_vector
-            if p.get_type() == 'id':
+        for x in self.data.path:
+            if x.get_type() != 'detector':
+                e_vector = x.increment(e_vector)
+                e_beam[self.data.path.index(x)+1] = e_vector
+            if x.get_type() == 'id':
                 p_vector.append(e_vector.tolist())
         p_beam = self.create_photon_beam(p_vector)
 
@@ -239,9 +241,9 @@ class CollectData(object):
 
         return p_beam
 
-####################
-## Graph plotting ##
-####################
+########################
+#### Graph plotting ####
+########################
 
 class BaseFigureCanvas(FigureCanvas): # inheritance works but graphs are tiny - to be worked out...
 
@@ -354,8 +356,8 @@ class GaussPlot(BaseFigureCanvas):
     def __init__(self):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
-        self.trigger = np.load('trigger.npy')
-        self.trace = np.load('diode.npy')
+        self.trigger = np.load('example_data/trigger.npy')
+        self.trace = np.load('example_data/diode.npy')
 
     def display(self):
 
@@ -474,7 +476,7 @@ class Trigger(BaseFigureCanvas):
 
     def plot_trigger(self, data):
 
-        self.ax.plot(np.load('trigger.npy')) #caget(data))
+        self.ax.plot(caget(data)) #np.load('trigger.npy'))
 
 
 class RangeError(Exception):

@@ -11,9 +11,10 @@ electron beams to maintain a closed bump.
 
 
 from pkg_resources import require
-require('cothread')
-require('scipy')
-require('matplotlib')
+require('cothread==2.10')
+require('scipy==0.10.1')
+require('matplotlib==1.3.1')
+require('numpy==1.11.1')
 
 import cothread
 from cothread.catools import caget, caput, camonitor, FORMAT_TIME, FORMAT_CTRL
@@ -34,6 +35,8 @@ from matplotlib.figure import Figure
 
 import scipy.integrate as integ
 
+import i10plots
+
 # Alarm colours
 ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
 ALARM_COLORS = [
@@ -47,51 +50,6 @@ ALARM_COLORS = [
 class OverCurrentException(Exception):
     def __init__(self, magnet_index):
         self.magnet_index = magnet_index
-
-
-class WaveformCanvas(FigureCanvas):
-    def __init__(self, pv1, pv2):
-        self.figure = pylab.plt.figure()
-        FigureCanvas.__init__(self, self.figure)
-        self.ax1 = self.figure.add_subplot(1, 1, 1)
-
-        # Initialise with real data the first time to set axis ranges
-        self.trigger = caget(pv1)
-
-        data1, data2 = self.get_windowed_data(caget(pv2))
-        x = range(len(data1))
-        self.lines = [
-                self.ax1.plot(x, data1, 'b')[0],
-                self.ax1.plot(x, data2, 'g')[0]]
-#        camonitor(pv1, self.update_plot2)
-        camonitor(pv2, self.update_plot)
-
-
-#    def update_plot2(self, value):
-#        self.trigger = value
-
-    def update_plot(self, value):
-        data1, data2 = self.get_windowed_data(value)
-        self.lines[0].set_ydata(data1)
-        self.lines[1].set_ydata(data2)
-        self.draw()
-        label1=integ.simps(data1)
-        label2=integ.simps(data2)
-
-#        print label1, label2
-        return label1, label2
-
-    def get_windowed_data(self, value):
-        length = len(value)
-        ysq = self.trigger
-        ysqdiff = numpy.diff(ysq).tolist()
-        edges = [ysqdiff.index(max(ysqdiff)), ysqdiff.index(min(ysqdiff))]
-        offset = min(edges) / 2
-        data1 = numpy.roll(value, - edges[0] - length/4)[:length/2]
-        data2 = numpy.roll(value, - edges[1] - length/4)[:length/2]
-
-#        print edges
-        return data1, data2
 
 
 class Knobs(object):
@@ -259,7 +217,7 @@ class KnobsUi(object):
 
         self.ui.reenable_checkbox.clicked.connect(self.toggle_forbidden_buttons)
         self.ui.small_correction_radiobutton.clicked.connect(lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correcton_radiobutton.clicked.connect(lambda: self.set_jog_scaling(1.0))
+        self.ui.full_correction_radiobutton.clicked.connect(lambda: self.set_jog_scaling(1.0))
 
         camonitor(self.BURT_STATUS_PV, self.update_burt_led)
         camonitor(self.MAGNET_STATUS_PV,
@@ -267,11 +225,9 @@ class KnobsUi(object):
         camonitor(self.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.ui.graph = WaveformCanvas(self.I10_ADC_1_PV, self.I10_ADC_2_PV)
+        self.ui.graph = i10plots.Simulation()
         self.ui.graph_layout.addWidget(self.ui.graph)
-
-        self.plot_area()
-
+        self.ui.graph.update_colourin()
 
     def update_cycling_textbox(self, var):
         '''Updates cycling status from enum attached to pv'''
