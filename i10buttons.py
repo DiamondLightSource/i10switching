@@ -54,12 +54,12 @@ class Knobs(object):
         self.jog_scale = 1.0
         self.straight = straight
 
-    def jog(self, pvs, old_values, ofs):
+    def jog(self, pvs, old_values, ofs, factor):
 
         """Increment the list of PVs by the offset. Errors are created 
         when a user is likely to exceed magnet tolerances."""
 
-        ofs = ofs * self.jog_scale
+        ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
 
         values = old_values + ofs
 

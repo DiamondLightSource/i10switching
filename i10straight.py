@@ -26,8 +26,9 @@ class Straight(object):
     def __init__(self):
 
         self.data = i10simulation.Layout('config.txt')
-        self.controls = i10controls.Controls()
         self.currents_add = np.array([0, 0, 0, 0, 0]) # not currently used... will be needed for simulation mode
+
+        self.controls = i10controls.Controls()
 
         self.controls.register_listener(self.get_offsets)
         self.controls.register_listener(self.get_scales)
@@ -52,7 +53,7 @@ class Straight(object):
 
     def get_scales(self, key, index):
 
-        """Gets magnet scales from i10controls; 
+        """Gets scaling pv (WFSCA) from i10controls; 
         if a scale changes it is updated."""
 
         if key == self.controls.ARRAYS.SCALES:
@@ -60,7 +61,7 @@ class Straight(object):
 
     def get_setscales(self, key, index):
 
-        """Gets magnet scales from i10controls; 
+        """Gets other scaling pv (SETWFSCA) from i10controls; 
         if a scale changes it is updated."""
 
         if key == self.controls.ARRAYS.SET_SCALES:

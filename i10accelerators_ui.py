@@ -147,13 +147,13 @@ class Gui(QMainWindow):
     def store_settings(self, button):
         self.offset += np.array(button)*self.knobs.jog_scale
 
-    def jog_handler(self, pvs, old_values, ofs):
+    def jog_handler(self, pvs, old_values, ofs, factor):
         """
         Wrap the Knobs.jog method to provide exception handling
         in callbacks.
         """
         try:
-            self.knobs.jog(pvs, old_values, ofs)
+            self.knobs.jog(pvs, old_values, ofs, factor)
         except i10buttons.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
@@ -196,91 +196,91 @@ class Gui(QMainWindow):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
+                'STEP_K3', 1)
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['STEP_K3']) # silly to be passing this in here when it's already in i10buttons...
 
     def k3_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                -i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
+                'STEP_K3', -1)
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['STEP_K3'])
 
     def bump1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
                 self.straight.offsets, #camonitored values
-                i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
+                'BUMP_LEFT', 1)
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                -i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
+                'BUMP_LEFT', -1)
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_LEFT'])
 
     def bump2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
+                'BUMP_RIGHT', 1)
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def bump2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                -i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
+                'BUMP_RIGHT', -1)
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BUMP_RIGHT'])
 
     def hbpm1_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                i10buttons.Knobs.BUTTON_DATA['BPM1'])
+                'BPM1', 1)
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm1_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                -i10buttons.Knobs.BUTTON_DATA['BPM1'])
+                'BPM1', -1)
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM1'])
 
     def hbpm2_plus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                i10buttons.Knobs.BUTTON_DATA['BPM2'])
+                'BPM2', 1)
         self.store_settings(i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def hbpm2_minus(self):
         self.jog_handler(
                [ctrl + ':OFFSET' for ctrl in CTRLS],
                 self.straight.offsets,
-                -i10buttons.Knobs.BUTTON_DATA['BPM2'])
+                'BPM2', -1)
         self.store_settings(-i10buttons.Knobs.BUTTON_DATA['BPM2'])
 
     def scale_plus(self): # am I doing the simulation right for this??
         self.jog_handler(
                [name + ':SETWFSCA' for name in NAMES],
                 self.straight.set_scales,
-                i10buttons.Knobs.BUTTON_DATA['SCALE'])
+                'SCALE', 1)
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in CTRLS],
                 self.straight.scales,
-                i10buttons.Knobs.BUTTON_DATA['SCALE'])
+                'SCALE', 1)
 
     def scale_minus(self):
         self.jog_handler(
                [name + ':SETWFSCA' for name in NAMES],
-                self.straight.set_scales
-                -i10buttons.Knobs.BUTTON_DATA['SCALE'])
+                self.straight.set_scales,
+                'SCALE', -1)
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in CTRLS],
                 self.straight.scales,
-                -i10buttons.Knobs.BUTTON_DATA['SCALE'])
+                'SCALE', -1)
 
     def reset(self):
         self.knobs.sim_reset()
