@@ -81,15 +81,13 @@ class InsertionDevice(Element):
 # Assign locations of devices along the axis of the system.
 class Layout(object):
 
-    """
-    Set up layout of the straight using the information in the 
-    configuration file.
-    """
+    """Set up layout of the straight using the information in the 
+    configuration file."""
 
     def __init__(self, name):
         self.NAME = name # best way to call it?
         self.path = self.load()
-        self.ids = self.get_elements('id') # should these REALLY be here?
+        self.ids = self.get_elements('id')
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
         self.p_coord = [[self.ids[0].s,
@@ -104,14 +102,15 @@ class Layout(object):
 
     def load(self):
 
-        """Load data from configuration file, set lengths of drifts."""
+        """Load data from configuration file."""
 
         raw_data = [line.split() for line in open(self.NAME)]
         element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
         path = [element_classes[x[0]](float(x[1])) for x in raw_data]
 
-        # Set drift lengths
+        """Set lengths of drifts."""
+
         for p in path:
             if p.get_type() == 'drift':
                 p.set_length(path[path.index(p)+1].s - p.s)
@@ -133,7 +132,6 @@ class Layout(object):
         e_beam = np.zeros((len(self.path), 2))
         p_vector = []
 
-        # Send e_vector through system and create electron and photon beams
         for x in self.path:
             if x.get_type() != 'detector':
                 e_vector = x.increment(e_vector)

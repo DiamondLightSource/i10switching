@@ -28,12 +28,10 @@ class OverCurrentException(Exception):
 
 class Knobs(object):
 
-    """
-    Interface to control the I10 Fast Chicane and its simulation,
-    enabling steering of the photon and electron beams.
-    """
+    """Interface to control the I10 Fast Chicane and its simulation,
+    enabling steering of the photon and electron beams."""
 
-    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
+    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE' # these probably shouldn't be in here
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
 
@@ -92,26 +90,21 @@ class Knobs(object):
 
     def sim_offsets_scales(self, button, factor):
 
-        """Increment the simulation magnet strengths by the offset."""
+        """Increment the simulation magnet strengths by the offsets or scale
+        factors."""
 
         if button == 'SCALE':
-            self.straight.simulated_scales = (self.straight.simulated_scales + (factor*self.BUTTON_DATA[button] * self.jog_scale))
+            self.straight.simulated_scales = (self.straight.simulated_scales
+                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
         elif button == 'SET_SCALE':
             pass
         else:
-            self.straight.simulated_offsets = (self.straight.simulated_offsets + (factor*self.BUTTON_DATA[button] * self.jog_scale))
-
-    def sim_reconfigure(self):
-
-        """Return the simulation to its settings before simulation-only mode
-        was enabled."""
-
-        self.straight.simulated_offsets = self.straight.controls.arrays[self.straight.controls.ARRAYS.OFFSETS]
-        self.straight.simulated_scales = self.straight.controls.arrays[self.straight.controls.ARRAYS.SCALES]
+            self.straight.simulated_offsets = (self.straight.simulated_offsets
+                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
 
     def sim_reset(self):
 
-        """Remove all offsets and scale factors in simulation-only mode."""
+        """Remove all offsets and scale factors within simulation-only mode."""
 
         self.straight.simulated_offsets = np.array([0, 0, 0, 0, 0])
         self.straight.simulated_scales =  np.array([23.2610, 23.2145, 

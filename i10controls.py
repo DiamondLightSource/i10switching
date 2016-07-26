@@ -6,6 +6,9 @@ from cothread.catools import *
 
 class Controls(object):
 
+    """Monitors PVs, informs listeners when they are changed and inputs new
+    PV values."""
+
     NAMES = [
         'SR09A-PC-FCHIC-01',
         'SR09A-PC-FCHIC-02',
@@ -48,31 +51,40 @@ class Controls(object):
         self.listeners = []
 
         for i in range(len(self.CTRLS)):
-            camonitor(self.CTRLS[i] + ':OFFSET', lambda x, i=i: self.update_values(x, 'offsets', i))
-            camonitor(self.CTRLS[i] + ':WFSCA', lambda x, i=i: self.update_values(x, 'scales', i))
-            camonitor(self.NAMES[i] + ':SETWFSCA', lambda x, i=i: self.update_values(x, 'set_scales', i)) #setwfsca vs wfsca...
-            camonitor(self.NAMES[i] + ':IMIN', lambda x, i=i: self.update_values(x, 'imin', i))
-            camonitor(self.NAMES[i] + ':IMAX', lambda x, i=i: self.update_values(x, 'imax', i))
-            camonitor(self.NAMES[i] + ':ERRG', lambda x, i=i: self.update_values(x, 'errors', i))
+            camonitor(self.CTRLS[i] + ':OFFSET',
+                    lambda x, i=i: self.update_values(x, 'offsets', i))
+            camonitor(self.CTRLS[i] + ':WFSCA',
+                    lambda x, i=i: self.update_values(x, 'scales', i))
+            camonitor(self.NAMES[i] + ':SETWFSCA',
+                    lambda x, i=i: self.update_values(x, 'set_scales', i)) #setwfsca vs wfsca...
+            camonitor(self.NAMES[i] + ':IMIN',
+                    lambda x, i=i: self.update_values(x, 'imin', i))
+            camonitor(self.NAMES[i] + ':IMAX',
+                    lambda x, i=i: self.update_values(x, 'imax', i))
+            camonitor(self.NAMES[i] + ':ERRG',
+                    lambda x, i=i: self.update_values(x, 'errors', i))
         for i in range(len(self.TRACES)):
-            camonitor(self.TRACES[i], lambda x, i=i: self.update_values(x, 'waveforms', i))
+            camonitor(self.TRACES[i],
+                    lambda x, i=i: self.update_values(x, 'waveforms', i))
 
     def register_listener(self, l):
+
+        """Adds new listener function to the list."""
+
         self.listeners.append(l)
 
     def update_values(self, val, key, index):
-        self.arrays[key][index] = val # this updates arrays
-        [l(key, index) for l in self.listeners] # this tells listener which value has changed
+
+        """Updates arrays and tells listeners when a value has changed."""
+
+        self.arrays[key][index] = val
+        [l(key, index) for l in self.listeners]
 
     def set_new_pvs(self, pvs, values):
+
         caput(pvs, values)
 
 
-
-
-
-
-# need to sort out how scale buttons update in simulation
 
 
 

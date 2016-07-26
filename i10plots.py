@@ -1,7 +1,6 @@
 #!/usr/bin/env dls-python2.7
 #i10plots
-# Contains BaseFigureCanvas, Simulation, OverlaidWaveforms, Traces, RangeError
-# Calls i10straight
+# Contains BaseFigureCanvas, Simulation, Traces, OverlaidWaveforms, RangeError
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -10,7 +9,6 @@ from cothread.catools import caget, camonitor
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
-
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -40,12 +38,13 @@ class Simulation(BaseFigureCanvas):
 
     def fig_setup(self):
 
-        # Set up axes
+        """Set up axes."""
         ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
         ax1.get_yaxis().set_visible(False)
         ax1.set_ylim(-0.01, 0.01)
-        # Plot positions of kickers and IDs.
+
+        """Plot positions of kickers and IDs."""
         for i in self.info.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.info.data.ids:
@@ -54,6 +53,8 @@ class Simulation(BaseFigureCanvas):
         return ax1
 
     def data_setup(self):
+
+        """Set up data for the animation."""
 
         beams = [
                 self.ax.plot([], [], 'b')[0],
@@ -70,11 +71,12 @@ class Simulation(BaseFigureCanvas):
 
         return self.beams
 
-    # Extract electron and photon beam positions for plotting.
     def beam_plot(self, t):
 
+        """Extract electron and photon beam positions for plotting."""
+
         e_positions = np.array(self.info.timestep(t)[0])[:, 0].tolist()
-        # Remove duplicates in data.
+        """Remove duplicates in data."""
         for i in range(len(self.info.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
@@ -83,11 +85,10 @@ class Simulation(BaseFigureCanvas):
 
         return e_positions, p_positions
 
-    # Animation function
     def animate(self, t):
-#        t = t*4 # This gets it to one cycle per second.
 
-        # Obtain data for plotting.
+        """Animation function."""
+
         data = self.beam_plot(t)
         e_data = data[0]
         p_data = data[1]
@@ -101,6 +102,8 @@ class Simulation(BaseFigureCanvas):
         return beams
 
     def update_colourin(self):
+
+        """Shade in the range over which each photon beam sweeps."""
 
         strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
         edges = [[], []]
@@ -117,7 +120,10 @@ class Simulation(BaseFigureCanvas):
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
-    def magnet_limits(self):
+    def magnet_limits(self): # Not yet correctly set up
+
+        """Plot lines indicating the maximum current values that can be
+        passed through the magnets."""
 
         strengths = [np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
                               -caget('SR09A-PC-FCHIC-02:IMAX'),
@@ -132,8 +138,6 @@ class Simulation(BaseFigureCanvas):
 #                              caget('SR10S-PC-FCHIC-04:IMAX'), 
 #                              caget('SR10S-PC-FCHIC-05:IMAX')])
 
-        # problem with plotting - currently incorrect but how to make it right??
-        # takes 30 clicks of bump left + to go out of magnet range...
         edges = [[], []]
         for s in range(2):
             edges[s] = np.array(self.info.p_beam_lim(strengths[s]))[:, [0, 2]]
@@ -144,14 +148,45 @@ class Simulation(BaseFigureCanvas):
         self.limit1 = self.ax.plot(self.info.data.p_coord[0], beam1max, 'r--')
         self.limit2 = self.ax.plot(self.info.data.p_coord[1], beam2max, 'r--')
 
+
+class Traces(BaseFigureCanvas):
+
+    """Plot the traces of the trigger waveform and x-ray peaks."""
+
+    def __init__(self, controls):
+        BaseFigureCanvas.__init__(self)
+        self.ax = self.figure.add_subplot(1, 1, 1)
+        self.controls = controls
+        self.controls.register_listener(self.update_waveforms)
+        trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+
+        x = range(len(trace))
+        self.lines = [
+                     self.ax.plot(x, trigger, 'b')[0],
+                     self.ax.plot(x, trace, 'g')[0]
+                     ]
+
+    def update_waveforms(self, key, index):
+
+        """Update plot data whenever it changes."""
+
+        if key == self.controls.ARRAYS.WAVEFORMS:
+            self.lines[index].set_ydata(self.controls.arrays[key][index])
+            self.draw()
+
+
 class OverlaidWaveforms(BaseFigureCanvas):
+
+    """Take the two intensity peaks of the x-rays and overlay them.
+    Calculate areas under peaks and display as a legend."""
 
     def __init__(self, controls):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
         self.controls.register_listener(self.update_plot)
-        # Initialise with real data the first time to set axis ranges
+        """Initialise with real data the first time to set axis ranges."""
         self.trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
         self.trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
         data1, data2 = self.get_windowed_data(self.trigger, self.trace)
@@ -162,6 +197,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      ]
 
     def update_plot(self, key, index):
+
+        """Update plot data whenever it changes, calculate areas."""
+
         waveforms = [self.trigger, self.trace]
         if key == self.controls.ARRAYS.WAVEFORMS:
             waveforms[index] = self.controls.arrays[key][index]
@@ -178,6 +216,8 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.draw()
 
     def get_windowed_data(self, trigger, trace):
+
+        """Overlay the two peaks."""
 
         try:
             diff = np.diff(trigger).tolist()
@@ -209,6 +249,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
             return data1, data2
 
     def gaussian(self, a, sigma):
+
+        """Plot a theoretical gaussian for comparison with the x-ray peaks."""
+
         self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x),
                         len(self.x))-len(self.x)/2)**2/(2*sigma**2)), 'r')
         self.lines.append(self.gauss)
@@ -219,28 +262,6 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.ax.relim()
         self.ax.autoscale_view()
         self.draw()
-
-
-class Traces(BaseFigureCanvas):
-
-    def __init__(self, controls):
-        BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.controls = controls
-        self.controls.register_listener(self.update_waveforms)
-        trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
-
-        x = range(len(trace))
-        self.lines = [
-                     self.ax.plot(x, trigger, 'b')[0],
-                     self.ax.plot(x, trace, 'g')[0]
-                     ]
-
-    def update_waveforms(self, key, index):
-        if key == self.controls.ARRAYS.WAVEFORMS:
-            self.lines[index].set_ydata(self.controls.arrays[key][index])
-            self.draw()
 
 
 class RangeError(Exception):

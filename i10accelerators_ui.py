@@ -1,9 +1,13 @@
 #!/usr/bin/env dls-python2.7
-#i10accelui.py
-#Gui linking to i10plots, straight, simulation
+# i10accelerators_ui.py
+# Gui linking to i10plots, straight, simulation
 # Contains Gui
 
-# Import libraries
+"""Buttons to move I10 fast chicane magnet offsets and scales.
+Provides a gui to control magnet scaling and offsets in order
+to allow independant steering of photon and electron beams to
+maintain a closed bump and a simulation of the beamline that
+indicates the effects of changes to the scaling and offsets."""
 
 from pkg_resources import require
 require('numpy==1.11.1')
@@ -16,9 +20,7 @@ import cothread
 from cothread.catools import *
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
-from PyQt4 import uic
-from PyQt4 import QtGui
-from PyQt4 import QtCore
+from PyQt4 import uic, QtGui, QtCore
 from PyQt4.QtGui import QMainWindow
 import os
 import traceback
@@ -28,7 +30,7 @@ import i10plots
 import i10buttons
 import i10straight
 
-# THIS IS TEMPORARY UNTIL I WORK OUT THE BEST PLACE TO KEEP THEM
+# THIS IS TEMPORARY
 NAMES = [
     'SR09A-PC-FCHIC-01',
     'SR09A-PC-FCHIC-02',
@@ -44,6 +46,11 @@ CTRLS = [
     'SR10S-PC-CTRL-05']
 
 class Gui(QMainWindow):
+
+    """GUI containing a simulation of the beamline and buttons
+    to control the beam and/or simulation. Relevant status 
+    information is also gathered from PVs and shown to the user
+    in a table."""
 
     UI_FILENAME = 'i10chicgui.ui'
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
@@ -63,12 +70,14 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        self.setup_table()
+        self.setup_table() # THIS NEEDS TO BE MOVED/AMALGAMATED WITH CAMONITORED VALUES IN I10CONTROLS
 
         self.straight = i10straight.Straight()
         self.knobs = i10buttons.Knobs(self.straight)
+        self.simulation = i10plots.Simulation(self.straight)
+        self.toolbar = NavigationToolbar(self.simulation, self)
 
-        # Connect buttons to PVs
+        """Connect buttons to PVs."""
         self.buttons = [self.ui.kplusButton, self.ui.kminusButton,
                    self.ui.bumpleftplusButton, self.ui.bumpleftminusButton,
                    self.ui.bumprightplusButton, self.ui.bumprightminusButton,
@@ -95,29 +104,27 @@ class Gui(QMainWindow):
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
+        """Monitor the states of magnets, BURT and cycling."""
         camonitor(i10buttons.Knobs.BURT_STATUS_PV, self.update_burt_led)
         camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
                 self.update_magnet_led, format=FORMAT_CTRL)
         camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
                 self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        self.simulation = i10plots.Simulation(self.straight)
-        self.toolbar = NavigationToolbar(self.simulation, self)
-
+        """Add simulation and toolbar to the GUI."""
         self.ui.matplotlib_layout.addWidget(self.simulation)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
+        """Add shading to indicate ranges over which photon beams sweep, and
+        dotted lines indicating limits of magnet tolerances."""
         self.simulation.update_colourin()
 #        self.simulation.magnet_limits()
 
-#    def store_settings(self, button):
-#        self.offset += np.array(button)*self.knobs.jog_scale
-
     def jog_handler(self, pvs, old_values, ofs, factor):
-        """
-        Wrap the Knobs.jog method to provide exception handling
-        in callbacks.
-        """
+
+        """Wrap the Knobs.jog method to provide exception handling
+        in callbacks; update pvs and simulation values."""
+
         if self.ui.simButton.isChecked() == False:
             try:
                 jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
@@ -139,30 +146,37 @@ class Gui(QMainWindow):
         else:
             self.simulation_controls(ofs, factor)
 
-# for some reason the scale is remembered for sim mode but offset isn't, but the colourin isn't lost for scale whereas it is for offset...
-
-
-    def set_jog_scaling(self, scale):
+    def set_jog_scaling(self, scale): # To be extended
         """Change the scaling applied to magnet corrections."""
         self.knobs.jog_scale = scale
 
     def toggle_simulation(self):
+
+        """Toggle in and out of simulation mode: switch between PVs and
+        simulated magnet values, update graph accordingly and change background
+        colour to indicate simulation mode enabled."""
+
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
         if self.ui.simButton.isChecked() == True:
             self.straight.switch_to_sim = True
+            self.update_shading()
             self.simulation.figure.patch.set_alpha(0.5)
         else:
             self.straight.switch_to_sim = False
-            self.reconfigure() # RETURN TO CAMONITORED VALUE
+            self.update_shading()
             self.simulation.figure.patch.set_alpha(0.0)
 
     def simulation_controls(self, ofs, factor):
+
+        """Update values of simulated offsets and scales."""
+
         self.knobs.sim_offsets_scales(ofs, factor)
-        self.simulation.ax.collections.remove(self.simulation.fill1)
-        self.simulation.ax.collections.remove(self.simulation.fill2)
-        self.simulation.update_colourin()
+        self.update_shading()
+
+    """Methods linking buttons to offset/scale values for adjusting PVs
+    and simulated values."""
 
     def k3_plus(self):
         self.jog_handler(
@@ -244,30 +258,34 @@ class Gui(QMainWindow):
                 self.straight.scales,
                 'SCALE', -1)
 
-    def reset(self):
-        self.knobs.sim_reset()
-        self.simulation.ax.collections.remove(self.simulation.fill1)
-        self.simulation.ax.collections.remove(self.simulation.fill2)
-        self.simulation.update_colourin()
+    def reset(self): # keep this here or pointless extra??
 
-    def reconfigure(self):
-        self.knobs.sim_reconfigure()
+        """Reset the offsets and scales to the starting point, only whilst in
+        simulation mode. Does not affect the PVs."""
+
+        self.knobs.sim_reset()
+        self.update_shading()
+
+    def update_shading(self):
+
+        """Update the x-ray beam range shading."""
+
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
 
     def update_cycling_textbox(self, var):
-        '''Updates cycling status from enum attached to pv'''
+        '''Update cycling status from enum attached to PV.'''
         self.ui.cycling_textbox_2.setText(QtCore.QString('%s' % var.enums[var]))
 
     def update_magnet_led(self, var):
-        '''Uses PV alarm status to choose color for qframe'''
+        '''Use PV alarm status to choose color for qframe.'''
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
         self.ui.magnet_led_2.setPalette(palette)
 
     def update_burt_led(self, var):
-        '''Uses burt valid PV to determine qframe color'''
+        '''Use burt valid PV to determine qframe colour.'''
         palette = QtGui.QPalette()
 
         # BURT PV is one if okay, zero if bad:
@@ -278,7 +296,9 @@ class Gui(QMainWindow):
         self.ui.burt_led_2.setPalette(palette)
 
     def flash_table_cell(self, row, column):
-        '''Flash a cell twice, with the major alarm color'''
+
+        '''Flash a cell twice with the major alarm colour.'''
+
         table = self.ui.table_widget
         item = table.item(column, row)
 
@@ -295,7 +315,8 @@ class Gui(QMainWindow):
                 900, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND)))
 
     def setup_table(self):
-        '''Initalise all values required for the currents table'''
+
+        '''Initialise all values required for the currents table.'''
 
         VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
@@ -347,22 +368,20 @@ class Gui(QMainWindow):
         camonitor(self.cache_pvs, self.update_cache)
 
     def update_float(self, var, row, col):
-        '''Updates a table widget populated with a float'''
+        '''Updates a table widget populated with a float.'''
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
-        '''Updates an alarm sensitive table widget'''
+        '''Updates an alarm sensitive table widget.'''
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(i10buttons.ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, var, dummy):
-        '''
-        Called by camonitor. Updates values in the cache and uses
-        them to provide new high and low values to the table
-        '''
+        '''Called by camonitor. Updates values in the cache and uses
+        them to provide new high and low values to the table.'''
         ioc_1 = var.name.split(':')[0][-2:]
         ioc_2 = var.name.split(':')[1]
         c = self.cache[ioc_1]
