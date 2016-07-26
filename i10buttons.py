@@ -58,7 +58,7 @@ class Knobs(object):
     def jog(self, pvs, old_values, ofs, factor):
 
         """
-        Increment the list of PVs by the offset. Errors are created 
+        Increment the list of PVs by the offset. Errors are created
         when a user is likely to exceed magnet tolerances.
         """
 

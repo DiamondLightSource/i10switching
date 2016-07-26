@@ -7,8 +7,10 @@ from cothread.catools import *
 class Controls(object):
 
     """
-    Monitors PVs, informs listeners when they are changed and inputs new
-    PV values.
+    The link between GUI and PVs.
+
+    Monitors PVs, informs listeners when they 
+    are changed and inputs new PV values.
     """
 
     NAMES = [
@@ -40,6 +42,9 @@ class Controls(object):
         ERRORS = 'errors'
 
     def __init__(self):
+
+        """Monitor values of PVs: offsets, scales etc."""
+
         self.arrays = {
                'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]),
                'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]),
@@ -70,15 +75,11 @@ class Controls(object):
                     lambda x, i=i: self.update_values(x, 'waveforms', i))
 
     def register_listener(self, l):
-
-        """Adds new listener function to the list."""
-
+        """Add new listener function to the list."""
         self.listeners.append(l)
 
     def update_values(self, val, key, index):
-
-        """Updates arrays and tells listeners when a value has changed."""
-
+        """Update arrays and tell listeners when a value has changed."""
         self.arrays[key][index] = val
         [l(key, index) for l in self.listeners]
 

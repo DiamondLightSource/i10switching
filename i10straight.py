@@ -12,10 +12,11 @@ import i10controls
 class Straight(object):
 
     """
-    Convert currents applied to kickers to time dependent kicks,
-    apply these kicks to electron beam and produce photon beams at the
-    insertion devices. Controls the pvs for both the beam itself and the
-    simulation.
+    The physics of the I10 straight.
+
+    Takes currents and converts them to time dependent kicks.
+    Takes layout of the straight, applies these kicks to electron
+    beam and produces photon beams at the insertion devices.
     """
 
     BEAM_RIGIDITY = 3e9/c
@@ -23,6 +24,9 @@ class Straight(object):
                              0.045012/23, 0.035174/23])
 
     def __init__(self):
+
+        """Get layout of straight, initialise values of PVs and link them
+        up to listen to the monitored PV values."""
 
         self.data = i10simulation.Layout('config.txt')
 
@@ -46,35 +50,28 @@ class Straight(object):
         self.imax = self.controls.arrays[self.controls.ARRAYS.IMAX]
         self.errors = self.controls.arrays[self.controls.ARRAYS.ERRORS]
 
-        self.simulated_offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS]
-        self.simulated_scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
+        self.simulated_offsets = self.controls.arrays[
+                                        self.controls.ARRAYS.OFFSETS]
+        self.simulated_scales = self.controls.arrays[
+                                        self.controls.ARRAYS.SCALES]
 
     def get_offsets(self, key, index):
 
-        """
-        Gets magnet offsets from i10controls; 
-        if an offset changes it is updated.
-        """
+        """Get magnet offsets from i10controls."""
 
         if key == self.controls.ARRAYS.OFFSETS:
             self.offsets[index] = self.controls.arrays[key][index]
 
     def get_scales(self, key, index):
 
-        """
-        Gets scaling pv (WFSCA) from i10controls; 
-        if a scale changes it is updated.
-        """
+        """Get scaling PV (WFSCA) from i10controls."""
 
         if key == self.controls.ARRAYS.SCALES:
             self.scales[index] = self.controls.arrays[key][index]
 
     def get_setscales(self, key, index):
 
-        """
-        Gets other scaling pv (SETWFSCA) from i10controls; 
-        if a scale changes it is updated.
-        """
+        """Get other scaling PV (SETWFSCA) from i10controls."""
 
         if key == self.controls.ARRAYS.SET_SCALES:
             self.set_scales[index] = self.controls.arrays[key][index]

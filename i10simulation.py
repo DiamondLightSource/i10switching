@@ -5,7 +5,6 @@
 import numpy as np
 
 
-
 class Element(object):
 
     """Define matrices to modify the electron beam vector."""
@@ -82,7 +81,7 @@ class InsertionDevice(Element):
 class Layout(object):
 
     """
-    Set up layout of the straight using the information in the 
+    Set up layout of the straight using the information in the
     configuration file.
     """
 
