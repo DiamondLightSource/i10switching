@@ -45,7 +45,8 @@ class Knobs(object):
                           -127.34037684])*1e-4,
         'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
                            135.24691079])*1e-4,
-        'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
+        'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2]),
+        'SET_SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
         }
 
 
@@ -89,19 +90,24 @@ class Knobs(object):
 
         return pvs, values
 
-    def sim_offsets(self, button, factor):
+    def sim_offsets_scales(self, button, factor):
 
         """Increment the simulation magnet strengths by the offset."""
 
-        self.straight.simulated_offsets = self.straight.simulated_offsets + (
-                            factor*self.BUTTON_DATA[button] * self.jog_scale)
+        if button == 'SCALE':
+            self.straight.simulated_scales = (self.straight.simulated_scales + (factor*self.BUTTON_DATA[button] * self.jog_scale))
+        elif button == 'SET_SCALE':
+            pass
+        else:
+            self.straight.simulated_offsets = (self.straight.simulated_offsets + (factor*self.BUTTON_DATA[button] * self.jog_scale))
 
-    def sim_reconfigure(self, settings): #not currently correct
+    def sim_reconfigure(self):
 
         """Return the simulation to its settings before simulation-only mode
         was enabled."""
 
-        self.straight.currents_add = settings
+        self.straight.simulated_offsets = self.straight.controls.arrays[self.straight.controls.ARRAYS.OFFSETS]
+        self.straight.simulated_scales = self.straight.controls.arrays[self.straight.controls.ARRAYS.SCALES]
 
     def sim_reset(self):
 

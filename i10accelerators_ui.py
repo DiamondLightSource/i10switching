@@ -84,31 +84,6 @@ class Gui(QMainWindow):
         for button, function in zip(self.buttons, self.beam_controls):
             button.clicked.connect(function)
 
-        # Connect buttons to simulation
-        self.ui.kplusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'STEP_K3'))
-        self.ui.kminusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'STEP_K3'))
-        self.ui.bumpleftplusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'BUMP_LEFT'))
-        self.ui.bumpleftminusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'BUMP_LEFT'))
-        self.ui.bumprightplusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'BUMP_RIGHT'))
-        self.ui.bumprightminusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'BUMP_RIGHT'))
-        self.ui.bpm1plusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'BPM1'))
-        self.ui.bpm1minusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'BPM1'))
-        self.ui.bpm2plusButton.clicked.connect(lambda:
-                                     self.simulation_controls(1, 'BPM2'))
-        self.ui.bpm2minusButton.clicked.connect(lambda:
-                                     self.simulation_controls(-1, 'BPM2'))
-#        self.ui.scaleplusButton.clicked.connect(lambda:
-#                                     self.simulation_controls(1, 'SCALE'))
-#        self.ui.scaleminusButton.clicked.connect(lambda:
-#                                     self.simulation_controls(-1, 'SCALE'))
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
         self.ui.resetButton.clicked.connect(self.reset)
@@ -120,7 +95,6 @@ class Gui(QMainWindow):
         self.ui.full_correction_radiobutton.clicked.connect(
                                         lambda: self.set_jog_scaling(1.0))
 
-#        self.offset = np.array([0.0, 0.0, 0.0, 0.0, 0.0])
         camonitor(i10buttons.Knobs.BURT_STATUS_PV, self.update_burt_led)
         camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
                 self.update_magnet_led, format=FORMAT_CTRL)
@@ -134,7 +108,7 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
         self.simulation.update_colourin()
-        self.simulation.magnet_limits()
+#        self.simulation.magnet_limits()
 
 #    def store_settings(self, button):
 #        self.offset += np.array(button)*self.knobs.jog_scale
@@ -148,6 +122,7 @@ class Gui(QMainWindow):
             try:
                 jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
                 self.straight.controls.set_new_pvs(jog_pvs[0], jog_pvs[1])
+                self.simulation_controls(ofs, factor)
             except i10buttons.OverCurrentException, e:
                 self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
             except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
@@ -162,39 +137,32 @@ class Gui(QMainWindow):
                 msgBox.setInformativeText(traceback.format_exc(3))
                 msgBox.exec_()
         else:
-            print 'Simulation mode' ######################################################################################
-            self.knobs.sim_offsets(ofs, factor)
-            self.simulation.ax.collections.remove(self.simulation.fill1)
-            self.simulation.ax.collections.remove(self.simulation.fill2)
-            self.simulation.update_colourin()
+            self.simulation_controls(ofs, factor)
+
+# for some reason the scale is remembered for sim mode but offset isn't, but the colourin isn't lost for scale whereas it is for offset...
 
 
     def set_jog_scaling(self, scale):
         """Change the scaling applied to magnet corrections."""
         self.knobs.jog_scale = scale
 
-    def toggle_simulation(self): # THIS NEEDS SOME WORK
+    def toggle_simulation(self):
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
         if self.ui.simButton.isChecked() == True:
-#            for button, function in zip(self.buttons, self.beam_controls):
-#                button.clicked.disconnect(function)
             self.straight.switch_to_sim = True
             self.simulation.figure.patch.set_alpha(0.5)
         else:
-#            self.reconfigure(self.straight.offsets) # RETURN TO CAMONITORED VALUE
-#            for button, function in zip(self.buttons, self.beam_controls):
-#                button.clicked.connect(function)
             self.straight.switch_to_sim = False
+            self.reconfigure() # RETURN TO CAMONITORED VALUE
             self.simulation.figure.patch.set_alpha(0.0)
 
-    def simulation_controls(self, factor, which_button):
-        print 'Need to disconnect this' ######################################################################################
-#        self.knobs.sim_offsets(factor, which_button)
-#        self.simulation.ax.collections.remove(self.simulation.fill1)
-#        self.simulation.ax.collections.remove(self.simulation.fill2)
-#        self.simulation.update_colourin()
+    def simulation_controls(self, ofs, factor):
+        self.knobs.sim_offsets_scales(ofs, factor)
+        self.simulation.ax.collections.remove(self.simulation.fill1)
+        self.simulation.ax.collections.remove(self.simulation.fill2)
+        self.simulation.update_colourin()
 
     def k3_plus(self):
         self.jog_handler(
@@ -256,11 +224,11 @@ class Gui(QMainWindow):
                 self.straight.offsets,
                 'BPM2', -1)
 
-    def scale_plus(self): # am I doing the simulation right for this??
+    def scale_plus(self):
         self.jog_handler(
                [name + ':SETWFSCA' for name in NAMES],
                 self.straight.set_scales,
-                'SCALE', 1)
+                'SET_SCALE', 1)
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in CTRLS],
                 self.straight.scales,
@@ -270,7 +238,7 @@ class Gui(QMainWindow):
         self.jog_handler(
                [name + ':SETWFSCA' for name in NAMES],
                 self.straight.set_scales,
-                'SCALE', -1)
+                'SET_SCALE', -1)
         self.jog_handler(
                [ctrl + ':WFSCA' for ctrl in CTRLS],
                 self.straight.scales,
@@ -282,8 +250,8 @@ class Gui(QMainWindow):
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
 
-    def reconfigure(self, value): #not currently right
-        self.knobs.sim_reconfigure(value)
+    def reconfigure(self):
+        self.knobs.sim_reconfigure()
         self.simulation.ax.collections.remove(self.simulation.fill1)
         self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()

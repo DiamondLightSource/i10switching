@@ -64,7 +64,7 @@ class Controls(object):
         self.arrays[key][index] = val # this updates arrays
         [l(key, index) for l in self.listeners] # this tells listener which value has changed
 
-    def set_new_pvs(self, pvs, values): # UNUSED CURRENTLY
+    def set_new_pvs(self, pvs, values):
         caput(pvs, values)
 
 

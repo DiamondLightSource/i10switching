@@ -38,6 +38,7 @@ class Straight(object):
         self.controls.register_listener(self.get_imin)
         self.controls.register_listener(self.get_imax)
         self.controls.register_listener(self.get_errors)
+
         self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS]
         self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
         self.set_scales = self.controls.arrays[self.controls.ARRAYS.SET_SCALES]
@@ -45,9 +46,8 @@ class Straight(object):
         self.imax = self.controls.arrays[self.controls.ARRAYS.IMAX]
         self.errors = self.controls.arrays[self.controls.ARRAYS.ERRORS]
 
-        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        self.simulated_scales = np.array([23.2610, 23.2145, 10.188844,
-                                          23.106842, 23.037771])
+        self.simulated_offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS] #np.array([0, 0, 0, 0, 0]) # this should just be a caget because it's not being updated by get_offsets I believe
+        self.simulated_scales = self.controls.arrays[self.controls.ARRAYS.SCALES] #np.array([23.2610, 23.2145, 10.188844, 23.106842, 23.037771])
 
     def get_offsets(self, key, index):
 
