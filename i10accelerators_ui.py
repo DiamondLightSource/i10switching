@@ -3,11 +3,13 @@
 # Gui linking to i10plots, straight, simulation
 # Contains Gui
 
-"""Buttons to move I10 fast chicane magnet offsets and scales.
+"""
+Buttons to move I10 fast chicane magnet offsets and scales.
 Provides a gui to control magnet scaling and offsets in order
 to allow independant steering of photon and electron beams to
 maintain a closed bump and a simulation of the beamline that
-indicates the effects of changes to the scaling and offsets."""
+indicates the effects of changes to the scaling and offsets.
+"""
 
 from pkg_resources import require
 require('numpy==1.11.1')
@@ -47,10 +49,12 @@ CTRLS = [
 
 class Gui(QMainWindow):
 
-    """GUI containing a simulation of the beamline and buttons
+    """
+    GUI containing a simulation of the beamline and buttons
     to control the beam and/or simulation. Relevant status 
     information is also gathered from PVs and shown to the user
-    in a table."""
+    in a table.
+    """
 
     UI_FILENAME = 'i10chicgui.ui'
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
@@ -115,15 +119,19 @@ class Gui(QMainWindow):
         self.ui.matplotlib_layout.addWidget(self.simulation)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
-        """Add shading to indicate ranges over which photon beams sweep, and
-        dotted lines indicating limits of magnet tolerances."""
+        """
+        Add shading to indicate ranges over which photon beams sweep, and
+        dotted lines indicating limits of magnet tolerances.
+        """
         self.simulation.update_colourin()
 #        self.simulation.magnet_limits()
 
     def jog_handler(self, pvs, old_values, ofs, factor):
 
-        """Wrap the Knobs.jog method to provide exception handling
-        in callbacks; update pvs and simulation values."""
+        """
+        Wrap the Knobs.jog method to provide exception handling
+        in callbacks; update pvs and simulation values.
+        """
 
         if self.ui.simButton.isChecked() == False:
             try:
@@ -152,9 +160,11 @@ class Gui(QMainWindow):
 
     def toggle_simulation(self):
 
-        """Toggle in and out of simulation mode: switch between PVs and
-        simulated magnet values, update graph accordingly and change background
-        colour to indicate simulation mode enabled."""
+        """
+        Toggle in and out of simulation mode: switch between PVs and
+        simulated magnet values, update graph accordingly and change
+        background colour to indicate simulation mode enabled.
+        """
 
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
@@ -175,8 +185,10 @@ class Gui(QMainWindow):
         self.knobs.sim_offsets_scales(ofs, factor)
         self.update_shading()
 
-    """Methods linking buttons to offset/scale values for adjusting PVs
-    and simulated values."""
+    """
+    Methods linking buttons to offset/scale values for adjusting PVs
+    and simulated values.
+    """
 
     def k3_plus(self):
         self.jog_handler(
@@ -260,8 +272,10 @@ class Gui(QMainWindow):
 
     def reset(self): # keep this here or pointless extra??
 
-        """Reset the offsets and scales to the starting point, only whilst in
-        simulation mode. Does not affect the PVs."""
+        """
+        Reset the offsets and scales to the starting point, only whilst in
+        simulation mode. Does not affect the PVs.
+        """
 
         self.knobs.sim_reset()
         self.update_shading()
@@ -380,8 +394,10 @@ class Gui(QMainWindow):
         item.setText(QtCore.QString(var))
 
     def update_cache(self, var, dummy):
-        '''Called by camonitor. Updates values in the cache and uses
-        them to provide new high and low values to the table.'''
+        '''
+        Called by camonitor. Updates values in the cache and uses
+        them to provide new high and low values to the table.
+        '''
         ioc_1 = var.name.split(':')[0][-2:]
         ioc_2 = var.name.split(':')[1]
         c = self.cache[ioc_1]

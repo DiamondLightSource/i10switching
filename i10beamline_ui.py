@@ -3,12 +3,14 @@
 # Gui linking to i10plots, straight, buttons
 # Contains KnobsUi
 
-"""Buttons to move I10 fast chicane magnet offsets and scales.
+"""
+Buttons to move I10 fast chicane magnet offsets and scales.
 Provides a gui to control magnet scaling and offsets in order
 to allow independant steering of photon and electron beams to
 maintain a closed bump. Displays the two x-ray peaks such that
 they overlap and calculates the area of each to indicate their
-relative intensities."""
+relative intensities.
+"""
 
 from pkg_resources import require
 require('numpy==1.11.1')
@@ -47,9 +49,11 @@ CTRLS = [
     'SR10S-PC-CTRL-05']
 
 class KnobsUi(QMainWindow):
-    """GUI containing buttons to control the beam and displaying the
+    """
+    GUI containing buttons to control the beam and displaying the
     trigger and x-ray waveform traces. The two peaks of the x-ray
-    waveform are displayed overlapped with their areas calculated."""
+    waveform are displayed overlapped with their areas calculated.
+    """
 
     UI_FILENAME = 'i10beamlineui.ui'
 
@@ -65,8 +69,10 @@ class KnobsUi(QMainWindow):
         self.straight = i10straight.Straight()
         self.knobs = i10buttons.Knobs(self.straight)
 
-        """Initialise amplitude and standard deviation of theoretical
-        gaussian."""
+        """
+        Initialise amplitude and standard deviation of theoretical
+        gaussian.
+        """
         self.amp = 2.5
         self.sig = 900
 
@@ -143,8 +149,12 @@ class KnobsUi(QMainWindow):
         self.graph.gaussian(self.amp, self.sig)
 
     def jog_handler(self, pvs, old_values, ofs, factor):
-        """Wrap the Knobs.jog method to provide exception handling
-        in callbacks; updates PVs."""
+
+        """
+        Wrap the Knobs.jog method to provide exception handling
+        in callbacks; updates PVs.
+        """
+
         try:
             jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
             self.straight.controls.set_new_pvs(jog_pvs[0], jog_pvs[1])

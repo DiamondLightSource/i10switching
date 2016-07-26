@@ -6,8 +6,10 @@ from cothread.catools import *
 
 class Controls(object):
 
-    """Monitors PVs, informs listeners when they are changed and inputs new
-    PV values."""
+    """
+    Monitors PVs, informs listeners when they are changed and inputs new
+    PV values.
+    """
 
     NAMES = [
         'SR09A-PC-FCHIC-01',

@@ -122,8 +122,10 @@ class Simulation(BaseFigureCanvas):
 
     def magnet_limits(self): # Not yet correctly set up
 
-        """Plot lines indicating the maximum current values that can be
-        passed through the magnets."""
+        """
+        Plot lines indicating the maximum current values that can be
+        passed through the magnets.
+        """
 
         strengths = [np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
                               -caget('SR09A-PC-FCHIC-02:IMAX'),
@@ -178,8 +180,10 @@ class Traces(BaseFigureCanvas):
 
 class OverlaidWaveforms(BaseFigureCanvas):
 
-    """Take the two intensity peaks of the x-rays and overlay them.
-    Calculate areas under peaks and display as a legend."""
+    """
+    Take the two intensity peaks of the x-rays and overlay them.
+    Calculate areas under peaks and display as a legend.
+    """
 
     def __init__(self, controls):
         BaseFigureCanvas.__init__(self)

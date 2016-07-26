@@ -28,8 +28,10 @@ class OverCurrentException(Exception):
 
 class Knobs(object):
 
-    """Interface to control the I10 Fast Chicane and its simulation,
-    enabling steering of the photon and electron beams."""
+    """
+    Interface to control the I10 Fast Chicane and its simulation,
+    enabling steering of the photon and electron beams.
+    """
 
     MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE' # these probably shouldn't be in here
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
@@ -55,8 +57,10 @@ class Knobs(object):
 
     def jog(self, pvs, old_values, ofs, factor):
 
-        """Increment the list of PVs by the offset. Errors are created 
-        when a user is likely to exceed magnet tolerances."""
+        """
+        Increment the list of PVs by the offset. Errors are created 
+        when a user is likely to exceed magnet tolerances.
+        """
 
         ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
 
@@ -90,8 +94,10 @@ class Knobs(object):
 
     def sim_offsets_scales(self, button, factor):
 
-        """Increment the simulation magnet strengths by the offsets or scale
-        factors."""
+        """
+        Increment the simulation magnet strengths by the offsets or scale
+        factors.
+        """
 
         if button == 'SCALE':
             self.straight.simulated_scales = (self.straight.simulated_scales

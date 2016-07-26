@@ -81,8 +81,10 @@ class InsertionDevice(Element):
 # Assign locations of devices along the axis of the system.
 class Layout(object):
 
-    """Set up layout of the straight using the information in the 
-    configuration file."""
+    """
+    Set up layout of the straight using the information in the 
+    configuration file.
+    """
 
     def __init__(self, name):
         self.NAME = name # best way to call it?
@@ -125,8 +127,10 @@ class Layout(object):
 
     def send_electrons_through(self):
 
-        """Send electron beam vector through straight to generate electron beam
-        and photon beams, which are initialised at the two insertion devices."""
+        """
+        Send electron beam vector through straight to generate electron beam
+        and photon beams, which are initialised at the two insertion devices.
+        """
 
         e_vector = np.array([0, 0])
         e_beam = np.zeros((len(self.path), 2))

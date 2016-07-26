@@ -11,10 +11,12 @@ import i10controls
 
 class Straight(object):
 
-    """Convert currents applied to kickers to time dependent kicks,
+    """
+    Convert currents applied to kickers to time dependent kicks,
     apply these kicks to electron beam and produce photon beams at the
     insertion devices. Controls the pvs for both the beam itself and the
-    simulation."""
+    simulation.
+    """
 
     BEAM_RIGIDITY = 3e9/c
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
@@ -49,24 +51,30 @@ class Straight(object):
 
     def get_offsets(self, key, index):
 
-        """Gets magnet offsets from i10controls; 
-        if an offset changes it is updated."""
+        """
+        Gets magnet offsets from i10controls; 
+        if an offset changes it is updated.
+        """
 
         if key == self.controls.ARRAYS.OFFSETS:
             self.offsets[index] = self.controls.arrays[key][index]
 
     def get_scales(self, key, index):
 
-        """Gets scaling pv (WFSCA) from i10controls; 
-        if a scale changes it is updated."""
+        """
+        Gets scaling pv (WFSCA) from i10controls; 
+        if a scale changes it is updated.
+        """
 
         if key == self.controls.ARRAYS.SCALES:
             self.scales[index] = self.controls.arrays[key][index]
 
     def get_setscales(self, key, index):
 
-        """Gets other scaling pv (SETWFSCA) from i10controls; 
-        if a scale changes it is updated."""
+        """
+        Gets other scaling pv (SETWFSCA) from i10controls; 
+        if a scale changes it is updated.
+        """
 
         if key == self.controls.ARRAYS.SET_SCALES:
             self.set_scales[index] = self.controls.arrays[key][index]
@@ -88,8 +96,10 @@ class Straight(object):
 
     def current_to_kick(self, current):
 
-        """Convert currents (Amps) to fields (Tesla) and then to kick
-        strength."""
+        """
+        Convert currents (Amps) to fields (Tesla) and then to kick
+        strength.
+        """
 
         field = current * self.AMP_TO_TESLA
         kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
@@ -124,8 +134,10 @@ class Straight(object):
 
     def timestep(self, t):
 
-        """Return positions and velocities of electron and photon beams at
-        time t."""
+        """
+        Return positions and velocities of electron and photon beams at
+        time t.
+        """
 
         self.strength_setup(self.calculate_strengths(t))
         beams = self.data.send_electrons_through()
@@ -136,8 +148,11 @@ class Straight(object):
 
     def p_beam_range(self, strength_values):
 
-        """Calculate beams defining maximum range through which the
-        photon beams sweep during a cycle."""
+        """
+        Calculate beams defining maximum range through which the
+        photon beams sweep during a cycle.
+        """
+
         if self.switch_to_sim == False:
             self.strength_setup(self.current_to_kick(self.scales)
                                 * strength_values + self.current_to_kick(
@@ -152,8 +167,10 @@ class Straight(object):
 
     def p_beam_lim(self, currents): # use camonitor values... not yet connected
 
-        """Calculate the photon beam produced by magnets at their maximum
-        strength settings."""
+        """
+        Calculate the photon beam produced by magnets at their maximum
+        strength settings.
+        """
 
         kick_limits = self.current_to_kick(currents)
         self.strength_setup(kick_limits)
