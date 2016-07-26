@@ -5,6 +5,7 @@ from cothread.catools import *
 
 
 class Controls(object):
+    # TODO: Implement singleton pattern, have to initialise class after imports due to cothread bug.
 
     """
     The link between GUI and PVs.
@@ -84,9 +85,7 @@ class Controls(object):
         [l(key, index) for l in self.listeners]
 
     def set_new_pvs(self, pvs, values):
-
         caput(pvs, values)
-
 
 
 

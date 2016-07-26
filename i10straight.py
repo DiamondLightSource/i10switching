@@ -137,9 +137,7 @@ class Straight(object):
         """
 
         self.strength_setup(self.calculate_strengths(t))
-        beams = self.data.send_electrons_through()
-        e_beam = beams[0]
-        p_beam = beams[1]
+        e_beam, p_beam = self.data.send_electrons_through()
 
         return e_beam, p_beam
 

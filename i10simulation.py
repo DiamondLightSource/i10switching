@@ -86,12 +86,11 @@ class Layout(object):
     """
 
     def __init__(self, name):
-        self.NAME = name # best way to call it?
-        self.path = self.load()
+        self.path = self.load(name)
         self.ids = self.get_elements('id')
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
-        self.p_coord = [[self.ids[0].s,
+        self.p_coord = [[self.ids[0].s,  # TODO: Convert to a list of length self.ids
                          self.detector[0].s],
                         [self.ids[1].s,
                          self.detector[0].s]]
@@ -101,11 +100,11 @@ class Layout(object):
         self.travel = [Drift(self.ids[0].s),
                        Drift(self.ids[1].s)]
 
-    def load(self):
-
+    def load(self, filename):
+        # TODO: Make private
         """Load data from configuration file."""
 
-        raw_data = [line.split() for line in open(self.NAME)]
+        raw_data = [line.split() for line in open(filename)]
         element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
         path = [element_classes[x[0]](float(x[1])) for x in raw_data]
