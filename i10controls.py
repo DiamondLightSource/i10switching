@@ -3,8 +3,17 @@
 import cothread
 from cothread.catools import *
 
+class SingletonType(type): # what does this even mean?
+    def __call__(cls, *args, **kwargs):
+        try:
+            return cls.__instance
+        except AttributeError:
+            cls.__instance = super(SingletonType, cls).__call__(*args, **kwargs)
+            return cls.__instance
 
-class Controls(object):
+
+class PVControls(object):
+    __metaclass__ = SingletonType
     # TODO: Implement singleton pattern, have to initialise class after imports due to cothread bug.
 
     """
@@ -47,33 +56,39 @@ class Controls(object):
         """Monitor values of PVs: offsets, scales etc."""
 
         self.arrays = {
-               'offsets': caget([ctrl + ':OFFSET' for ctrl in self.CTRLS]),
-               'scales': caget([ctrl + ':WFSCA' for ctrl in self.CTRLS]),
-               'set_scales': caget([name + ':SETWFSCA' for name in self.NAMES]),
-               'waveforms': caget(self.TRACES),
-               'imin': caget([name + ':IMIN' for name in self.NAMES]),
-               'imax': caget([name + ':IMAX' for name in self.NAMES]),
-               'errors': caget([name + ':ERRG' for name in self.NAMES])
-               }
+                      self.ARRAYS.OFFSETS: caget([
+                                    ctrl + ':OFFSET' for ctrl in self.CTRLS]),
+                      self.ARRAYS.SCALES: caget([
+                                    ctrl + ':WFSCA' for ctrl in self.CTRLS]),
+                      self.ARRAYS.SET_SCALES: caget([
+                                    name + ':SETWFSCA' for name in self.NAMES]),
+                      self.ARRAYS.WAVEFORMS: caget(self.TRACES),
+                      self.ARRAYS.IMIN: caget([
+                                    name + ':IMIN' for name in self.NAMES]),
+                      self.ARRAYS.IMAX: caget([
+                                    name + ':IMAX' for name in self.NAMES]),
+                      self.ARRAYS.ERRORS: caget([
+                                    name + ':ERRG' for name in self.NAMES])
+                      }
 
         self.listeners = []
 
         for i in range(len(self.CTRLS)):
             camonitor(self.CTRLS[i] + ':OFFSET',
-                    lambda x, i=i: self.update_values(x, 'offsets', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.OFFSETS, i))
             camonitor(self.CTRLS[i] + ':WFSCA',
-                    lambda x, i=i: self.update_values(x, 'scales', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.SCALES, i))
             camonitor(self.NAMES[i] + ':SETWFSCA',
-                    lambda x, i=i: self.update_values(x, 'set_scales', i)) #setwfsca vs wfsca...
+                lambda x, i=i: self.update_values(x, self.ARRAYS.SET_SCALES, i))
             camonitor(self.NAMES[i] + ':IMIN',
-                    lambda x, i=i: self.update_values(x, 'imin', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.IMIN, i))
             camonitor(self.NAMES[i] + ':IMAX',
-                    lambda x, i=i: self.update_values(x, 'imax', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.IMAX, i))
             camonitor(self.NAMES[i] + ':ERRG',
-                    lambda x, i=i: self.update_values(x, 'errors', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.ERRORS, i))
         for i in range(len(self.TRACES)):
             camonitor(self.TRACES[i],
-                    lambda x, i=i: self.update_values(x, 'waveforms', i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.WAVEFORMS, i))
 
     def register_listener(self, l):
         """Add new listener function to the list."""

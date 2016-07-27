@@ -18,6 +18,7 @@ class Detector(Element):
     """End of the straight where the sample is located."""
 
     def __init__(self, s):
+        super(Detector, self).__init__()
         self.s = s
 
     def get_type(self):
@@ -29,6 +30,7 @@ class Drift(Element):
     """Allow electron beam to move along path described by its beam vector."""
 
     def __init__(self, s, step=0):
+        super(Drift, self).__init__()
         self.step = step
         self.s = s
 
@@ -49,6 +51,7 @@ class Kicker(Element):
     """Magnet responsible for deflecting the electron beam."""
 
     def __init__(self, s, k=0):
+        super(Kicker, self).__init__()
         self.k = k
         self.s = s
 
@@ -68,6 +71,7 @@ class InsertionDevice(Element):
     """Generates x-ray beam."""
 
     def __init__(self, s):
+        super(InsertionDevice, self).__init__()
         self.s = s
 
     def increment(self, e):
@@ -86,22 +90,18 @@ class Layout(object):
     """
 
     def __init__(self, name):
-        self.path = self.load(name)
+        self.path = self._load(name)
         self.ids = self.get_elements('id')
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
-        self.p_coord = [[self.ids[0].s,  # TODO: Convert to a list of length self.ids
-                         self.detector[0].s],
-                        [self.ids[1].s,
-                         self.detector[0].s]]
+        self.p_coord = [[self.ids[i].s, self.detector[0].s] for i in range(len(self.ids))]
         self.xaxis = [0]
         self.xaxis.extend([i.s for i in self.path
                       if i.get_type() != 'drift'])
-        self.travel = [Drift(self.ids[0].s),
-                       Drift(self.ids[1].s)]
+        self.travel = [Drift(self.ids[i].s) for i in range(len(self.ids))]
 
-    def load(self, filename):
-        # TODO: Make private
+    def _load(self, filename):
+
         """Load data from configuration file."""
 
         raw_data = [line.split() for line in open(filename)]
@@ -148,7 +148,7 @@ class Layout(object):
 
         """Take initialised photon beams and extend them to the detector."""
 
-        for i in range(2):
+        for i in range(len(self.ids)):
             self.travel[i].set_length(self.p_coord[i][1]
                                       - self.p_coord[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))

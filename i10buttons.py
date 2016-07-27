@@ -2,13 +2,9 @@
 #i10buttons
 # Contains ButtonData, OverCurrentException, Knobs
 
-import cothread
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
-import scipy.io
-import os
 from PyQt4 import QtGui
-from scipy.constants import c
 
 
 # Alarm colours
@@ -23,6 +19,7 @@ ALARM_COLORS = [
 
 class OverCurrentException(Exception):
     def __init__(self, magnet_index):
+        super(OverCurrentException, self).__init__()
         self.magnet_index = magnet_index
 
 
@@ -77,7 +74,7 @@ class Knobs(object):
 
         # Check errors on limits.
         for n in range(len(pvs)):
-            max = imaxs[n]
+            max = imaxs[n] # redefine max and min?
             min = imins[n]
             offset = offsets[n]
             scale = scales[n]

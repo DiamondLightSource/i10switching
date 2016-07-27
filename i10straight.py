@@ -32,17 +32,17 @@ class Straight(object):
 
         self.switch_to_sim = False
 
-        self.controls = i10controls.Controls()
+        self.controls = i10controls.PVControls()
 
-        self.controls.register_listener(self.get_offsets)
-        self.controls.register_listener(self.get_scales)
-        self.controls.register_listener(self.get_setscales)
+        self.controls.register_listener(self.offset_listener)
+        self.controls.register_listener(self.scale_listener)
+        self.controls.register_listener(self.setscale_listener)
         # should these be in here or elsewhere?
-        self.controls.register_listener(self.get_imin)
-        self.controls.register_listener(self.get_imax)
-        self.controls.register_listener(self.get_errors)
+        self.controls.register_listener(self.imin_listener)
+        self.controls.register_listener(self.imax_listener)
+        self.controls.register_listener(self.error_listener)
 
-        self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS]
+        self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS] # don't need these references to them?
         self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
         self.set_scales = self.controls.arrays[self.controls.ARRAYS.SET_SCALES]
 
@@ -55,38 +55,38 @@ class Straight(object):
         self.simulated_scales = self.controls.arrays[
                                         self.controls.ARRAYS.SCALES]
 
-    def get_offsets(self, key, index):
+    def offset_listener(self, key, index):
 
         """Get magnet offsets from i10controls."""
 
         if key == self.controls.ARRAYS.OFFSETS:
             self.offsets[index] = self.controls.arrays[key][index]
 
-    def get_scales(self, key, index):
+    def scale_listener(self, key, index):
 
         """Get scaling PV (WFSCA) from i10controls."""
 
         if key == self.controls.ARRAYS.SCALES:
             self.scales[index] = self.controls.arrays[key][index]
 
-    def get_setscales(self, key, index):
+    def setscale_listener(self, key, index):
 
         """Get other scaling PV (SETWFSCA) from i10controls."""
 
         if key == self.controls.ARRAYS.SET_SCALES:
             self.set_scales[index] = self.controls.arrays[key][index]
 
-    def get_imin(self, key, index):
+    def imin_listener(self, key, index):
 
         if key == self.controls.ARRAYS.IMIN:
             self.imin[index] = self.controls.arrays[key][index]
 
-    def get_imax(self, key, index):
+    def imax_listener(self, key, index):
 
         if key == self.controls.ARRAYS.IMAX:
             self.imax[index] = self.controls.arrays[key][index]
 
-    def get_errors(self, key, index):
+    def error_listener(self, key, index):
 
         if key == self.controls.ARRAYS.ERRORS:
             self.errors[index] = self.controls.arrays[key][index]
