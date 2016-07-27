@@ -12,7 +12,7 @@ class SingletonType(type): # what does this even mean?
             return cls.__instance
 
 
-class PVControls(object):
+class PvMonitors(object):
     __metaclass__ = SingletonType
     # TODO: Implement singleton pattern, have to initialise class after imports due to cothread bug.
 
