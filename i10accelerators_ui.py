@@ -31,6 +31,7 @@ import numpy as np
 import i10plots
 import i10buttons
 import i10straight
+import i10controls
 
 # THIS IS TEMPORARY
 NAMES = [
@@ -77,6 +78,7 @@ class Gui(QMainWindow):
         self.setup_table() # THIS NEEDS TO BE MOVED/AMALGAMATED WITH CAMONITORED VALUES IN I10CONTROLS
 
         self.straight = i10straight.Straight()
+        self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
         self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
@@ -136,7 +138,7 @@ class Gui(QMainWindow):
         if self.ui.simButton.isChecked() == False:
             try:
                 jog_values = self.knobs.jog(old_values, ofs, factor)
-                self.straight.controls.set_new_pvs(pvs, jog_values)
+                self.pv_monitor.set_new_pvs(pvs, jog_values)
                 self.simulation_controls(ofs, factor)
             except i10buttons.OverCurrentException, e:
                 self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
@@ -191,42 +193,42 @@ class Gui(QMainWindow):
     """
 
     def k3_plus(self):
-        self.jog_handler(self.straight.offsets, 'STEP_K3', 1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', 1)
 
     def k3_minus(self):
-        self.jog_handler(self.straight.offsets, 'STEP_K3', -1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', -1)
 
     def bump1_plus(self):
-        self.jog_handler(self.straight.offsets, 'BUMP_LEFT', 1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', 1)
 
     def bump1_minus(self):
-        self.jog_handler(self.straight.offsets, 'BUMP_LEFT', -1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', -1)
 
     def bump2_plus(self):
-        self.jog_handler(self.straight.offsets, 'BUMP_RIGHT', 1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', 1)
 
     def bump2_minus(self):
-        self.jog_handler(self.straight.offsets, 'BUMP_RIGHT', -1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', -1)
 
     def hbpm1_plus(self):
-        self.jog_handler(self.straight.offsets, 'BPM1', 1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', 1)
 
     def hbpm1_minus(self):
-        self.jog_handler(self.straight.offsets, 'BPM1', -1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', -1)
 
     def hbpm2_plus(self):
-        self.jog_handler(self.straight.offsets, 'BPM2', 1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', 1)
 
     def hbpm2_minus(self):
-        self.jog_handler(self.straight.offsets, 'BPM2', -1)
+        self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', -1)
 
     def scale_plus(self):
-        self.jog_handler(self.straight.set_scales, 'SET_SCALE', 1)
-        self.jog_handler(self.straight.scales, 'SCALE', 1)
+        self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', 1)
+        self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', 1)
 
     def scale_minus(self):
-        self.jog_handler(self.straight.set_scales, 'SET_SCALE', -1)
-        self.jog_handler(self.straight.scales, 'SCALE', -1)
+        self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', -1)
+        self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', -1)
 
     def reset(self): # keep this here or pointless extra??
 
@@ -289,7 +291,7 @@ class Gui(QMainWindow):
     def setup_table(self):
 
         """Initialise all values required for the currents table."""
-
+        # TODO: Use PvMonitors to get the values and updated for the table
         VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
         table = self.ui.table_widget

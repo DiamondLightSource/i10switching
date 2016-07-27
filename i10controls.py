@@ -119,6 +119,9 @@ class PvMonitors(object):
     def get_scales(self):
         return self._get_array_value(self.ARRAYS.SCALES)
 
+    def get_set_scales(self):
+        return self._get_array_value(self.ARRAYS.SET_SCALES)
+
     def get_max_currents(self):
         return self._get_array_value(self.ARRAYS.IMAX)
 
