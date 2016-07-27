@@ -203,11 +203,11 @@ class KnobsUi(QMainWindow):
                 'BUMP_RIGHT', -1)
 
     def update_cycling_textbox(self, var):
-        '''Updates cycling status from enum attached to pv'''
+        """Updates cycling status from enum attached to pv"""
         self.ui.cycling_textbox_3.setText(QtCore.QString('%s' % var.enums[var]))
 
     def update_magnet_led(self, var):
-        '''Uses PV alarm status to choose color for qframe'''
+        """Uses PV alarm status to choose color for qframe"""
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
         self.ui.magnet_led_3.setPalette(palette)

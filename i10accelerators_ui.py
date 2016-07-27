@@ -247,17 +247,17 @@ class Gui(QMainWindow):
         self.simulation.update_colourin()
 
     def update_cycling_textbox(self, var):
-        '''Update cycling status from enum attached to PV.'''
+        """Update cycling status from enum attached to PV."""
         self.ui.cycling_textbox_2.setText(QtCore.QString('%s' % var.enums[var]))
 
     def update_magnet_led(self, var):
-        '''Use PV alarm status to choose color for qframe.'''
+        """Use PV alarm status to choose color for qframe."""
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
         self.ui.magnet_led_2.setPalette(palette)
 
     def update_burt_led(self, var):
-        '''Use burt valid PV to determine qframe colour.'''
+        """Use burt valid PV to determine qframe colour."""
         palette = QtGui.QPalette()
 
         # BURT PV is one if okay, zero if bad:
@@ -269,7 +269,7 @@ class Gui(QMainWindow):
 
     def flash_table_cell(self, row, column):
 
-        '''Flash a cell twice with the major alarm colour.'''
+        """Flash a cell twice with the major alarm colour."""
 
         table = self.ui.table_widget
         item = table.item(column, row)
@@ -288,7 +288,7 @@ class Gui(QMainWindow):
 
     def setup_table(self):
 
-        '''Initialise all values required for the currents table.'''
+        """Initialise all values required for the currents table."""
 
         VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
@@ -340,22 +340,22 @@ class Gui(QMainWindow):
         camonitor(self.cache_pvs, self.update_cache)
 
     def update_float(self, var, row, col):
-        '''Updates a table widget populated with a float.'''
+        """Updates a table widget populated with a float."""
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
-        '''Updates an alarm sensitive table widget.'''
+        """Updates an alarm sensitive table widget."""
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(i10buttons.ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, var, dummy):
-        '''
+        """
         Called by camonitor. Updates values in the cache and uses
         them to provide new high and low values to the table.
-        '''
+        """
         ioc_1 = var.name.split(':')[0][-2:]
         ioc_2 = var.name.split(':')[1]
         c = self.cache[ioc_1]
