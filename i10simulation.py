@@ -18,7 +18,7 @@ class Detector(Element):
     """End of the straight where the sample is located."""
 
     def __init__(self, s):
-        super(Detector, self).__init__()
+        super(Detector, self).__init__(s)
         self.s = s
 
     def get_type(self):
@@ -30,7 +30,7 @@ class Drift(Element):
     """Allow electron beam to move along path described by its beam vector."""
 
     def __init__(self, s, step=0):
-        super(Drift, self).__init__()
+        super(Drift, self).__init__(s)
         self.step = step
         self.s = s
 
@@ -51,7 +51,7 @@ class Kicker(Element):
     """Magnet responsible for deflecting the electron beam."""
 
     def __init__(self, s, k=0):
-        super(Kicker, self).__init__()
+        super(Kicker, self).__init__(s)
         self.k = k
         self.s = s
 
@@ -71,7 +71,7 @@ class InsertionDevice(Element):
     """Generates x-ray beam."""
 
     def __init__(self, s):
-        super(InsertionDevice, self).__init__()
+        super(InsertionDevice, self).__init__(s)
         self.s = s
 
     def increment(self, e):
