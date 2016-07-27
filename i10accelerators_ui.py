@@ -126,7 +126,7 @@ class Gui(QMainWindow):
         self.simulation.update_colourin()
 #        self.simulation.magnet_limits()
 
-    def jog_handler(self, pvs, old_values, ofs, factor):
+    def jog_handler(self, old_values, ofs, factor):
 
         """
         Wrap the MagnetCoordinator.jog method to provide exception handling
@@ -191,84 +191,42 @@ class Gui(QMainWindow):
     """
 
     def k3_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'STEP_K3', 1)
+        self.jog_handler(self.straight.offsets, 'STEP_K3', 1)
 
     def k3_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'STEP_K3', -1)
+        self.jog_handler(self.straight.offsets, 'STEP_K3', -1)
 
     def bump1_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
-                self.straight.offsets, #camonitored values
-                'BUMP_LEFT', 1)
+        self.jog_handler(self.straight.offsets, 'BUMP_LEFT', 1)
 
     def bump1_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_LEFT', -1)
+        self.jog_handler(self.straight.offsets, 'BUMP_LEFT', -1)
 
     def bump2_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_RIGHT', 1)
+        self.jog_handler(self.straight.offsets, 'BUMP_RIGHT', 1)
 
     def bump2_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_RIGHT', -1)
+        self.jog_handler(self.straight.offsets, 'BUMP_RIGHT', -1)
 
     def hbpm1_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BPM1', 1)
+        self.jog_handler(self.straight.offsets, 'BPM1', 1)
 
     def hbpm1_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BPM1', -1)
+        self.jog_handler(self.straight.offsets, 'BPM1', -1)
 
     def hbpm2_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BPM2', 1)
+        self.jog_handler(self.straight.offsets, 'BPM2', 1)
 
     def hbpm2_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BPM2', -1)
+        self.jog_handler(self.straight.offsets, 'BPM2', -1)
 
     def scale_plus(self):
-        self.jog_handler(
-               [name + ':SETWFSCA' for name in NAMES],
-                self.straight.set_scales,
-                'SET_SCALE', 1)
-        self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in CTRLS],
-                self.straight.scales,
-                'SCALE', 1)
+        self.jog_handler(self.straight.set_scales, 'SET_SCALE', 1)
+        self.jog_handler(self.straight.scales, 'SCALE', 1)
 
     def scale_minus(self):
-        self.jog_handler(
-               [name + ':SETWFSCA' for name in NAMES],
-                self.straight.set_scales,
-                'SET_SCALE', -1)
-        self.jog_handler(
-               [ctrl + ':WFSCA' for ctrl in CTRLS],
-                self.straight.scales,
-                'SCALE', -1)
+        self.jog_handler(self.straight.set_scales, 'SET_SCALE', -1)
+        self.jog_handler(self.straight.scales, 'SCALE', -1)
 
     def reset(self): # keep this here or pointless extra??
 
