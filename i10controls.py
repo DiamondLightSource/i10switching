@@ -82,33 +82,36 @@ class PvMonitors(object):
                                     name + ':ERRG' for name in self.NAMES])
                       }
 
-        self.listeners = []
+        self.listeners = {'straight': [], 'trace': []}
 
         for i in range(len(self.CTRLS)):
             camonitor(self.CTRLS[i] + ':OFFSET',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.OFFSETS, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.OFFSETS, i, 'straight'))
             camonitor(self.CTRLS[i] + ':WFSCA',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.SCALES, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.SCALES, i, 'straight'))
             camonitor(self.NAMES[i] + ':SETWFSCA',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.SET_SCALES, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.SET_SCALES, i, 'straight'))
             camonitor(self.NAMES[i] + ':IMIN',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.IMIN, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.IMIN, i, 'straight'))
             camonitor(self.NAMES[i] + ':IMAX',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.IMAX, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.IMAX, i, 'straight'))
             camonitor(self.NAMES[i] + ':ERRG',
-                lambda x, i=i: self.update_values(x, self.ARRAYS.ERRORS, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.ERRORS, i, 'straight'))
         for i in range(len(self.TRACES)):
             camonitor(self.TRACES[i],
-                lambda x, i=i: self.update_values(x, self.ARRAYS.WAVEFORMS, i))
+                lambda x, i=i: self.update_values(x, self.ARRAYS.WAVEFORMS, i, 'trace'))
 
-    def register_listener(self, l):
+    def register_straight_listener(self, l):
         """Add new listener function to the list."""
-        self.listeners.append(l)
+        self.listeners['straight'].append(l)
 
-    def update_values(self, val, key, index):
+    def register_trace_listener(self, l):
+        self.listeners['trace'].append(l)
+
+    def update_values(self, val, key, index, listener_key):
         """Update arrays and tell listeners when a value has changed."""
         self.arrays[key][index] = val
-        [l(key, index) for l in self.listeners]
+        [l(key, index) for l in self.listeners[listener_key]]
 
     def set_new_pvs(self, pvs, values):
         caput(pvs, values)

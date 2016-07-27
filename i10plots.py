@@ -159,7 +159,7 @@ class Traces(BaseFigureCanvas):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
-        self.controls.register_listener(self.update_waveforms)
+        self.controls.register_trace_listener(self.update_waveforms)
         trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
         trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
 
@@ -189,7 +189,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
-        self.controls.register_listener(self.update_plot)
+        self.controls.register_trace_listener(self.update_plot)
         """Initialise with real data the first time to set axis ranges."""
         self.trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
         self.trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]

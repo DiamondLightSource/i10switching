@@ -34,13 +34,13 @@ class Straight(object):
 
         self.controls = i10controls.PvMonitors()
 
-        self.controls.register_listener(self.offset_listener)
-        self.controls.register_listener(self.scale_listener)
-        self.controls.register_listener(self.setscale_listener)
+        self.controls.register_straight_listener(self.offset_listener)
+        self.controls.register_straight_listener(self.scale_listener)
+        self.controls.register_straight_listener(self.setscale_listener)
         # should these be in here or elsewhere?
-        self.controls.register_listener(self.imin_listener)
-        self.controls.register_listener(self.imax_listener)
-        self.controls.register_listener(self.error_listener)
+        self.controls.register_straight_listener(self.imin_listener)
+        self.controls.register_straight_listener(self.imax_listener)
+        self.controls.register_straight_listener(self.error_listener)
 
         self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS] # don't need these references to them?
         self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
