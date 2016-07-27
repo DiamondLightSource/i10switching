@@ -67,7 +67,7 @@ class KnobsUi(QMainWindow):
         self.parent = QtGui.QMainWindow()
 
         self.straight = i10straight.Straight()
-        self.knobs = i10buttons.Knobs(self.straight)
+        self.knobs = i10buttons.MagnetCoordinator()
 
         """
         Initialise amplitude and standard deviation of theoretical
@@ -102,10 +102,10 @@ class KnobsUi(QMainWindow):
                                         lambda: self.set_jog_scaling(1.0))
 
         """Monitor the states of magnets and cycling."""
-        camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
-                self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
-                self.update_cycling_textbox, format=FORMAT_CTRL)
+        camonitor(i10buttons.MagnetCoordinator.MAGNET_STATUS_PV,
+                  self.update_magnet_led, format=FORMAT_CTRL)
+        camonitor(i10buttons.MagnetCoordinator.CYCLING_STATUS_PV,
+                  self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add graphs to the GUI."""
         self.ui.graph_layout.addWidget(self.traces)
@@ -151,7 +151,7 @@ class KnobsUi(QMainWindow):
     def jog_handler(self, pvs, old_values, ofs, factor):
 
         """
-        Wrap the Knobs.jog method to provide exception handling
+        Wrap the MagnetCoordinator.jog method to provide exception handling
         in callbacks; updates PVs.
         """
 

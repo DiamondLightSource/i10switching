@@ -1,10 +1,12 @@
 #!/usr/bin/env dls-python2.7
 #i10buttons
-# Contains ButtonData, OverCurrentException, Knobs
+# Contains ButtonData, OverCurrentException, MagnetCoordinator
 
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
 from PyQt4 import QtGui
+
+from i10controls import PvMonitors
 
 
 # Alarm colours
@@ -23,7 +25,7 @@ class OverCurrentException(Exception):
         self.magnet_index = magnet_index
 
 
-class Knobs(object):
+class MagnetCoordinator(object):
 
     """
     Interface to control the I10 Fast Chicane and its simulation,
@@ -47,10 +49,9 @@ class Knobs(object):
         }
 
 
-    def __init__(self, straight):
+    def __init__(self):
 
         self.jog_scale = 1.0
-        self.straight = straight
 
     def jog(self, old_values, ofs, factor):
 
@@ -63,13 +64,14 @@ class Knobs(object):
 
         values = old_values + ofs
 
-        scales = [abs(scale) for scale in self.straight.scales]
-        offsets = self.straight.offsets
-        imaxs = self.straight.imax
-        imins = self.straight.imin
+        scales = [
+            abs(scale) for scale in PvMonitors.get_instance().get_scales()]
+        offsets = PvMonitors.get_instance().get_offsets()
+        imaxs = PvMonitors.get_instance().get_max_currents()
+        imins = PvMonitors.get_instance().get_min_currents()
 
         # Check errors on limits.
-        for n in range(len(pvs)):
+        for n in range(len(old_values)):
             max = imaxs[n] # redefine max and min?
             min = imins[n]
             offset = offsets[n]

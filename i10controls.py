@@ -96,6 +96,8 @@ class PvMonitors(object):
             camonitor(self.TRACES[i],
                 lambda x, i=i: self.update_values(x, self.ARRAYS.WAVEFORMS, i, 'trace'))
 
+        cothread.Yield()  # Ensure monitored values are connected
+
     def register_straight_listener(self, l):
         """Add new listener function to the list."""
         self.listeners['straight'].append(l)
@@ -111,7 +113,17 @@ class PvMonitors(object):
     def set_new_pvs(self, pvs, values):
         caput(pvs, values)
 
+    def get_offsets(self):
+        return self._get_array_value(self.ARRAYS.OFFSETS)
 
+    def get_scales(self):
+        return self._get_array_value(self.ARRAYS.SCALES)
 
+    def get_max_currents(self):
+        return self._get_array_value(self.ARRAYS.IMAX)
 
+    def get_min_currents(self):
+        return self._get_array_value(self.ARRAYS.IMIN)
 
+    def _get_array_value(self, array_key):
+        return self.arrays[array_key]

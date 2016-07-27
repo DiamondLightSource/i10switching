@@ -77,7 +77,7 @@ class Gui(QMainWindow):
         self.setup_table() # THIS NEEDS TO BE MOVED/AMALGAMATED WITH CAMONITORED VALUES IN I10CONTROLS
 
         self.straight = i10straight.Straight()
-        self.knobs = i10buttons.Knobs(self.straight)
+        self.knobs = i10buttons.MagnetCoordinator()
         self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
 
@@ -109,11 +109,11 @@ class Gui(QMainWindow):
                                         lambda: self.set_jog_scaling(1.0))
 
         """Monitor the states of magnets, BURT and cycling."""
-        camonitor(i10buttons.Knobs.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(i10buttons.Knobs.MAGNET_STATUS_PV,
-                self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10buttons.Knobs.CYCLING_STATUS_PV,
-                self.update_cycling_textbox, format=FORMAT_CTRL)
+        camonitor(i10buttons.MagnetCoordinator.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(i10buttons.MagnetCoordinator.MAGNET_STATUS_PV,
+                  self.update_magnet_led, format=FORMAT_CTRL)
+        camonitor(i10buttons.MagnetCoordinator.CYCLING_STATUS_PV,
+                  self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add simulation and toolbar to the GUI."""
         self.ui.matplotlib_layout.addWidget(self.simulation)
@@ -129,7 +129,7 @@ class Gui(QMainWindow):
     def jog_handler(self, pvs, old_values, ofs, factor):
 
         """
-        Wrap the Knobs.jog method to provide exception handling
+        Wrap the MagnetCoordinator.jog method to provide exception handling
         in callbacks; update pvs and simulation values.
         """
 

@@ -29,67 +29,7 @@ class Straight(object):
         up to listen to the monitored PV values."""
 
         self.data = i10simulation.Layout('config.txt')
-
         self.switch_to_sim = False
-
-        self.controls = i10controls.PvMonitors.get_instance()
-
-        self.controls.register_straight_listener(self.offset_listener)
-        self.controls.register_straight_listener(self.scale_listener)
-        self.controls.register_straight_listener(self.setscale_listener)
-        # should these be in here or elsewhere?
-        self.controls.register_straight_listener(self.imin_listener)
-        self.controls.register_straight_listener(self.imax_listener)
-        self.controls.register_straight_listener(self.error_listener)
-
-        self.offsets = self.controls.arrays[self.controls.ARRAYS.OFFSETS] # don't need these references to them?
-        self.scales = self.controls.arrays[self.controls.ARRAYS.SCALES]
-        self.set_scales = self.controls.arrays[self.controls.ARRAYS.SET_SCALES]
-
-        self.imin = self.controls.arrays[self.controls.ARRAYS.IMIN]
-        self.imax = self.controls.arrays[self.controls.ARRAYS.IMAX]
-        self.errors = self.controls.arrays[self.controls.ARRAYS.ERRORS]
-
-        self.simulated_offsets = self.controls.arrays[
-                                        self.controls.ARRAYS.OFFSETS]
-        self.simulated_scales = self.controls.arrays[
-                                        self.controls.ARRAYS.SCALES]
-
-    def offset_listener(self, key, index):
-
-        """Get magnet offsets from i10controls."""
-
-        if key == self.controls.ARRAYS.OFFSETS:
-            self.offsets[index] = self.controls.arrays[key][index]
-
-    def scale_listener(self, key, index):
-
-        """Get scaling PV (WFSCA) from i10controls."""
-
-        if key == self.controls.ARRAYS.SCALES:
-            self.scales[index] = self.controls.arrays[key][index]
-
-    def setscale_listener(self, key, index):
-
-        """Get other scaling PV (SETWFSCA) from i10controls."""
-
-        if key == self.controls.ARRAYS.SET_SCALES:
-            self.set_scales[index] = self.controls.arrays[key][index]
-
-    def imin_listener(self, key, index):
-
-        if key == self.controls.ARRAYS.IMIN:
-            self.imin[index] = self.controls.arrays[key][index]
-
-    def imax_listener(self, key, index):
-
-        if key == self.controls.ARRAYS.IMAX:
-            self.imax[index] = self.controls.arrays[key][index]
-
-    def error_listener(self, key, index):
-
-        if key == self.controls.ARRAYS.ERRORS:
-            self.errors[index] = self.controls.arrays[key][index]
 
     def current_to_kick(self, current):
 
@@ -108,11 +48,12 @@ class Straight(object):
         """Calculate time-varying strengths of kicker magnets."""
 
         kick = [[],[],[],[],[]]
+        pv_monitors = i10controls.PvMonitors.get_instance()
         if self.switch_to_sim == False:
-            kick = self.current_to_kick(self.scales) * np.array([ # have I got the physics right for the scales and offsets?
+            kick = self.current_to_kick(pv_monitors.get_scales()) * np.array([ # have I got the physics right for the scales and offsets?
                    np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
                    2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-                   + 1]) * 0.5 + self.current_to_kick(self.offsets)
+                   + 1]) * 0.5 + self.current_to_kick(pv_monitors.get_offsets())
 
         elif self.switch_to_sim == True:
             kick = self.current_to_kick(self.simulated_scales) * np.array([
@@ -147,11 +88,11 @@ class Straight(object):
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
         """
-
+        pv_monitors = i10controls.PvMonitors.get_instance()
         if self.switch_to_sim == False:
-            self.strength_setup(self.current_to_kick(self.scales)
+            self.strength_setup(self.current_to_kick(pv_monitors.get_scales())
                                 * strength_values + self.current_to_kick(
-                                self.offsets))
+                                pv_monitors.get_offsets()))
         elif self.switch_to_sim == True:
             self.strength_setup(self.current_to_kick(self.simulated_scales)
                                 * strength_values + self.current_to_kick(
