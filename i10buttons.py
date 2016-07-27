@@ -52,7 +52,7 @@ class Knobs(object):
         self.jog_scale = 1.0
         self.straight = straight
 
-    def jog(self, pvs, old_values, ofs, factor):
+    def jog(self, old_values, ofs, factor):
 
         """
         Increment the list of PVs by the offset. Errors are created
@@ -62,10 +62,6 @@ class Knobs(object):
         ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
 
         values = old_values + ofs
-
-        print
-        for name, old, new in zip(pvs, old_values, values):
-            print '%s:\t%f->%f' % (name, old, new)
 
         scales = [abs(scale) for scale in self.straight.scales]
         offsets = self.straight.offsets
@@ -82,12 +78,9 @@ class Knobs(object):
             high = offset + new_val + scale
             low = offset + new_val - scale
             if high > max or low < min:
-                print 'Warning: Setting current value above limits:'
-                print ('%s: High: %f\tLow: %f\tMin: %f\tMax: %f\n'
-                        % (pvs[n], high, low, max, min))
                 raise OverCurrentException(n)
 
-        return pvs, values
+        return values
 
     def sim_offsets_scales(self, button, factor):
 

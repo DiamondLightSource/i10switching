@@ -135,8 +135,8 @@ class Gui(QMainWindow):
 
         if self.ui.simButton.isChecked() == False:
             try:
-                jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
-                self.straight.controls.set_new_pvs(jog_pvs[0], jog_pvs[1])
+                jog_values = self.knobs.jog(old_values, ofs, factor)
+                self.straight.controls.set_new_pvs(pvs, jog_values)
                 self.simulation_controls(ofs, factor)
             except i10buttons.OverCurrentException, e:
                 self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
