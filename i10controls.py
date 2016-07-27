@@ -3,7 +3,16 @@
 import cothread
 from cothread.catools import *
 
-class SingletonType(type): # what does this even mean?
+class SingletonType(type):
+
+    """
+    Singleton metaclass.
+
+    Use as '__metaclass__ = SingletonType' in order
+    to provide only one instance of your class each
+    time the constructor is called.
+    """
+
     def __call__(cls, *args, **kwargs):
         try:
             return cls.__instance
@@ -13,15 +22,17 @@ class SingletonType(type): # what does this even mean?
 
 
 class PvMonitors(object):
-    __metaclass__ = SingletonType
-    # TODO: Implement singleton pattern, have to initialise class after imports due to cothread bug.
 
     """
     The link between GUI and PVs.
 
     Monitors PVs, informs listeners when they 
-    are changed and inputs new PV values.
+    are changed and inputs new PV values. This
+    is a singleton class, calling the constructor
+    multiple times yields the same instance.
     """
+
+    __metaclass__ = SingletonType
 
     NAMES = [
         'SR09A-PC-FCHIC-01',
