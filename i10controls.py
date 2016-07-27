@@ -3,23 +3,6 @@
 import cothread
 from cothread.catools import *
 
-class SingletonType(type):
-
-    """
-    Singleton metaclass.
-
-    Use as '__metaclass__ = SingletonType' in order
-    to provide only one instance of your class each
-    time the constructor is called.
-    """
-
-    def __call__(cls, *args, **kwargs):
-        try:
-            return cls.__instance
-        except AttributeError:
-            cls.__instance = super(SingletonType, cls).__call__(*args, **kwargs)
-            return cls.__instance
-
 
 class PvMonitors(object):
 
@@ -32,7 +15,14 @@ class PvMonitors(object):
     multiple times yields the same instance.
     """
 
-    __metaclass__ = SingletonType
+    class ARRAYS(object):
+        OFFSETS = 'offsets'
+        SCALES = 'scales'
+        SET_SCALES = 'set_scales'
+        WAVEFORMS = 'waveforms'
+        IMIN = 'imin'
+        IMAX = 'imax'
+        ERRORS = 'errors'
 
     NAMES = [
         'SR09A-PC-FCHIC-01',
@@ -52,19 +42,24 @@ class PvMonitors(object):
         'BL10I-EA-USER-01:WAI1',
         'BL10I-EA-USER-01:WAI2']
 
+    __instance = None
+    __guard = True
 
-    class ARRAYS(object):
-        OFFSETS = 'offsets'
-        SCALES = 'scales'
-        SET_SCALES = 'set_scales'
-        WAVEFORMS = 'waveforms'
-        IMIN = 'imin'
-        IMAX = 'imax'
-        ERRORS = 'errors'
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            cls.__guard = False
+            cls.__instance = PvMonitors()
+            cls.__guard = True
+        return PvMonitors.__instance
 
     def __init__(self):
 
         """Monitor values of PVs: offsets, scales etc."""
+
+        if self.__guard:
+            raise RuntimeError('Do not instantiate. ' +
+                               'If you require an instance use get_instance.')
 
         self.arrays = {
                       self.ARRAYS.OFFSETS: caget([

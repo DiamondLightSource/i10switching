@@ -32,7 +32,7 @@ class Straight(object):
 
         self.switch_to_sim = False
 
-        self.controls = i10controls.PvMonitors()
+        self.controls = i10controls.PvMonitors.get_instance()
 
         self.controls.register_straight_listener(self.offset_listener)
         self.controls.register_straight_listener(self.scale_listener)
