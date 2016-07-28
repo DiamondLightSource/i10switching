@@ -56,10 +56,7 @@ class MagnetCoordinator(object):
     def __init__(self):
 
         self.jog_scale = 1.0
-        # temporary to get sim working again
-#        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-#        self.simulated_scales =  np.array([23.2610, 23.2145, 
-#                                          10.188844, 23.106842, 23.037771])
+
 
     def jog(self, old_values, ofs, factor):
 
@@ -89,7 +86,9 @@ class MagnetCoordinator(object):
             high = offset + new_val + scale
             low = offset + new_val - scale
             if high > max_val or low < min_val:
-                raise OverCurrentException(n)
+                raise OverCurrentException(n) #problem with not being able to send magnet index (n) to OverCurrentException now...
+
+# SURPRISING PROBLEM: SCALE SEEMS TO RAISE AN OVERCURRENTEXCEPTION EVERY TIME WHEN THE OTHERS DON'T. WHAT'S GOING WRONG??
 
 #    def sim_offsets_scales(self, button, factor):
 
