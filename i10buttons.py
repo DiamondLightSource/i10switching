@@ -36,8 +36,12 @@ class MagnetCoordinator(object):
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
 
+    class Moves(object):
+        STEP_K3 = 0
+        #etc
+
     BUTTON_DATA = {
-        'STEP_K3': np.array([0, 0, 1e-2, 0, 0]),
+        'STEP_K3': np.array([0, 0, 1e-2, 0, 0]), #update the rest of these and do I need self?? or MagnetCoordinator?? #Moves.STEP_K3
         'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
         'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
         'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
@@ -53,9 +57,9 @@ class MagnetCoordinator(object):
 
         self.jog_scale = 1.0
         # temporary to get sim working again
-        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        self.simulated_scales =  np.array([23.2610, 23.2145, 
-                                          10.188844, 23.106842, 23.037771])
+#        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
+#        self.simulated_scales =  np.array([23.2610, 23.2145, 
+#                                          10.188844, 23.106842, 23.037771])
 
     def jog(self, old_values, ofs, factor):
 
@@ -65,44 +69,43 @@ class MagnetCoordinator(object):
         """
 
         ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
-
         values = old_values + ofs
 
-        scales = [
-            abs(scale) for scale in PvMonitors.get_instance().get_scales()]
-        offsets = PvMonitors.get_instance().get_offsets()
-        imaxs = PvMonitors.get_instance().get_max_currents()
-        imins = PvMonitors.get_instance().get_min_currents()
-
-        # Check errors on limits.
-        for n in range(len(old_values)):
-            max = imaxs[n] # redefine max and min?
-            min = imins[n]
-            offset = offsets[n]
-            scale = scales[n]
-            new_val = ofs[n]
-            high = offset + new_val + scale
-            low = offset + new_val - scale
-            if high > max or low < min:
-                raise OverCurrentException(n)
-
+        self.check_bounds(values)
         return values
 
-    def sim_offsets_scales(self, button, factor):
-
+    def _check_bounds(self, values):
         """
-        Increment the simulation magnet strengths by the offsets or scale
-        factors.
+        Raises OverCurrentException if...
         """
+        pvm = PvMonitors.get_instance()
+        scales = [abs(scale) for scale in pvm.get_scales()]
+        offsets = pvm.get_offsets()
+        imaxs = pvm.get_max_currents()
+        imins = pvm.get_min_currents()
 
-        if button == 'SCALE':
-            self.simulated_scales = (self.simulated_scales
-                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
-        elif button == 'SET_SCALE':
-            pass
-        else:
-            self.simulated_offsets = (self.simulated_offsets
-                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
+        # Check errors on limits.
+        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(zip(imaxs, imins, offsets,scales, values)): 
+            high = offset + new_val + scale
+            low = offset + new_val - scale
+            if high > max_val or low < min_val:
+                raise OverCurrentException(n)
+
+#    def sim_offsets_scales(self, button, factor):
+
+#        """
+#        Increment the simulation magnet strengths by the offsets or scale
+#        factors.
+#        """
+
+#        if button == 'SCALE':
+#            self.simulated_scales = (self.simulated_scales
+#                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
+#        elif button == 'SET_SCALE':
+#            pass
+#        else:
+#            self.simulated_offsets = (self.simulated_offsets
+#                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
 
     def sim_reset(self):
 

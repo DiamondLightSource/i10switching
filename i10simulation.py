@@ -9,77 +9,63 @@ class Element(object):
 
     """Define matrices to modify the electron beam vector."""
 
-    def __init__(self, s):
-        self.where = s
-
-
-class Detector(Element):
-
-    """End of the straight where the sample is located."""
-
-    def __init__(self, s):
-        super(Detector, self).__init__(s)
-        self.s = s
-
-    def get_type(self):
-        return 'detector'
-
-
-class Drift(Element):
-
-    """Allow electron beam to move along path described by its beam vector."""
-
-    def __init__(self, s, step=0):
-        super(Drift, self).__init__(s)
-        self.step = step
-        self.s = s
-
-    def set_length(self, step):
-        self.step = step
-
-    def increment(self, e):
-        drift = np.array([[1, self.step],
-                          [0, 1]])
-        return np.dot(drift, e)
-
-    def get_type(self):
-        return 'drift'
-
-
-class Kicker(Element):
-
-    """Magnet responsible for deflecting the electron beam."""
-
-    def __init__(self, s, k=0):
-        super(Kicker, self).__init__(s)
-        self.k = k
-        self.s = s
-
-    def set_strength(self, k):
-        self.k = k
-
-    def increment(self, e):
-        kick = np.array([0, self.k])
-        return e + kick
-
-    def get_type(self):
-        return 'kicker'
-
-
-class InsertionDevice(Element):
-
-    """Generates x-ray beam."""
-
-    def __init__(self, s):
-        super(InsertionDevice, self).__init__(s)
-        self.s = s
+    def __init__(self, displacement):
+        self.s = displacement
 
     def increment(self, e):
         return e
 
     def get_type(self):
-        return 'id'
+        """
+            The device name is the name of the class extending :class:`Element`
 
+        Returns:
+            str: Name of the element.
+        """
+        return type(self).__name__.lower()
+
+
+class Detector(Element):
+    """End of the straight where the sample is located."""
+    pass
+
+class Drift(Element):
+    """Allow electron beam to move along path described by its beam vector."""
+
+    def __init__(self, displacement, length=0):
+        super(Drift, self).__init__(displacement)
+        self.length = length
+
+    def set_length(self, length):
+        self.length = length
+
+    def increment(self, e):
+        drift = np.array([[1, self.length],
+                          [0, 1]])
+        return np.dot(drift, e)
+
+
+class Kicker(Element):
+    """Magnet responsible for deflecting the electron beam."""
+
+    def __init__(self, displacement, kick=0):
+        super(Kicker, self).__init__(displacement)
+        self.set_strength(kick)
+
+    def set_strength(self, kick):
+        self.k = kick
+
+    def increment(self, e):
+        kick = np.array([0, self.k])
+        return e + kick
+
+
+class InsertionDevice(Element):
+    """Generates x-ray beam."""
+    pass
+
+
+# TODO Move Layout into a separate py file
 
 # Assign locations of devices along the axis of the system.
 class Layout(object):
@@ -91,7 +77,7 @@ class Layout(object):
 
     def __init__(self, name):
         self.path = self._load(name)
-        self.ids = self.get_elements('id')
+        self.ids = self.get_elements('insertiondevice') #CHANGEEEE
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
         self.p_coord = [[self.ids[i].s, self.detector[0].s] for i in range(len(self.ids))]
@@ -123,6 +109,7 @@ class Layout(object):
 
         return [x for x in self.path if x.get_type() == which]
 
+    # TODO: not a great name
     def send_electrons_through(self):
 
         """
@@ -138,8 +125,9 @@ class Layout(object):
             if x.get_type() != 'detector':
                 e_vector = x.increment(e_vector)
                 e_beam[self.path.index(x)+1] = e_vector
-            if x.get_type() == 'id':
+            if x.get_type() == 'insertiondevice': #CHANGEEEEEE
                 p_vector.append(e_vector.tolist())
+
         p_beam = self.create_photon_beam(p_vector)
 
         return e_beam, p_beam

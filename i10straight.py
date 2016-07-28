@@ -8,7 +8,59 @@ from scipy.constants import c
 
 import i10simulation
 import i10controls
-import i10buttons #temporary
+
+
+class RealModeController(object):
+    """Controls simulation using the camonitored offsets/scales from PvMonitors."""
+
+    def __init__(self):
+        self.pvm = i10controls.PvMonitors.get_instance()
+        self.pvm.register_straight_listener(self.update)
+        self.straights = []
+
+    def update(self, key, index):
+
+        """Update scales whenever they change."""
+
+        if key == i10controls.ARRAYS.SCALES:
+            for straight in self.straights:
+                straight.set_scales(self.pvm.get_scales())
+
+        elif key == i10controls.ARRAYS.OFFSETS:
+            for straight in self.straights:
+                straight.set_offsets(self.pvm.get_offsets())
+
+    def register_straight(self, straight):
+        self.straights.append(straight)
+
+    def deregister_straight(self, straight):
+        self.straights.remove(straight)
+
+    
+
+class SimModeController(object):
+    """Controls simulation using the simulated values from SimWriter."""
+    def __init__(self):
+        self.sim_writer = i10controls.SimWriter.get_instance()
+        self.sim_writer.register_listener(self.update_sim)
+        self.straights = []
+
+    def update_sim(self):
+
+        if key == i10controls.ARRAYS.SCALES:
+            for straight in self.straights:
+                straight.set_scales(self.sim_writer.get_scales())
+
+        if key == i10controls.ARRAYS.OFFSETS:
+            for straight in self.straights:
+                straight.set_offsets(self.sim_writer.get_offsets())
+
+    def register_straight(self, straight):
+        self.straights.append(straight)
+
+    def deregister_straight(self, straight):
+        self.straights.remove(straight)
+
 
 class Straight(object):
 
@@ -20,7 +72,7 @@ class Straight(object):
     beam and produces photon beams at the insertion devices.
     """
 
-    BEAM_RIGIDITY = 3e9/c
+    BEAM_RIGIDITY = 3e9/c # hwat is this?
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
                              0.045012/23, 0.035174/23])
 
@@ -30,8 +82,16 @@ class Straight(object):
         up to listen to the monitored PV values."""
 
         self.data = i10simulation.Layout('config.txt')
-        self.switch_to_sim = False
-        self.simbuttons = i10buttons.MagnetCoordinator() #temporary - to be done in a nicer way
+        self.scales = i10controls.PvMonitors.get_instance().get_scales() # ??
+        self.offsets = i10controls.PvMonitors.get_instance().get_offsets()
+
+    def set_scales(self, scales):
+
+        self.scales = scales
+
+    def set_offsets(self, offsets):
+
+        self.offsets = offsets
 
     def current_to_kick(self, current):
 
@@ -47,21 +107,19 @@ class Straight(object):
 
     def calculate_strengths(self, t):
 
-        """Calculate time-varying strengths of kicker magnets."""
+        """Calculate time-varying strengths of kicker magnets.
+            Args:
+                t (int): time in sec
+            Returns:
+                new kicker strengths (array of x by y)
+        """
 
-        kick = [[],[],[],[],[]]
-        pv_monitors = i10controls.PvMonitors.get_instance()
-        if self.switch_to_sim == False:
-            kick = self.current_to_kick(pv_monitors.get_scales()) * np.array([ # have I got the physics right for the scales and offsets?
-                   np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
-                   2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-                   + 1]) * 0.5 + self.current_to_kick(pv_monitors.get_offsets())
-
-        elif self.switch_to_sim == True:
-            kick = self.current_to_kick(self.simbuttons.simulated_scales) * np.array([
-                   np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
-                   2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-                   + 1]) * 0.5 + self.current_to_kick(self.simbuttons.simulated_offsets)
+        kick = self.current_to_kick(self.scales) * 0.5 * np.array([ # have I got the physics right for the scales and offsets?
+                   np.sin(t*np.pi/100) + 1, 
+                   -(np.sin(t*np.pi/100) + 1),
+                   2,
+                   np.sin(t*np.pi/100) - 1,
+                  -np.sin(t*np.pi/100) + 1]) + self.current_to_kick(self.offsets)
 
         return kick
 
@@ -90,15 +148,10 @@ class Straight(object):
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
         """
-        pv_monitors = i10controls.PvMonitors.get_instance()
-        if self.switch_to_sim == False:
-            self.strength_setup(self.current_to_kick(pv_monitors.get_scales())
-                                * strength_values + self.current_to_kick(
-                                pv_monitors.get_offsets()))
-        elif self.switch_to_sim == True:
-            self.strength_setup(self.current_to_kick(self.simbuttons.simulated_scales)
-                                * strength_values + self.current_to_kick(
-                                self.simbuttons.simulated_offsets))
+
+        self.strength_setup(self.current_to_kick(self.scales) * strength_values
+                          + self.current_to_kick(self.offsets))
+
         p_beam = self.data.send_electrons_through()[1]
 
         return p_beam

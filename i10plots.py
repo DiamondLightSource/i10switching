@@ -95,8 +95,7 @@ class Simulation(BaseFigureCanvas):
 
         beams = self.init_data()
         beams[0].set_data(self.info.data.xaxis, e_data)
-        for line, x, y in zip([beams[1], beams[2]],
-                          self.info.data.p_coord, p_data):
+        for line, x, y in zip(beams[1:], self.info.data.p_coord, p_data):
             line.set_data(x, y)
 
         return beams
@@ -207,16 +206,17 @@ class OverlaidWaveforms(BaseFigureCanvas):
         waveforms = [self.trigger, self.trace]
         if key == self.controls.ARRAYS.WAVEFORMS:
             waveforms[index] = self.controls.arrays[key][index]
+
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
             self.lines[0].set_ydata(data1)
             self.lines[1].set_ydata(data2)
-            labels = [integ.simps(data1), integ.simps(data2)]
+            labels = [integ.simps(data1), integ.simps(data2)]            
             for area in labels:
                 if area < 0.1:
                     raise RangeError
             self.ax.legend([self.lines[0], self.lines[1]],
                            labels)
-
+        
         self.draw()
 
     def get_windowed_data(self, trigger, trace):
@@ -244,7 +244,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
                             - trigger_length/4)[:trigger_length/2]
             data2 = np.roll(trace[:trigger_length], - edges[1]
                             - trigger_length/4)[:trigger_length/2]
-            return data1, data2
+            return data1, data2  ### what are data1/2
 
         except RangeError:
             print 'Trace is partially cut off' # status bar? callback?
@@ -255,9 +255,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
     def gaussian(self, a, sigma):
 
         """Plot a theoretical gaussian for comparison with the x-ray peaks."""
-
-        self.gauss = self.ax.plot(a*np.exp(-(np.linspace(0, len(self.x),
-                        len(self.x))-len(self.x)/2)**2/(2*sigma**2)), 'r')
+        l = len(self.x)
+        x = np.linspace(0, l, l) - l/2 # centre of data
+        self.gauss = self.ax.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
         self.lines.append(self.gauss)
         self.draw()
 
