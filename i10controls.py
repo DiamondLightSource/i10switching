@@ -170,6 +170,7 @@ class PvWriter(AbstractWriter):
         self.scale_pvs = [ctrl + ':WFSCA' for ctrl in PvReferences.CTRLS]
         self.set_scale_pvs = [name + ':SETWFSCA' for name in PvReferences.NAMES]
         self.offset_pvs = [ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]
+        self.magnet_coordinator = i10buttons.MagnetCoordinator() # can this be inherited??
 
     def write(self, old_values, key, factor):
         jog_values = self.magnet_coordinator.jog(old_values, key, factor) # update this and jog so that it no longer takes old_values but finds them itself.
@@ -212,7 +213,7 @@ class SimWriter(AbstractWriter):
         self.simulated_offsets = np.array([0, 0, 0, 0, 0])
         self.simulated_scales =  np.array([23.2610, 23.2145, 
                                           10.188844, 23.106842, 23.037771])
-
+        self.magnet_coordinator = i10buttons.MagnetCoordinator() # can this be inherited??
         self.listeners = []
 
     def register_listener(self, l):

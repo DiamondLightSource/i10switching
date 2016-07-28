@@ -45,15 +45,15 @@ class SimModeController(object):
         self.sim_writer.register_listener(self.update_sim)
         self.straights = []
 
-    def update_sim(self):
+    def update_sim(self, key):
 
         if key == i10controls.ARRAYS.SCALES:
             for straight in self.straights:
-                straight.set_scales(self.sim_writer.get_scales())
+                straight.set_scales(self.sim_writer.simulated_scales)
 
         if key == i10controls.ARRAYS.OFFSETS:
             for straight in self.straights:
-                straight.set_offsets(self.sim_writer.get_offsets())
+                straight.set_offsets(self.sim_writer.simulated_offsets)
 
     def register_straight(self, straight):
         self.straights.append(straight)
@@ -82,7 +82,7 @@ class Straight(object):
         up to listen to the monitored PV values."""
 
         self.data = i10simulation.Layout('config.txt')
-        self.scales = i10controls.PvMonitors.get_instance().get_scales() # ??
+        self.scales = i10controls.PvMonitors.get_instance().get_scales() # ?? do i want to instantiate this here??
         self.offsets = i10controls.PvMonitors.get_instance().get_offsets()
 
     def set_scales(self, scales):

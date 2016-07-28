@@ -71,7 +71,7 @@ class MagnetCoordinator(object):
         ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
         values = old_values + ofs
 
-        self.check_bounds(values)
+        self._check_bounds(values)
         return values
 
     def _check_bounds(self, values):

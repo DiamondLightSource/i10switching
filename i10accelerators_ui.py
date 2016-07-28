@@ -77,7 +77,7 @@ class Gui(QMainWindow):
 
         self.setup_table() # THIS NEEDS TO BE MOVED/AMALGAMATED WITH CAMONITORED VALUES IN I10CONTROLS
 
-        self.jog_buttons = JogButtonHandler()
+#        self.jog_buttons = JogButtonHandler()
 
         self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
@@ -88,23 +88,25 @@ class Gui(QMainWindow):
         self.realcontrol = i10straight.RealModeController()
         self.realcontrol.register_straight(self.straight) # do dereg and reg when press sim button
 
+        self.writer = i10controls.PvWriter() ######
+
         self.toolbar = NavigationToolbar(self.simulation, self)
 
         """Connect buttons to PVs."""
-        self.ui.kplusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', 1))
-        self.ui.kminusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', -1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', 1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', -1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', 1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', -1))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', 1))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', -1))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', 1))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', -1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', 1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_scales(), 'SCALE', 1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', -1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_buttons.jog_handler(self.pv_monitor.get_scales(), 'SCALE', -1))
+        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', 1)) # add jog_buttons if move jog_handler to another class
+        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', -1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', -1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', 1))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', -1))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', 1))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', -1))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', 1))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', -1))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', 1))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', 1))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', -1))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', -1))
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
@@ -153,13 +155,13 @@ class Gui(QMainWindow):
         self.ui.resetButton.setEnabled(enabled)
 
         if self.ui.simButton.isChecked():
-            self.jog_buttons.set_simulate_only(True)
+            self.set_simulate_only(True) # add jog_buttons if separated into different class
             self.realcontrol.deregister_straight(self.straight)
             self.simcontrol.register_straight(self.straight)
             self.update_shading()
             self.simulation.figure.patch.set_alpha(0.5)
         else:
-            self.jog_buttons.set_simulate_only(False)
+            self.set_simulate_only(False) # add jog_buttons if separated into different class
             self.simcontrol.deregister_straight(self.straight)
             self.realcontrol.register_straight(self.straight)
             self.update_shading()
@@ -304,15 +306,15 @@ class Gui(QMainWindow):
         self.update_float(high, int(ioc_1)-1, self.Columns.HIGH)
         self.update_float(low, int(ioc_1)-1, self.Columns.LOW)
 
-class JogButtonHandler(object):
+#class JogButtonHandler(object): #try amalgamating this with class above
 
     """ When button clicked this class sends information about which button was
     clicked to either PvWriter or SimWriter depending on whether simulation-only
     mode is enabled."""
 
-    def __init__(self):
+#    def __init__(self):
 
-        self.writer = i10controls.PvWriter()
+#        self.writer = i10controls.PvWriter()
 
     def jog_handler(self, old_values, key, factor):
 
