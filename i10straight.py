@@ -8,6 +8,7 @@ from scipy.constants import c
 
 import i10simulation
 import i10controls
+import i10buttons #temporary
 
 class Straight(object):
 
@@ -30,6 +31,7 @@ class Straight(object):
 
         self.data = i10simulation.Layout('config.txt')
         self.switch_to_sim = False
+        self.simbuttons = i10buttons.MagnetCoordinator() #temporary - to be done in a nicer way
 
     def current_to_kick(self, current):
 
@@ -56,10 +58,10 @@ class Straight(object):
                    + 1]) * 0.5 + self.current_to_kick(pv_monitors.get_offsets())
 
         elif self.switch_to_sim == True:
-            kick = self.current_to_kick(self.simulated_scales) * np.array([
+            kick = self.current_to_kick(self.simbuttons.simulated_scales) * np.array([
                    np.sin(t*np.pi/100) + 1, -(np.sin(t*np.pi/100) + 1),
                    2, np.sin(t*np.pi/100) - 1, -np.sin(t*np.pi/100)
-                   + 1]) * 0.5 + self.current_to_kick(self.simulated_offsets)
+                   + 1]) * 0.5 + self.current_to_kick(self.simbuttons.simulated_offsets)
 
         return kick
 
@@ -94,9 +96,9 @@ class Straight(object):
                                 * strength_values + self.current_to_kick(
                                 pv_monitors.get_offsets()))
         elif self.switch_to_sim == True:
-            self.strength_setup(self.current_to_kick(self.simulated_scales)
+            self.strength_setup(self.current_to_kick(self.simbuttons.simulated_scales)
                                 * strength_values + self.current_to_kick(
-                                self.simulated_offsets))
+                                self.simbuttons.simulated_offsets))
         p_beam = self.data.send_electrons_through()[1]
 
         return p_beam

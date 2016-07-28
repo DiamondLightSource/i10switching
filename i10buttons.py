@@ -52,6 +52,10 @@ class MagnetCoordinator(object):
     def __init__(self):
 
         self.jog_scale = 1.0
+        # temporary to get sim working again
+        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
+        self.simulated_scales =  np.array([23.2610, 23.2145, 
+                                          10.188844, 23.106842, 23.037771])
 
     def jog(self, old_values, ofs, factor):
 
@@ -92,19 +96,19 @@ class MagnetCoordinator(object):
         """
 
         if button == 'SCALE':
-            self.straight.simulated_scales = (self.straight.simulated_scales
+            self.simulated_scales = (self.simulated_scales
                         + (factor*self.BUTTON_DATA[button] * self.jog_scale))
         elif button == 'SET_SCALE':
             pass
         else:
-            self.straight.simulated_offsets = (self.straight.simulated_offsets
+            self.simulated_offsets = (self.simulated_offsets
                         + (factor*self.BUTTON_DATA[button] * self.jog_scale))
 
     def sim_reset(self):
 
         """Remove all offsets and scale factors within simulation-only mode."""
 
-        self.straight.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        self.straight.simulated_scales =  np.array([23.2610, 23.2145, 
+        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
+        self.simulated_scales =  np.array([23.2610, 23.2145, 
                                           10.188844, 23.106842, 23.037771])
 
