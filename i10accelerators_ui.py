@@ -82,42 +82,46 @@ class Gui(QMainWindow):
         self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
-        self.simulation = i10plots.Simulation(self.straight)
+
 
         self.simcontrol = i10straight.SimModeController()
         self.realcontrol = i10straight.RealModeController()
-        self.realcontrol.register_straight(self.straight) # do dereg and reg when press sim button
+        self.realcontrol.register_straight(self.straight)
 
-        self.writer = i10controls.PvWriter() ######
+        self.writer = i10controls.PvWriter.get_instance() ######
 
+        self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
 
+        self.jog_scale = 1.0
+
         """Connect buttons to PVs."""
-        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', 1)) # add jog_buttons if move jog_handler to another class
-        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'STEP_K3', -1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', 1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_LEFT', -1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', 1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BUMP_RIGHT', -1))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', 1))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM1', -1))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', 1))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_offsets(), 'BPM2', -1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', 1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', 1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_set_scales(), 'SET_SCALE', -1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(self.pv_monitor.get_scales(), 'SCALE', -1))
+        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler('STEP_K3', 1)) # add jog_buttons if move jog_handler to another class
+        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler('STEP_K3', -1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler('BUMP_LEFT', 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler('BUMP_LEFT', -1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler('BUMP_RIGHT', 1))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler('BUMP_RIGHT', -1))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler('BPM1', 1))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler('BPM1', -1))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler('BPM2', 1))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler('BPM2', -1))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler('SCALE', 1))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler('SCALE', -1))
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
-#        self.ui.resetButton.clicked.connect(self.reset)
+        self.ui.resetButton.clicked.connect(self.reset)
         self.ui.resetButton.setEnabled(False)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-        self.ui.small_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(1.0))
+#        self.ui.small_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(0.1))
+#        self.ui.full_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(1.0))
+
+        self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
+        self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets, BURT and cycling."""
         camonitor(i10buttons.MagnetCoordinator.BURT_STATUS_PV, self.update_burt_led)
@@ -139,9 +143,10 @@ class Gui(QMainWindow):
 
 
 
-    def set_jog_scaling(self, scale): # To be extended
+    def set_jog_scaling(self):
         """Change the scaling applied to magnet corrections."""
-        self.knobs.jog_scale = scale
+        self.jog_scale = self.ui.jog_scale_slider.value() * 0.1
+        self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
     def toggle_simulation(self):
 
@@ -166,18 +171,6 @@ class Gui(QMainWindow):
             self.realcontrol.register_straight(self.straight)
             self.update_shading()
             self.simulation.figure.patch.set_alpha(0.0)
-
-
-
-#    def reset(self): # keep this here or pointless extra??
-
-#        """
-#        Reset the offsets and scales to the starting point, only whilst in
-#        simulation mode. Does not affect the PVs.
-#        """
-
-#        self.knobs.sim_reset()
-#        self.update_shading()
 
     def update_shading(self):
 
@@ -316,7 +309,7 @@ class Gui(QMainWindow):
 
 #        self.writer = i10controls.PvWriter()
 
-    def jog_handler(self, old_values, key, factor):
+    def jog_handler(self, key, factor):
 
         """
         Wrap the MagnetCoordinator.jog method to provide exception handling
@@ -324,7 +317,8 @@ class Gui(QMainWindow):
         """
 
         try:
-            self.writer.write(old_values, key, factor)
+            self.writer.write(key, factor, self.jog_scale)
+            self.update_shading()
 
         except i10buttons.OverCurrentException, e: # need to deal with this
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
@@ -344,7 +338,17 @@ class Gui(QMainWindow):
         if sim:
             self.writer = i10controls.SimWriter.get_instance()
         else:
-            self.writer = i10controls.PvWriter()
+            self.writer = i10controls.PvWriter.get_instance()
+
+    def reset(self):
+
+        """
+        Reset the offsets and scales to the starting point, only whilst in
+        simulation mode. Does not affect the PVs.
+        """
+        if self.ui.simButton.isChecked():
+            self.writer.reset()
+            self.update_shading()
 
 def main():
     cothread.iqt()

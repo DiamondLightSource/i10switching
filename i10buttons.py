@@ -53,28 +53,32 @@ class MagnetCoordinator(object):
         }
 
 
-    def __init__(self):
+    def __init__(self): # why initialised 3 times??
+        pass
+#        self.jog_scale = 1.0
 
-        self.jog_scale = 1.0
 
-
-    def jog(self, old_values, ofs, factor):
+    def jog(self, old_values, ofs, factor, jog_scale):
 
         """
         Increment the list of PVs by the offset. Errors are created
         when a user is likely to exceed magnet tolerances.
         """
 
-        ofs = factor * self.BUTTON_DATA[ofs] * self.jog_scale
+        ofs = factor * self.BUTTON_DATA[ofs] * jog_scale
+
         values = old_values + ofs
 
-        self._check_bounds(values)
+        self._check_bounds(ofs)
+
         return values
 
-    def _check_bounds(self, values):
+    def _check_bounds(self, ofs):
+
         """
         Raises OverCurrentException if...
         """
+
         pvm = PvMonitors.get_instance()
         scales = [abs(scale) for scale in pvm.get_scales()]
         offsets = pvm.get_offsets()
@@ -82,35 +86,10 @@ class MagnetCoordinator(object):
         imins = pvm.get_min_currents()
 
         # Check errors on limits.
-        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(zip(imaxs, imins, offsets,scales, values)): 
+        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(zip(imaxs, imins, offsets, scales, ofs)):
             high = offset + new_val + scale
             low = offset + new_val - scale
             if high > max_val or low < min_val:
-                raise OverCurrentException(n) #problem with not being able to send magnet index (n) to OverCurrentException now...
+                raise OverCurrentException(idx)
 
-# SURPRISING PROBLEM: SCALE SEEMS TO RAISE AN OVERCURRENTEXCEPTION EVERY TIME WHEN THE OTHERS DON'T. WHAT'S GOING WRONG??
-
-#    def sim_offsets_scales(self, button, factor):
-
-#        """
-#        Increment the simulation magnet strengths by the offsets or scale
-#        factors.
-#        """
-
-#        if button == 'SCALE':
-#            self.simulated_scales = (self.simulated_scales
-#                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
-#        elif button == 'SET_SCALE':
-#            pass
-#        else:
-#            self.simulated_offsets = (self.simulated_offsets
-#                        + (factor*self.BUTTON_DATA[button] * self.jog_scale))
-
-    def sim_reset(self):
-
-        """Remove all offsets and scale factors within simulation-only mode."""
-
-        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        self.simulated_scales =  np.array([23.2610, 23.2145, 
-                                          10.188844, 23.106842, 23.037771])
 

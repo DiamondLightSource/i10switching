@@ -166,23 +166,42 @@ class PvWriter(AbstractWriter):
     Write coordainted magnets moves to PV's on the machine.
     """
 
+
+    __instance = None
+    __guard = True
+
+    @classmethod
+    def get_instance(cls):
+        if cls.__instance is None:
+            cls.__guard = False
+            cls.__instance = PvWriter()
+            cls.__guard = True
+        return PvWriter.__instance # do I want this to be a singleton?
+
+
     def __init__(self):
+
+        if self.__guard:
+            raise RuntimeError('Do not instantiate. ' +
+                               'If you require an instance use get_instance.')
+
+        AbstractWriter.__init__(self)
         self.scale_pvs = [ctrl + ':WFSCA' for ctrl in PvReferences.CTRLS]
         self.set_scale_pvs = [name + ':SETWFSCA' for name in PvReferences.NAMES]
         self.offset_pvs = [ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]
-        self.magnet_coordinator = i10buttons.MagnetCoordinator() # can this be inherited??
 
-    def write(self, old_values, key, factor):
-        jog_values = self.magnet_coordinator.jog(old_values, key, factor) # update this and jog so that it no longer takes old_values but finds them itself.
-        self.write_to_pvs(key, jog_values)
-
-    def write_to_pvs(self, key, jog_values):
+    def write(self, key, factor, jog_scale):
         if key == 'SCALE':
-            caput(self.scale_pvs, jog_values)
-        elif key == 'SET_SCALE':
-            caput(self.set_scale_pvs, jog_values) # do both with scale
+            scale_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_scales(), key, factor, jog_scale)
+            set_scale_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_set_scales(), key, factor, jog_scale)
+            self.write_to_pvs(self.scale_pvs, scale_jog_values)
+            self.write_to_pvs(self.set_scale_pvs, set_scale_jog_values)
         else:
-            caput(self.offset_pvs, jog_values)
+            offset_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_offsets(), key, factor, jog_scale)
+            self.write_to_pvs(self.offset_pvs, offset_jog_values)
+
+    def write_to_pvs(self, pvs, jog_values):
+            caput(pvs, jog_values)
 
 
 class SimWriter(AbstractWriter):
@@ -190,7 +209,6 @@ class SimWriter(AbstractWriter):
     """
     Write coordainted magnets moves to the manual simulation controller.
     """
-
 
     __instance = None
     __guard = True
@@ -203,36 +221,44 @@ class SimWriter(AbstractWriter):
             cls.__guard = True
         return SimWriter.__instance # do I want this to be a singleton?
 
-
     def __init__(self):
 
         if self.__guard:
             raise RuntimeError('Do not instantiate. ' +
                                'If you require an instance use get_instance.')
 
+        AbstractWriter.__init__(self)
         self.simulated_offsets = np.array([0, 0, 0, 0, 0])
         self.simulated_scales =  np.array([23.2610, 23.2145, 
-                                          10.188844, 23.106842, 23.037771])
-        self.magnet_coordinator = i10buttons.MagnetCoordinator() # can this be inherited??
+                                          10.188844, 23.106842, 23.037771]) # like this or start with a caget??
         self.listeners = []
 
     def register_listener(self, l):
         """Add new listener function to the list."""
         self.listeners.append(l)
 
-    def write(self, old_values, key, factor):
-        jog_values = self.magnet_coordinator.jog(old_values, key, factor) # update this and jog so that it no longer takes old_values but finds them itself.
+    def write(self, key, factor, jog_scale):
+        if key == 'SCALE':
+            jog_values = self.magnet_coordinator.jog(self.simulated_scales, key, factor, jog_scale)
+        else:
+            jog_values = self.magnet_coordinator.jog(self.simulated_offsets, key, factor, jog_scale)
+
         self.update_sim_values(key, jog_values)
 
     def update_sim_values(self, key, jog_values):
         if key == 'SCALE':
-            self.simulated_scales = self.simulated_scales + jog_values
+            self.simulated_scales = jog_values
             [l(ARRAYS.SCALES) for l in self.listeners]
-        elif key == 'SET_SCALE':
-            pass
         else:
-            self.simulated_offsets = self.simulated_offsets + jog_values
+            self.simulated_offsets = jog_values
             [l(ARRAYS.OFFSETS) for l in self.listeners]
+
+    def reset(self):
+        self.simulated_scales =  np.array([23.2610, 23.2145, 
+                                          10.188844, 23.106842, 23.037771])
+        [l(ARRAYS.SCALES) for l in self.listeners]
+        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
+        [l(ARRAYS.OFFSETS) for l in self.listeners]
 
 
 

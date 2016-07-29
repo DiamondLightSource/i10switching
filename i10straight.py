@@ -4,7 +4,7 @@
 # Calls i10simulation
 
 import numpy as np
-from scipy.constants import c
+import scipy.constants
 
 import i10simulation
 import i10controls
@@ -18,7 +18,7 @@ class RealModeController(object):
         self.pvm.register_straight_listener(self.update)
         self.straights = []
 
-    def update(self, key, index):
+    def update(self, key, index): # need index?
 
         """Update scales whenever they change."""
 
@@ -72,7 +72,7 @@ class Straight(object):
     beam and produces photon beams at the insertion devices.
     """
 
-    BEAM_RIGIDITY = 3e9/c # hwat is this?
+    BEAM_RIGIDITY = 3e9/scipy.constants.c # hwat is this?
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
                              0.045012/23, 0.035174/23])
 
