@@ -166,24 +166,7 @@ class PvWriter(AbstractWriter):
     Write coordainted magnets moves to PV's on the machine.
     """
 
-
-    __instance = None
-    __guard = True
-
-    @classmethod
-    def get_instance(cls):
-        if cls.__instance is None:
-            cls.__guard = False
-            cls.__instance = PvWriter()
-            cls.__guard = True
-        return PvWriter.__instance # do I want this to be a singleton?
-
-
     def __init__(self):
-
-        if self.__guard:
-            raise RuntimeError('Do not instantiate. ' +
-                               'If you require an instance use get_instance.')
 
         AbstractWriter.__init__(self)
         self.scale_pvs = [ctrl + ':WFSCA' for ctrl in PvReferences.CTRLS]
@@ -210,32 +193,17 @@ class SimWriter(AbstractWriter):
     Write coordainted magnets moves to the manual simulation controller.
     """
 
-    __instance = None
-    __guard = True
-
-    @classmethod
-    def get_instance(cls):
-        if cls.__instance is None:
-            cls.__guard = False
-            cls.__instance = SimWriter()
-            cls.__guard = True
-        return SimWriter.__instance # do I want this to be a singleton?
-
     def __init__(self):
-
-        if self.__guard:
-            raise RuntimeError('Do not instantiate. ' +
-                               'If you require an instance use get_instance.')
 
         AbstractWriter.__init__(self)
         self.simulated_offsets = np.array([0, 0, 0, 0, 0])
         self.simulated_scales =  np.array([23.2610, 23.2145, 
                                           10.188844, 23.106842, 23.037771]) # like this or start with a caget??
-        self.listeners = []
+        self.controllers = []
 
-    def register_listener(self, l):
+    def register_controller(self, controller):
         """Add new listener function to the list."""
-        self.listeners.append(l)
+        self.controllers.append(controller)
 
     def write(self, key, factor, jog_scale):
         if key == 'SCALE':
@@ -248,17 +216,17 @@ class SimWriter(AbstractWriter):
     def update_sim_values(self, key, jog_values):
         if key == 'SCALE':
             self.simulated_scales = jog_values
-            [l(ARRAYS.SCALES) for l in self.listeners]
+            [c(ARRAYS.SCALES, jog_values) for c in self.controllers]
         else:
             self.simulated_offsets = jog_values
-            [l(ARRAYS.OFFSETS) for l in self.listeners]
+            [c(ARRAYS.OFFSETS, jog_values) for c in self.controllers]
 
     def reset(self):
         self.simulated_scales =  np.array([23.2610, 23.2145, 
                                           10.188844, 23.106842, 23.037771])
-        [l(ARRAYS.SCALES) for l in self.listeners]
+        [c(ARRAYS.SCALES, self.simulated_scales) for c in self.controllers]
         self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        [l(ARRAYS.OFFSETS) for l in self.listeners]
+        [c(ARRAYS.OFFSETS, self.simulated_offsets) for c in self.controllers]
 
 
 

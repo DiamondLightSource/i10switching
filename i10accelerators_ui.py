@@ -88,7 +88,11 @@ class Gui(QMainWindow):
         self.realcontrol = i10straight.RealModeController()
         self.realcontrol.register_straight(self.straight)
 
-        self.writer = i10controls.PvWriter.get_instance() ######
+        self.pv_writer = i10controls.PvWriter()
+        self.sim_writer = i10controls.SimWriter()
+        self.writer = self.pv_writer
+
+        self.sim_writer.register_controller(self.simcontrol.update_sim) #################### moved this in here so that correct instance of everything
 
         self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
@@ -115,11 +119,6 @@ class Gui(QMainWindow):
         self.ui.resetButton.setEnabled(False)
         self.ui.quitButton.clicked.connect(sys.exit)
 
-#        self.ui.small_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(0.1))
-#        self.ui.full_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(1.0))
-
         self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
@@ -141,8 +140,6 @@ class Gui(QMainWindow):
         self.simulation.update_colourin()
 #        self.simulation.magnet_limits()
 
-
-
     def set_jog_scaling(self):
         """Change the scaling applied to magnet corrections."""
         self.jog_scale = self.ui.jog_scale_slider.value() * 0.1
@@ -159,14 +156,14 @@ class Gui(QMainWindow):
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
-        if self.ui.simButton.isChecked():
-            self.set_simulate_only(True) # add jog_buttons if separated into different class
+        if enabled:
+            self.writer = self.sim_writer
             self.realcontrol.deregister_straight(self.straight)
             self.simcontrol.register_straight(self.straight)
             self.update_shading()
             self.simulation.figure.patch.set_alpha(0.5)
         else:
-            self.set_simulate_only(False) # add jog_buttons if separated into different class
+            self.writer = self.pv_writer
             self.simcontrol.deregister_straight(self.straight)
             self.realcontrol.register_straight(self.straight)
             self.update_shading()
@@ -320,7 +317,7 @@ class Gui(QMainWindow):
             self.writer.write(key, factor, self.jog_scale)
             self.update_shading()
 
-        except i10buttons.OverCurrentException, e: # need to deal with this
+        except i10buttons.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
             print 'Cothread Exception:', e
@@ -334,11 +331,6 @@ class Gui(QMainWindow):
             msgBox.setInformativeText(traceback.format_exc(3))
             msgBox.exec_()
 
-    def set_simulate_only(self, sim):
-        if sim:
-            self.writer = i10controls.SimWriter.get_instance()
-        else:
-            self.writer = i10controls.PvWriter.get_instance()
 
     def reset(self):
 

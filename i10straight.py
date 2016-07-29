@@ -32,35 +32,47 @@ class RealModeController(object):
 
     def register_straight(self, straight):
         self.straights.append(straight)
+        self.update(i10controls.ARRAYS.SCALES, 0)
+        self.update(i10controls.ARRAYS.OFFSETS, 0)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
-
     
 
 class SimModeController(object):
     """Controls simulation using the simulated values from SimWriter."""
     def __init__(self):
-        self.sim_writer = i10controls.SimWriter.get_instance()
-        self.sim_writer.register_listener(self.update_sim)
-        self.straights = []
 
-    def update_sim(self, key):
+        self.straights = []
+        self.offsets = np.array([0, 0, 0, 0, 0])
+        self.scales =  np.array([23.2610, 23.2145, 
+                                 10.188844, 23.106842, 23.037771]) # like this or start with a caget?? # unfortunate duplication but not sure it can be avoided easily
+
+    def update_sim(self, key, values):
 
         if key == i10controls.ARRAYS.SCALES:
-            for straight in self.straights:
-                straight.set_scales(self.sim_writer.simulated_scales)
+            self.scales = values
+            self.update_scales()
 
         if key == i10controls.ARRAYS.OFFSETS:
-            for straight in self.straights:
-                straight.set_offsets(self.sim_writer.simulated_offsets)
+            self.offsets = values
+            self.update_offsets()
 
     def register_straight(self, straight):
         self.straights.append(straight)
+        self.update_sim(i10controls.ARRAYS.SCALES, self.scales)
+        self.update_sim(i10controls.ARRAYS.OFFSETS, self.offsets)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
 
+    def update_scales(self):
+        for straight in self.straights:
+            straight.set_scales(self.scales)
+
+    def update_offsets(self):
+        for straight in self.straights:
+            straight.set_offsets(self.offsets)
 
 class Straight(object):
 
