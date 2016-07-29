@@ -100,18 +100,18 @@ class Gui(QMainWindow):
         self.jog_scale = 1.0
 
         """Connect buttons to PVs."""
-        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler('STEP_K3', 1)) # add jog_buttons if move jog_handler to another class
-        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler('STEP_K3', -1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler('BUMP_LEFT', 1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler('BUMP_LEFT', -1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler('BUMP_RIGHT', 1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler('BUMP_RIGHT', -1))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler('BPM1', 1))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler('BPM1', -1))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler('BPM2', 1))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler('BPM2', -1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler('SCALE', 1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler('SCALE', -1))
+        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1)) # add jog_buttons if move jog_handler to another class
+        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, -1))
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM1, 1))
+        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM1, -1))
+        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM2, 1))
+        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM2, -1))
+        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.SCALE, 1))
+        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.SCALE, -1))
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)

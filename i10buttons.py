@@ -17,6 +17,13 @@ ALARM_COLORS = [
         QtGui.QColor(255, 0, 0), # Major
         QtGui.QColor(255, 0, 255), # Invalid
         ]
+class Moves(object):
+    STEP_K3 = 0
+    BUMP_LEFT = 1
+    BUMP_RIGHT = 2
+    BPM1 = 3
+    BPM2 = 4
+    SCALE = 5 # should this be a subclass of MagnetCoordinator?
 
 
 class OverCurrentException(Exception):
@@ -36,20 +43,16 @@ class MagnetCoordinator(object):
     BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
     CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
 
-    class Moves(object):
-        STEP_K3 = 0
-        #etc
 
     BUTTON_DATA = {
-        'STEP_K3': np.array([0, 0, 1e-2, 0, 0]), #update the rest of these and do I need self?? or MagnetCoordinator?? #Moves.STEP_K3
-        'BUMP_LEFT': np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
-        'BUMP_RIGHT': np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
-        'BPM1': np.array([136.71614094, 135.51675771, 0, -128.72713879,
+        Moves.STEP_K3: np.array([0, 0, 1e-2, 0, 0]),
+        Moves.BUMP_LEFT: np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
+        Moves.BUMP_RIGHT: np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
+        Moves.BPM1: np.array([136.71614094, 135.51675771, 0, -128.72713879,
                           -127.34037684])*1e-4,
-        'BPM2': np.array([-128.7237158, -129.31031648, 0, 134.90558954,
+        Moves.BPM2: np.array([-128.7237158, -129.31031648, 0, 134.90558954,
                            135.24691079])*1e-4,
-        'SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2]),
-        'SET_SCALE': np.array([1e-2, 1e-2, 0, 1e-2, 1e-2])
+        Moves.SCALE: np.array([1e-2, 1e-2, 0, 1e-2, 1e-2]),
         }
 
 

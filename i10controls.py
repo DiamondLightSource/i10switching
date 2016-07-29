@@ -206,7 +206,7 @@ class SimWriter(AbstractWriter):
         self.controllers.append(controller)
 
     def write(self, key, factor, jog_scale):
-        if key == 'SCALE':
+        if key == i10buttons.Moves.SCALE:
             jog_values = self.magnet_coordinator.jog(self.simulated_scales, key, factor, jog_scale)
         else:
             jog_values = self.magnet_coordinator.jog(self.simulated_offsets, key, factor, jog_scale)
@@ -214,7 +214,7 @@ class SimWriter(AbstractWriter):
         self.update_sim_values(key, jog_values)
 
     def update_sim_values(self, key, jog_values):
-        if key == 'SCALE':
+        if key == i10buttons.Moves.SCALE:
             self.simulated_scales = jog_values
             [c(ARRAYS.SCALES, jog_values) for c in self.controllers]
         else:
