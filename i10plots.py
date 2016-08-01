@@ -158,9 +158,10 @@ class Traces(BaseFigureCanvas):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
-        self.controls.register_trace_listener(self.update_waveforms)
-        trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+        self.pv_monitor = self.controls.PvMonitors.get_instance()
+        self.pv_monitor.register_trace_listener(self.update_waveforms)
+        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
 
         x = range(len(trace))
         self.lines = [
@@ -173,7 +174,7 @@ class Traces(BaseFigureCanvas):
         """Update plot data whenever it changes."""
 
         if key == self.controls.ARRAYS.WAVEFORMS:
-            self.lines[index].set_ydata(self.controls.arrays[key][index])
+            self.lines[index].set_ydata(self.pv_monitor.arrays[key][index])
             self.draw()
 
 
@@ -188,10 +189,11 @@ class OverlaidWaveforms(BaseFigureCanvas):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
-        self.controls.register_trace_listener(self.update_plot)
+        self.pv_monitor = self.controls.PvMonitors.get_instance()
+        self.pv_monitor.register_trace_listener(self.update_plot)
         """Initialise with real data the first time to set axis ranges."""
-        self.trigger = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        self.trace = self.controls.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+        self.trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        self.trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
         data1, data2 = self.get_windowed_data(self.trigger, self.trace)
         self.x = range(len(data1))
         self.lines = [
@@ -205,7 +207,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
         waveforms = [self.trigger, self.trace]
         if key == self.controls.ARRAYS.WAVEFORMS:
-            waveforms[index] = self.controls.arrays[key][index]
+            waveforms[index] = self.pv_monitor.arrays[key][index]
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
             self.lines[0].set_ydata(data1)

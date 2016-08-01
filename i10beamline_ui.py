@@ -31,7 +31,7 @@ from PyQt4.QtGui import QMainWindow
 
 import i10plots
 import i10buttons
-import i10straight
+import i10controls
 
 # THIS IS TEMPORARY UNTIL I WORK OUT THE BEST PLACE TO KEEP THEM
 NAMES = [
@@ -66,8 +66,14 @@ class KnobsUi(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        self.straight = i10straight.Straight()
+#        self.straight = i10straight.Straight()
+        self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
+#        self.realcontrol = i10straight.RealModeController()
+
+        self.pv_writer = i10controls.PvWriter()
+
+        self.jog_scale = 1.0
 
         """
         Initialise amplitude and standard deviation of theoretical
@@ -76,14 +82,18 @@ class KnobsUi(QMainWindow):
         self.amp = 2.5
         self.sig = 900
 
-        self.traces = i10plots.Traces(self.straight.controls)
-        self.graph = i10plots.OverlaidWaveforms(self.straight.controls)
+        self.traces = i10plots.Traces(i10controls)
+        self.graph = i10plots.OverlaidWaveforms(i10controls)
 
         """Connect buttons to PVs."""
-        self.ui.bump_left_plus_button.clicked.connect(self.bump1_plus)
-        self.ui.bump_left_minus_button.clicked.connect(self.bump1_minus)
-        self.ui.bump_right_plus_button.clicked.connect(self.bump2_plus)
-        self.ui.bump_right_minus_button.clicked.connect(self.bump2_minus)
+        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+#        self.ui.bump_left_plus_button.clicked.connect(self.bump1_plus)
+#        self.ui.bump_left_minus_button.clicked.connect(self.bump1_minus)
+#        self.ui.bump_right_plus_button.clicked.connect(self.bump2_plus)
+#        self.ui.bump_right_minus_button.clicked.connect(self.bump2_minus)
 
         self.ui.ampplusButton.clicked.connect(self.amp_plus)
         self.ui.ampminusButton.clicked.connect(self.amp_minus)
@@ -96,10 +106,13 @@ class KnobsUi(QMainWindow):
 
         self.ui.checkBox.clicked.connect(self.gauss_fit)
 
-        self.ui.small_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(0.1))
-        self.ui.full_correction_radiobutton.clicked.connect(
-                                        lambda: self.set_jog_scaling(1.0))
+#        self.ui.small_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(0.1))
+#        self.ui.full_correction_radiobutton.clicked.connect(
+#                                        lambda: self.set_jog_scaling(1.0))
+
+        self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
+        self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets and cycling."""
         camonitor(i10buttons.MagnetCoordinator.MAGNET_STATUS_PV,
@@ -125,6 +138,10 @@ class KnobsUi(QMainWindow):
         else:
             self.graph.clear_gaussian()
 
+    def set_jog_scaling(self):
+        """Change the scaling applied to magnet corrections."""
+        self.jog_scale = self.ui.jog_scale_slider.value() * 0.1
+        self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
     """Methods controlling the theoretical gaussian."""
 
@@ -148,7 +165,7 @@ class KnobsUi(QMainWindow):
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
-    def jog_handler(self, pvs, old_values, ofs, factor):
+    def jog_handler(self, key, factor):
 
         """
         Wrap the MagnetCoordinator.jog method to provide exception handling
@@ -156,8 +173,9 @@ class KnobsUi(QMainWindow):
         """
 
         try:
-            jog_pvs = self.knobs.jog(pvs, old_values, ofs, factor)
-            self.straight.controls.set_new_pvs(jog_pvs[0], jog_pvs[1])
+            self.pv_writer.write(key, factor, self.jog_scale)
+            self.update_shading()
+
         except i10buttons.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index) # no table in this gui - put something else in to warn?
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
@@ -172,35 +190,35 @@ class KnobsUi(QMainWindow):
             msgBox.setInformativeText(traceback.format_exc(3))
             msgBox.exec_()
 
-    def set_jog_scaling(self, scale):
-        """Change the scaling applied to magnet corrections."""
-        self.knobs.jog_scale = scale
+#    def set_jog_scaling(self, scale):
+#        """Change the scaling applied to magnet corrections."""
+#        self.knobs.jog_scale = scale
 
     """Methods linking buttons to offset/scale values for adjusting PVs."""
 
-    def bump1_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
-                self.straight.offsets, #camonitored values
-                'BUMP_LEFT', 1)
+#    def bump1_plus(self):
+#        self.jog_handler(
+#               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
+#                self.straight.offsets, #camonitored values
+#                'BUMP_LEFT', 1)
 
-    def bump1_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_LEFT', -1)
+#    def bump1_minus(self):
+#        self.jog_handler(
+#               [ctrl + ':OFFSET' for ctrl in CTRLS],
+#                self.straight.offsets,
+#                'BUMP_LEFT', -1)
 
-    def bump2_plus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_RIGHT', 1)
+#    def bump2_plus(self):
+#        self.jog_handler(
+#               [ctrl + ':OFFSET' for ctrl in CTRLS],
+#                self.straight.offsets,
+#                'BUMP_RIGHT', 1)
 
-    def bump2_minus(self):
-        self.jog_handler(
-               [ctrl + ':OFFSET' for ctrl in CTRLS],
-                self.straight.offsets,
-                'BUMP_RIGHT', -1)
+#    def bump2_minus(self):
+#        self.jog_handler(
+#               [ctrl + ':OFFSET' for ctrl in CTRLS],
+#                self.straight.offsets,
+#                'BUMP_RIGHT', -1)
 
     def update_cycling_textbox(self, var):
         """Updates cycling status from enum attached to pv"""
