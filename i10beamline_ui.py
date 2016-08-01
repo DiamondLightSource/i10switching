@@ -33,20 +33,6 @@ import i10plots
 import i10buttons
 import i10controls
 
-# THIS IS TEMPORARY UNTIL I WORK OUT THE BEST PLACE TO KEEP THEM
-NAMES = [
-    'SR09A-PC-FCHIC-01',
-    'SR09A-PC-FCHIC-02',
-    'SR10S-PC-FCHIC-03',
-    'SR10S-PC-FCHIC-04',
-    'SR10S-PC-FCHIC-05']
-
-CTRLS = [
-    'SR09A-PC-CTRL-01',
-    'SR09A-PC-CTRL-02',
-    'SR10S-PC-CTRL-03',
-    'SR10S-PC-CTRL-04',
-    'SR10S-PC-CTRL-05']
 
 class KnobsUi(QMainWindow):
     """
@@ -66,10 +52,8 @@ class KnobsUi(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-#        self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
-#        self.realcontrol = i10straight.RealModeController()
 
         self.pv_writer = i10controls.PvWriter()
 
@@ -90,10 +74,6 @@ class KnobsUi(QMainWindow):
         self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
         self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
         self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
-#        self.ui.bump_left_plus_button.clicked.connect(self.bump1_plus)
-#        self.ui.bump_left_minus_button.clicked.connect(self.bump1_minus)
-#        self.ui.bump_right_plus_button.clicked.connect(self.bump2_plus)
-#        self.ui.bump_right_minus_button.clicked.connect(self.bump2_minus)
 
         self.ui.ampplusButton.clicked.connect(self.amp_plus)
         self.ui.ampminusButton.clicked.connect(self.amp_minus)
@@ -105,11 +85,6 @@ class KnobsUi(QMainWindow):
         self.ui.sigmaminusButton.setEnabled(False)
 
         self.ui.checkBox.clicked.connect(self.gauss_fit)
-
-#        self.ui.small_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(0.1))
-#        self.ui.full_correction_radiobutton.clicked.connect(
-#                                        lambda: self.set_jog_scaling(1.0))
 
         self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
@@ -177,7 +152,9 @@ class KnobsUi(QMainWindow):
             self.update_shading()
 
         except i10buttons.OverCurrentException, e:
-            self.flash_table_cell(self.Columns.OFFSET, e.magnet_index) # no table in this gui - put something else in to warn?
+            msgBox = QtGui.QMessageBox(self.parent)
+            msgBox.setText('OverCurrent Exception: current applied to magnet %s is too high.' % e.magnet_index)
+            msgBox.exec_()
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
             print 'Cothread Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
@@ -189,36 +166,6 @@ class KnobsUi(QMainWindow):
             msgBox.setText('Unexpected Exception: %s' % e)
             msgBox.setInformativeText(traceback.format_exc(3))
             msgBox.exec_()
-
-#    def set_jog_scaling(self, scale):
-#        """Change the scaling applied to magnet corrections."""
-#        self.knobs.jog_scale = scale
-
-    """Methods linking buttons to offset/scale values for adjusting PVs."""
-
-#    def bump1_plus(self):
-#        self.jog_handler(
-#               [ctrl + ':OFFSET' for ctrl in CTRLS], #names of camonitored values - probably nicer way to do this but leave for now
-#                self.straight.offsets, #camonitored values
-#                'BUMP_LEFT', 1)
-
-#    def bump1_minus(self):
-#        self.jog_handler(
-#               [ctrl + ':OFFSET' for ctrl in CTRLS],
-#                self.straight.offsets,
-#                'BUMP_LEFT', -1)
-
-#    def bump2_plus(self):
-#        self.jog_handler(
-#               [ctrl + ':OFFSET' for ctrl in CTRLS],
-#                self.straight.offsets,
-#                'BUMP_RIGHT', 1)
-
-#    def bump2_minus(self):
-#        self.jog_handler(
-#               [ctrl + ':OFFSET' for ctrl in CTRLS],
-#                self.straight.offsets,
-#                'BUMP_RIGHT', -1)
 
     def update_cycling_textbox(self, var):
         """Updates cycling status from enum attached to pv"""

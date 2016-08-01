@@ -83,6 +83,7 @@ class Gui(QMainWindow):
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
 
+        self.pv_monitor.register_straight_listener(self.update_table)
 
         self.simcontrol = i10straight.SimModeController()
         self.realcontrol = i10straight.RealModeController()
@@ -239,25 +240,26 @@ class Gui(QMainWindow):
         table.verticalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
-        # Callbacks: Min and Max
-        max_pvs = [name + ':IMAX' for name in NAMES]
-        min_pvs = [name + ':IMIN' for name in NAMES]
-        offset_pvs = [ctrl + ':OFFSET' for ctrl in CTRLS]
-        seti_pvs = [name + ':SETI' for name in NAMES]
-        camonitor(max_pvs,
-                lambda x, i: self.update_float(x, i, self.Columns.MAX))
-        camonitor(min_pvs,
-                lambda x, i: self.update_float(x, i, self.Columns.MIN))
-        camonitor(offset_pvs,
-                lambda x, i: self.update_float(x, i, self.Columns.OFFSET))
-        camonitor(seti_pvs,
-                lambda x, i: self.update_float(x, i, self.Columns.SETI))
+    def update_table(self, key, index):
 
-        # Callbacks: Alarm status for each IOC
-        alarm_pvs = [name + ':ERRGSTR' for name in NAMES]
-        camonitor(alarm_pvs,
-                lambda x, i: self.update_alarm(x, i, self.Columns.ERRORS),
-               format=FORMAT_TIME)
+        # Callbacks: Min and Max
+
+        if key == i10controls.ARRAYS.IMAX:
+            self.update_float(self.pv_monitor.get_max_currents()[index], index, self.Columns.MAX)
+
+        elif key == i10controls.ARRAYS.IMIN:
+            self.update_float(self.pv_monitor.get_min_currents()[index], index, self.Columns.MIN)
+
+        elif key == i10controls.ARRAYS.OFFSETS:
+            self.update_float(self.pv_monitor.get_offsets()[index], index, self.Columns.OFFSET)
+
+        elif key == i10controls.ARRAYS.SETI:
+            self.update_float(self.pv_monitor.get_actual_offsets()[index], index, self.Columns.SETI)
+
+        elif key == i10controls.ARRAYS.ERRORS:
+            self.update_alarm(self.pv_monitor.get_errors()[index], index, self.Columns.ERRORS)
+
+        #TODO
 
         # Callbacks: High and low values store PVs in a cache for calculations
         self.cache_pvs = (

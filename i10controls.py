@@ -29,6 +29,7 @@ class ARRAYS(object):
     SCALES = 'scales'
     SET_SCALES = 'set_scales'
     WAVEFORMS = 'waveforms'
+    SETI = 'seti'
     IMIN = 'imin'
     IMAX = 'imax'
     ERRORS = 'errors'
@@ -73,12 +74,13 @@ class PvMonitors(object):
                       ARRAYS.SET_SCALES: caget([
                                     name + ':SETWFSCA' for name in PvReferences.NAMES]),
                       ARRAYS.WAVEFORMS: caget(PvReferences.TRACES),
+                      ARRAYS.SETI: caget([name + ':SETI' for name in PvReferences.NAMES]),
                       ARRAYS.IMIN: caget([
                                     name + ':IMIN' for name in PvReferences.NAMES]),
                       ARRAYS.IMAX: caget([
                                     name + ':IMAX' for name in PvReferences.NAMES]),
                       ARRAYS.ERRORS: caget([
-                                    name + ':ERRG' for name in PvReferences.NAMES])
+                                    name + ':ERRGSTR' for name in PvReferences.NAMES])
                       }
 
         self.listeners = {'straight': [], 'trace': []}
@@ -92,12 +94,15 @@ class PvMonitors(object):
         for idx, ioc in enumerate(PvReferences.NAMES):
             camonitor(ioc + ':SETWFSCA',
                 lambda x, i=idx: self.update_values(x, ARRAYS.SET_SCALES, i, 'straight'))
+            camonitor(ioc + ':SETI',
+                lambda x, i=idx: self.update_values(x, ARRAYS.SETI, i, 'straight'))
             camonitor(ioc + ':IMIN',
                 lambda x, i=idx: self.update_values(x, ARRAYS.IMIN, i, 'straight'))
             camonitor(ioc + ':IMAX',
                 lambda x, i=idx: self.update_values(x, ARRAYS.IMAX, i, 'straight'))
-            camonitor(ioc + ':ERRG',
-                lambda x, i=idx: self.update_values(x, ARRAYS.ERRORS, i, 'straight'))
+            camonitor(ioc + ':ERRGSTR',
+                lambda x, i=idx: self.update_values(x, ARRAYS.ERRORS, i, 'straight'),
+                format=FORMAT_TIME)
 
         for i in range(len(PvReferences.TRACES)):
             camonitor(PvReferences.TRACES[i],
@@ -132,11 +137,17 @@ class PvMonitors(object):
     def get_set_scales(self):
         return self._get_array_value(ARRAYS.SET_SCALES)
 
+    def get_actual_offsets(self):
+        return self._get_array_value(ARRAYS.SETI)
+
     def get_max_currents(self):
         return self._get_array_value(ARRAYS.IMAX)
 
     def get_min_currents(self):
         return self._get_array_value(ARRAYS.IMIN)
+
+    def get_errors(self):
+        return self._get_array_value(ARRAYS.ERRORS)
 
     def _get_array_value(self, array_key):
         return self.arrays[array_key]
