@@ -5,6 +5,7 @@
 
 """
 Buttons to move I10 fast chicane magnet offsets and scales.
+
 Provides a gui to control magnet scaling and offsets in order
 to allow independant steering of photon and electron beams to
 maintain a closed bump. Displays the two x-ray peaks such that
@@ -44,15 +45,16 @@ ALARM_COLORS = [
 
 
 class KnobsUi(QMainWindow):
+
     """
+    GUI for the beamline users.
+
     GUI containing buttons to control the beam and displaying the
     trigger and x-ray waveform traces. The two peaks of the x-ray
     waveform are displayed overlapped with their areas calculated.
     """
 
     UI_FILENAME = 'i10beamlineui.ui'
-
-    HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     def __init__(self):
 
@@ -63,15 +65,12 @@ class KnobsUi(QMainWindow):
 
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
-
         self.pv_writer = i10controls.PvWriter()
 
+        """Initial setting for GUI: jog scaling = 1."""
         self.jog_scale = 1.0
 
-        """
-        Initialise amplitude and standard deviation of theoretical
-        gaussian.
-        """
+        """Initialise amplitude and standard deviation of gaussian."""
         self.amp = 2.5
         self.sig = 900
 
@@ -79,10 +78,14 @@ class KnobsUi(QMainWindow):
         self.graph = i10plots.OverlaidWaveforms(i10controls)
 
         """Connect buttons to PVs."""
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+        self.ui.bumpleftplusButton.clicked.connect(
+                lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+        self.ui.bumpleftminusButton.clicked.connect(
+                lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+        self.ui.bumprightplusButton.clicked.connect(
+                lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+        self.ui.bumprightminusButton.clicked.connect(
+                lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
 
         self.ui.ampplusButton.clicked.connect(self.amp_plus)
         self.ui.ampminusButton.clicked.connect(self.amp_minus)
@@ -152,8 +155,10 @@ class KnobsUi(QMainWindow):
     def jog_handler(self, key, factor):
 
         """
-        Wrap the MagnetCoordinator.jog method to provide exception handling
-        in callbacks; updates PVs.
+        Handle button clicks.
+
+        When button clicked this class sends information to the writer and
+        provides exception handling in callbacks.
         """
 
         try:

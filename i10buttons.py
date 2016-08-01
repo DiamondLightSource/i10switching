@@ -27,8 +27,11 @@ class OverCurrentException(Exception):
 class MagnetCoordinator(object):
 
     """
-    Interface to control the I10 Fast Chicane and its simulation,
-    enabling steering of the photon and electron beams.
+    Control jogs applied to magnets.
+
+    Contains information about jogs to be applied to magnet scales and
+    offsets, applies these jogs to the values given to it and
+    checks this doesn't send the values over the magnet current limits.
     """
 
     BUTTON_DATA = {
@@ -49,10 +52,7 @@ class MagnetCoordinator(object):
 
     def jog(self, old_values, ofs, factor, jog_scale):
 
-        """
-        Increment the list of PVs by the offset. Errors are created
-        when a user is likely to exceed magnet tolerances.
-        """
+        """Increment the list of PVs by the appropriate offset from the list."""
 
         ofs = factor * self.BUTTON_DATA[ofs] * jog_scale
 
@@ -64,9 +64,7 @@ class MagnetCoordinator(object):
 
     def _check_bounds(self, ofs):
 
-        """
-        Raises OverCurrentException if...
-        """
+        """Raises exception if new value exceeds magnet current limit."""
 
         pvm = PvMonitors.get_instance()
         scales = [abs(scale) for scale in pvm.get_scales()]
@@ -79,6 +77,6 @@ class MagnetCoordinator(object):
             high = offset + new_val + scale
             low = offset + new_val - scale
             if high > max_val or low < min_val:
-                raise OverCurrentException(idx)
+                raise OverCurrentException(idx) # this doesn't work in simulation mode BUT got the limits on the graph as a visual guide instead...
 
 

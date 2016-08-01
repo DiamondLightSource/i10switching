@@ -5,8 +5,9 @@
 
 """
 Buttons to move I10 fast chicane magnet offsets and scales.
+
 Provides a gui to control magnet scaling and offsets in order
-to allow independant steering of photon and electron beams to
+to allow independent steering of photon and electron beams to
 maintain a closed bump and a simulation of the beamline that
 indicates the effects of changes to the scaling and offsets.
 """
@@ -47,6 +48,8 @@ ALARM_COLORS = [
 class Gui(QMainWindow):
 
     """
+    GUI for the accelerator physicists.
+
     GUI containing a simulation of the beamline and buttons
     to control the beam and/or simulation. Relevant status 
     information is also gathered from PVs and shown to the user
@@ -66,32 +69,34 @@ class Gui(QMainWindow):
         ERRORS=6
 
     def __init__(self):
+
+        """Initialise GUI."""
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        self.setup_table()
-
+        """Get instances of required classes."""
         self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
-
-        self.pv_monitor.register_straight_listener(self.update_table)
-
         self.simcontrol = i10straight.SimModeController()
         self.realcontrol = i10straight.RealModeController()
-        self.realcontrol.register_straight(self.straight)
-
         self.pv_writer = i10controls.PvWriter()
         self.sim_writer = i10controls.SimWriter()
-        self.writer = self.pv_writer
 
+        """Register listeners."""
+        self.realcontrol.register_straight(self.straight)
+        self.pv_monitor.register_straight_listener(self.update_table)
         self.sim_writer.register_controller(self.simcontrol.update_sim)
 
+        """Set up simulation, toolbar and table in the GUI."""
         self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
+        self.setup_table()
 
+        """Initial settings for GUI: connected to PVs and with jog scaling = 1."""
+        self.writer = self.pv_writer
         self.jog_scale = 1.0
 
         """Connect buttons to PVs."""
@@ -133,7 +138,7 @@ class Gui(QMainWindow):
         dotted lines indicating limits of magnet tolerances.
         """
         self.simulation.update_colourin()
-#        self.simulation.magnet_limits()
+        self.simulation.magnet_limits(self.pv_monitor)
 
     def set_jog_scaling(self):
         """Change the scaling applied to magnet corrections."""
@@ -143,9 +148,11 @@ class Gui(QMainWindow):
     def toggle_simulation(self):
 
         """
-        Toggle in and out of simulation mode: switch between PVs and
-        simulated magnet values, update graph accordingly and change
-        background colour to indicate simulation mode enabled.
+        Toggle in and out of simulation mode.
+
+        Switch between PVs and simulated magnet values,
+        update graph accordingly and change background colour
+        to indicate simulation mode enabled.
         """
 
         enabled = self.ui.simButton.isChecked()
@@ -215,6 +222,7 @@ class Gui(QMainWindow):
     def setup_table(self):
 
         """Initialise all values required for the currents table."""
+
         VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
         table = self.ui.table_widget
@@ -235,7 +243,7 @@ class Gui(QMainWindow):
 
     def update_table(self, key, index):
 
-        # Callbacks: Min and Max
+        """When this is called the table values and cache are updated."""
 
         if key == i10controls.ARRAYS.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index], index, self.Columns.MAX)
@@ -257,18 +265,24 @@ class Gui(QMainWindow):
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
+
         """Updates a table widget populated with a float."""
+
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
+
         """Updates an alarm sensitive table widget."""
+
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, cache, index):
+
+        """Updates cached values of offsets and scales for the table."""
 
         high = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] + cache['%02d' % index][i10controls.ARRAYS.SCALES]
         low = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] - cache['%02d' % index][i10controls.ARRAYS.SCALES]
@@ -277,13 +291,11 @@ class Gui(QMainWindow):
 
     def jog_handler(self, key, factor):
 
-        """ When button clicked this class sends information about which button was
-        clicked to either PvWriter or SimWriter depending on whether simulation-only
-        mode is enabled."""
-
         """
-        Wrap the MagnetCoordinator.jog method to provide exception handling
-        in callbacks; update pvs and simulation values.
+        Handle button clicks.
+
+        When button clicked this class sends information to the writer and
+        provides exception handling in callbacks.
         """
 
         try:
@@ -308,9 +320,11 @@ class Gui(QMainWindow):
     def reset(self):
 
         """
-        Reset the offsets and scales to the starting point, only whilst in
-        simulation mode. Does not affect the PVs.
+        Reset the offsets and scales to the starting point.
+
+        Only whilst in simulation mode. Does not affect the PVs.
         """
+
         if self.ui.simButton.isChecked():
             self.writer.reset()
             self.update_shading()

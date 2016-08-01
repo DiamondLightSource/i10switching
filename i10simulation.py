@@ -17,7 +17,7 @@ class Element(object):
 
     def get_type(self):
         """
-            The device name is the name of the class extending :class:`Element`
+        The device name is the name of the class extending :class:`Element`
 
         Returns:
             str: Name of the element.
@@ -71,7 +71,9 @@ class InsertionDevice(Element):
 class Layout(object):
 
     """
-    Set up layout of the straight using the information in the
+    Layout of the straight.
+
+    Set up using the information in the
     configuration file.
     """
 
@@ -110,12 +112,14 @@ class Layout(object):
 
         return [x for x in self.path if x.get_type() == which]
 
-    # TODO: not a great name
-    def send_electrons_through(self):
+    def generate_beams(self):
 
         """
-        Send electron beam vector through straight to generate electron beam
-        and photon beams, which are initialised at the two insertion devices.
+        Generate electron beam and photon beams.
+
+        Takes electron vector and sends it through the straight, generating
+        complete electron beam from list of vectors at positions along straight.
+        Photon beams are initialised at the two insertion devices.
         """
 
         e_vector = np.array([0, 0])

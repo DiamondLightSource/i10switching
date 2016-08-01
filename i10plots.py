@@ -119,25 +119,20 @@ class Simulation(BaseFigureCanvas):
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
-    def magnet_limits(self): # Not yet correctly set up
+    def magnet_limits(self, pv_monitor):
 
-        """
-        Plot lines indicating the maximum current values that can be
-        passed through the magnets.
-        """
+        """Show maximum currents that can be passed through the magnets."""
 
-        strengths = [np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
-                              -caget('SR09A-PC-FCHIC-02:IMAX'),
-                               caget('SR10S-PC-FCHIC-03:IMAX'), 0, 0]),
-                     np.array([0, 0, caget('SR10S-PC-FCHIC-03:IMAX'),
-                              -caget('SR10S-PC-FCHIC-04:IMAX'), 
-                               caget('SR10S-PC-FCHIC-05:IMAX')])]
+        self.pv_monitor = pv_monitor
 
-#        strengths = np.array([caget('SR09A-PC-FCHIC-01:IMAX'),
-#                              caget('SR09A-PC-FCHIC-02:IMAX'),
-#                              caget('SR10S-PC-FCHIC-03:IMAX'),
-#                              caget('SR10S-PC-FCHIC-04:IMAX'), 
-#                              caget('SR10S-PC-FCHIC-05:IMAX')])
+        max_currents = self.pv_monitor.get_max_currents()
+
+        strengths = [np.array([max_currents[0],
+                              -max_currents[1],
+                               max_currents[2], 0, 0]),
+                     np.array([0, 0, max_currents[2],
+                              -max_currents[3], 
+                               max_currents[4]])]
 
         edges = [[], []]
         for s in range(2):
@@ -181,8 +176,10 @@ class Traces(BaseFigureCanvas):
 class OverlaidWaveforms(BaseFigureCanvas):
 
     """
-    Take the two intensity peaks of the x-rays and overlay them.
-    Calculate areas under peaks and display as a legend.
+    Overlay the two intensity peaks of the x-ray beams.
+
+    Calculate areas under peaks and display as a legend, plot gaussian
+    for visual comparison of peak shapes.
     """
 
     def __init__(self, controls):

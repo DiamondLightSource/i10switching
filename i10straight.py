@@ -11,7 +11,8 @@ import i10controls
 
 
 class RealModeController(object):
-    """Controls simulation using the camonitored offsets/scales from PvMonitors."""
+
+    """Control simulation using the camonitored offsets/scales from PvMonitors."""
 
     def __init__(self):
         self.pvm = i10controls.PvMonitors.get_instance()
@@ -20,7 +21,7 @@ class RealModeController(object):
 
     def update(self, key, index):
 
-        """Update scales whenever they change."""
+        """Update scales and offsets whenever they change."""
 
         if key == i10controls.ARRAYS.SCALES:
             for straight in self.straights:
@@ -31,6 +32,9 @@ class RealModeController(object):
                 straight.set_offsets(self.pvm.get_offsets())
 
     def register_straight(self, straight):
+
+        """Register the straight with the controller linked to PVs."""
+
         self.straights.append(straight)
         self.update(i10controls.ARRAYS.SCALES, 0)
         self.update(i10controls.ARRAYS.OFFSETS, 0)
@@ -40,7 +44,9 @@ class RealModeController(object):
     
 
 class SimModeController(object):
-    """Controls simulation using the simulated values from SimWriter."""
+
+    """Control simulation using the simulated values from SimWriter."""
+
     def __init__(self):
 
         self.straights = []
@@ -49,6 +55,8 @@ class SimModeController(object):
                                  10.188844, 23.106842, 23.037771]) # like this or start with a caget?? # unfortunate duplication but not sure it can be avoided easily
 
     def update_sim(self, key, values):
+
+        """Update simulated scales and offsets whenever they change."""
 
         if key == i10controls.ARRAYS.SCALES:
             self.scales = values
@@ -59,6 +67,9 @@ class SimModeController(object):
             self.update_offsets()
 
     def register_straight(self, straight):
+
+        """Register the straight with controller linked to the simulation."""
+
         self.straights.append(straight)
         self.update_sim(i10controls.ARRAYS.SCALES, self.scales)
         self.update_sim(i10controls.ARRAYS.OFFSETS, self.offsets)
@@ -105,12 +116,9 @@ class Straight(object):
 
         self.offsets = offsets
 
-    def current_to_kick(self, current):
+    def amps_to_radians(self, current):
 
-        """
-        Convert currents (Amps) to fields (Tesla) and then to kick
-        strength.
-        """
+        """Convert currents (Amps) to fields (Tesla) to kick strength (rads)."""
 
         field = current * self.AMP_TO_TESLA
         kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
@@ -119,19 +127,20 @@ class Straight(object):
 
     def calculate_strengths(self, t):
 
-        """Calculate time-varying strengths of kicker magnets.
+        """
+        Calculate time-varying strengths of kicker magnets.
             Args:
                 t (int): time in sec
             Returns:
-                new kicker strengths (array of x by y)
+                new kicker strengths (array of 5 by 1)
         """
 
-        kick = self.current_to_kick(self.scales) * 0.5 * np.array([
+        kick = self.amps_to_radians(self.scales) * 0.5 * np.array([
                    np.sin(t*np.pi/100) + 1, 
                    -(np.sin(t*np.pi/100) + 1),
                    2,
                    np.sin(t*np.pi/100) - 1,
-                  -np.sin(t*np.pi/100) + 1]) + self.current_to_kick(self.offsets)
+                  -np.sin(t*np.pi/100) + 1]) + self.amps_to_radians(self.offsets)
 
         return kick
 
@@ -145,39 +154,45 @@ class Straight(object):
     def timestep(self, t):
 
         """
+        Create electron and photon beams.
+
         Return positions and velocities of electron and photon beams at
-        time t.
+        positions along the straight at time t.
         """
 
         self.strength_setup(self.calculate_strengths(t))
-        e_beam, p_beam = self.data.send_electrons_through()
+        e_beam, p_beam = self.data.generate_beams()
 
         return e_beam, p_beam
 
     def p_beam_range(self, strength_values):
 
         """
+        Edges of photon beam range.
+
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
         """
 
-        self.strength_setup(self.current_to_kick(self.scales) * strength_values
-                          + self.current_to_kick(self.offsets))
+        self.strength_setup(self.amps_to_radians(self.scales) * strength_values
+                          + self.amps_to_radians(self.offsets))
 
-        p_beam = self.data.send_electrons_through()[1]
+        p_beam = self.data.generate_beams()[1]
 
         return p_beam
 
-    def p_beam_lim(self, currents): # use camonitor values... not yet connected
+    def p_beam_lim(self, currents):
 
         """
+        Limits on the photon beams due to magnet strengths.
+
         Calculate the photon beam produced by magnets at their maximum
         strength settings.
         """
 
-        kick_limits = self.current_to_kick(currents)
+        kick_limits = self.amps_to_radians(currents)
         self.strength_setup(kick_limits)
-        p_beam = self.data.send_electrons_through()[1]
+        p_beam = self.data.generate_beams()[1]
 
         return p_beam
 
