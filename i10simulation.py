@@ -77,10 +77,11 @@ class Layout(object):
 
     def __init__(self, name):
         self.path = self._load(name)
-        self.ids = self.get_elements('insertiondevice') #CHANGEEEE
+        self.ids = self.get_elements('insertiondevice')
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
-        self.p_coord = [[self.ids[i].s, self.detector[0].s] for i in range(len(self.ids))]
+        self.p_coord = [[self.ids[i].s, self.detector[0].s]
+                         for i in range(len(self.ids))]
         self.xaxis = [0]
         self.xaxis.extend([i.s for i in self.path
                       if i.get_type() != 'drift'])
@@ -125,7 +126,7 @@ class Layout(object):
             if x.get_type() != 'detector':
                 e_vector = x.increment(e_vector)
                 e_beam[self.path.index(x)+1] = e_vector
-            if x.get_type() == 'insertiondevice': #CHANGEEEEEE
+            if x.get_type() == 'insertiondevice':
                 p_vector.append(e_vector.tolist())
 
         p_beam = self.create_photon_beam(p_vector)

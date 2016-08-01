@@ -33,20 +33,16 @@ import i10buttons
 import i10straight
 import i10controls
 
-# THIS IS TEMPORARY
-NAMES = [
-    'SR09A-PC-FCHIC-01',
-    'SR09A-PC-FCHIC-02',
-    'SR10S-PC-FCHIC-03',
-    'SR10S-PC-FCHIC-04',
-    'SR10S-PC-FCHIC-05']
 
-CTRLS = [
-    'SR09A-PC-CTRL-01',
-    'SR09A-PC-CTRL-02',
-    'SR10S-PC-CTRL-03',
-    'SR10S-PC-CTRL-04',
-    'SR10S-PC-CTRL-05']
+# Alarm colours
+ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
+ALARM_COLORS = [
+        QtGui.QColor(0, 215, 20), # None
+        QtGui.QColor(255, 140, 0), # Minor
+        QtGui.QColor(255, 0, 0), # Major
+        QtGui.QColor(255, 0, 255), # Invalid
+        ]
+
 
 class Gui(QMainWindow):
 
@@ -75,9 +71,7 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        self.setup_table() # THIS NEEDS TO BE MOVED/AMALGAMATED WITH CAMONITORED VALUES IN I10CONTROLS
-
-#        self.jog_buttons = JogButtonHandler()
+        self.setup_table()
 
         self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
@@ -93,7 +87,7 @@ class Gui(QMainWindow):
         self.sim_writer = i10controls.SimWriter()
         self.writer = self.pv_writer
 
-        self.sim_writer.register_controller(self.simcontrol.update_sim) #################### moved this in here so that correct instance of everything
+        self.sim_writer.register_controller(self.simcontrol.update_sim)
 
         self.simulation = i10plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
@@ -101,7 +95,7 @@ class Gui(QMainWindow):
         self.jog_scale = 1.0
 
         """Connect buttons to PVs."""
-        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1)) # add jog_buttons if move jog_handler to another class
+        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1))
         self.ui.kminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, -1))
         self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
         self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
@@ -124,10 +118,10 @@ class Gui(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets, BURT and cycling."""
-        camonitor(i10buttons.MagnetCoordinator.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(i10buttons.MagnetCoordinator.MAGNET_STATUS_PV,
+        camonitor(i10controls.PvReferences.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(i10controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10buttons.MagnetCoordinator.CYCLING_STATUS_PV,
+        camonitor(i10controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add simulation and toolbar to the GUI."""
@@ -185,7 +179,7 @@ class Gui(QMainWindow):
     def update_magnet_led(self, var):
         """Use PV alarm status to choose color for qframe."""
         palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
         self.ui.magnet_led_2.setPalette(palette)
 
     def update_burt_led(self, var):
@@ -196,7 +190,7 @@ class Gui(QMainWindow):
         #    set no alarm (0) or major alarm(2)
         alarm_state = 0 if var == 1 else 2
 
-        palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[alarm_state])
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[alarm_state])
         self.ui.burt_led_2.setPalette(palette)
 
     def flash_table_cell(self, row, column):
@@ -206,22 +200,21 @@ class Gui(QMainWindow):
         table = self.ui.table_widget
         item = table.item(column, row)
 
-        item.setBackground(QtGui.QBrush(i10buttons.ALARM_COLORS[2]))
+        item.setBackground(QtGui.QBrush(ALARM_COLORS[2]))
         QtCore.QTimer.singleShot(
-                200, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND)))
+                200, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
         QtCore.QTimer.singleShot(
-                400, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_COLORS[2])))
+                400, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
         QtCore.QTimer.singleShot(
-                600, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND)))
+                600, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
         QtCore.QTimer.singleShot(
-                800, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_COLORS[2])))
+                800, lambda: item.setBackground(QtGui.QBrush(ALARM_COLORS[2])))
         QtCore.QTimer.singleShot(
-                900, lambda: item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND)))
+                900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
 
     def setup_table(self):
 
         """Initialise all values required for the currents table."""
-        # TODO: Use PvMonitors to get the values and updated for the table
         VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
         table = self.ui.table_widget
@@ -263,19 +256,6 @@ class Gui(QMainWindow):
         elif key == i10controls.ARRAYS.SCALES:
             self.update_cache(self.pv_monitor.get_cache(), index)
 
-        #TODO
-
-        # Callbacks: High and low values store PVs in a cache for calculations
-#        self.cache_pvs = (
-#                [ctrl + ':OFFSET' for ctrl in CTRLS] +
-#                [ctrl + ':WFSCA' for ctrl in CTRLS])
-#        self.cache = c = {}
-#        for i in range(1, 6):
-#            c['%02d' % i] = {}
-#        for pv in self.cache_pvs:
-#            c[pv.split(':')[0][-2:]][pv.split(':')[1]] = caget(pv)
-#        camonitor(self.cache_pvs, self.update_cache)
-
     def update_float(self, var, row, col):
         """Updates a table widget populated with a float."""
         item = self.ui.table_widget.item(row, col)
@@ -284,8 +264,8 @@ class Gui(QMainWindow):
     def update_alarm(self, var, row, col):
         """Updates an alarm sensitive table widget."""
         item = self.ui.table_widget.item(row, col)
-        item.setForeground(QtGui.QBrush(i10buttons.ALARM_COLORS[var.severity]))
-        item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND))
+        item.setForeground(QtGui.QBrush(ALARM_COLORS[var.severity]))
+        item.setBackground(QtGui.QBrush(ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, cache, index):
@@ -295,17 +275,11 @@ class Gui(QMainWindow):
         self.update_float(high, index, self.Columns.HIGH)
         self.update_float(low, index, self.Columns.LOW)
 
-#class JogButtonHandler(object): #try amalgamating this with class above
-
-    """ When button clicked this class sends information about which button was
-    clicked to either PvWriter or SimWriter depending on whether simulation-only
-    mode is enabled."""
-
-#    def __init__(self):
-
-#        self.writer = i10controls.PvWriter()
-
     def jog_handler(self, key, factor):
+
+        """ When button clicked this class sends information about which button was
+        clicked to either PvWriter or SimWriter depending on whether simulation-only
+        mode is enabled."""
 
         """
         Wrap the MagnetCoordinator.jog method to provide exception handling

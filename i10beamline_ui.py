@@ -34,6 +34,15 @@ import i10buttons
 import i10controls
 
 
+# Alarm colours
+ALARM_COLORS = [
+        QtGui.QColor(0, 215, 20), # None
+        QtGui.QColor(255, 140, 0), # Minor
+        QtGui.QColor(255, 0, 0), # Major
+        QtGui.QColor(255, 0, 255), # Invalid
+        ]
+
+
 class KnobsUi(QMainWindow):
     """
     GUI containing buttons to control the beam and displaying the
@@ -90,9 +99,9 @@ class KnobsUi(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets and cycling."""
-        camonitor(i10buttons.MagnetCoordinator.MAGNET_STATUS_PV,
+        camonitor(i10controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10buttons.MagnetCoordinator.CYCLING_STATUS_PV,
+        camonitor(i10controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add graphs to the GUI."""
@@ -174,7 +183,7 @@ class KnobsUi(QMainWindow):
     def update_magnet_led(self, var):
         """Uses PV alarm status to choose color for qframe"""
         palette = QtGui.QPalette()
-        palette.setColor(QtGui.QPalette.Background, i10buttons.ALARM_COLORS[var.severity])
+        palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
         self.ui.magnet_led_3.setPalette(palette)
 
 

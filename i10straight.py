@@ -18,7 +18,7 @@ class RealModeController(object):
         self.pvm.register_straight_listener(self.update)
         self.straights = []
 
-    def update(self, key, index): # need index?
+    def update(self, key, index):
 
         """Update scales whenever they change."""
 
@@ -84,7 +84,7 @@ class Straight(object):
     beam and produces photon beams at the insertion devices.
     """
 
-    BEAM_RIGIDITY = 3e9/scipy.constants.c # hwat is this?
+    BEAM_RIGIDITY = 3e9/scipy.constants.c
     AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
                              0.045012/23, 0.035174/23])
 
@@ -94,7 +94,7 @@ class Straight(object):
         up to listen to the monitored PV values."""
 
         self.data = i10simulation.Layout('config.txt')
-        self.scales = i10controls.PvMonitors.get_instance().get_scales() # ?? do i want to instantiate this here??
+        self.scales = i10controls.PvMonitors.get_instance().get_scales()
         self.offsets = i10controls.PvMonitors.get_instance().get_offsets()
 
     def set_scales(self, scales):
@@ -126,7 +126,7 @@ class Straight(object):
                 new kicker strengths (array of x by y)
         """
 
-        kick = self.current_to_kick(self.scales) * 0.5 * np.array([ # have I got the physics right for the scales and offsets?
+        kick = self.current_to_kick(self.scales) * 0.5 * np.array([
                    np.sin(t*np.pi/100) + 1, 
                    -(np.sin(t*np.pi/100) + 1),
                    2,

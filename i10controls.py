@@ -24,6 +24,11 @@ class PvReferences(object):
         'BL10I-EA-USER-01:WAI1',
         'BL10I-EA-USER-01:WAI2']
 
+    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE'
+    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
+    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
+
+
 class ARRAYS(object):
     OFFSETS = 'offsets'
     SCALES = 'scales'
@@ -33,6 +38,7 @@ class ARRAYS(object):
     IMIN = 'imin'
     IMAX = 'imax'
     ERRORS = 'errors'
+
 
 class PvMonitors(object):
 
@@ -108,6 +114,7 @@ class PvMonitors(object):
             camonitor(PvReferences.TRACES[i],
                 lambda x, i=i: self.update_values(x, ARRAYS.WAVEFORMS, i, 'trace'))
 
+
         cothread.Yield()  # Ensure monitored values are connected
 
     def register_straight_listener(self, l):
@@ -120,7 +127,7 @@ class PvMonitors(object):
     def update_values(self, val, key, index, listener_key):
         """Update arrays and tell listeners when a value has changed."""
         self.arrays[key][index] = val
-        [l(key, index) for l in self.listeners[listener_key]] # why does this need to pass the index at all?
+        [l(key, index) for l in self.listeners[listener_key]]
 
     def get_offsets(self):
         return self._get_array_value(ARRAYS.OFFSETS)
@@ -147,7 +154,6 @@ class PvMonitors(object):
 
         self.cache = c = {}
         for i in range(5):
-            c['%02d' % i] = {} # need this line?
             c['%02d' % i] = {ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i], ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]}
 
         return c

@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python2.7
 #i10buttons
-# Contains ButtonData, OverCurrentException, MagnetCoordinator
+# Contains ButtonData, OverCurrentException, MagnetCoordinator, Moves
 
 from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
@@ -9,14 +9,6 @@ from PyQt4 import QtGui
 from i10controls import PvMonitors
 
 
-# Alarm colours
-ALARM_BACKGROUND = QtGui.QColor(255, 255, 255)
-ALARM_COLORS = [
-        QtGui.QColor(0, 215, 20), # None
-        QtGui.QColor(255, 140, 0), # Minor
-        QtGui.QColor(255, 0, 0), # Major
-        QtGui.QColor(255, 0, 255), # Invalid
-        ]
 class Moves(object):
     STEP_K3 = 0
     BUMP_LEFT = 1
@@ -39,11 +31,6 @@ class MagnetCoordinator(object):
     enabling steering of the photon and electron beams.
     """
 
-    MAGNET_STATUS_PV = 'SR10I-PC-FCHIC-01:GRPSTATE' # these probably shouldn't be in here
-    BURT_STATUS_PV = 'CS-TI-BL10-01:BURT:OK'
-    CYCLING_STATUS_PV = 'CS-TI-BL10-01:STATE'
-
-
     BUTTON_DATA = {
         Moves.STEP_K3: np.array([0, 0, 1e-2, 0, 0]),
         Moves.BUMP_LEFT: np.array([23.2610, -23.2145, 10.1888, 0, 0]) / 600,
@@ -56,9 +43,8 @@ class MagnetCoordinator(object):
         }
 
 
-    def __init__(self): # why initialised 3 times??
+    def __init__(self): # does it matter that it's initialised 3 times or should I pass it as an argument to the writers from the gui?
         pass
-#        self.jog_scale = 1.0
 
 
     def jog(self, old_values, ofs, factor, jog_scale):
