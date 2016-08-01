@@ -252,6 +252,7 @@ class Gui(QMainWindow):
 
         elif key == i10controls.ARRAYS.OFFSETS:
             self.update_float(self.pv_monitor.get_offsets()[index], index, self.Columns.OFFSET)
+            self.update_cache(self.pv_monitor.get_cache(), index)
 
         elif key == i10controls.ARRAYS.SETI:
             self.update_float(self.pv_monitor.get_actual_offsets()[index], index, self.Columns.SETI)
@@ -259,18 +260,21 @@ class Gui(QMainWindow):
         elif key == i10controls.ARRAYS.ERRORS:
             self.update_alarm(self.pv_monitor.get_errors()[index], index, self.Columns.ERRORS)
 
+        elif key == i10controls.ARRAYS.SCALES:
+            self.update_cache(self.pv_monitor.get_cache(), index)
+
         #TODO
 
         # Callbacks: High and low values store PVs in a cache for calculations
-        self.cache_pvs = (
-                [ctrl + ':OFFSET' for ctrl in CTRLS] +
-                [ctrl + ':WFSCA' for ctrl in CTRLS])
-        self.cache = c = {}
-        for i in range(1, 6):
-            c['%02d' % i] = {}
-        for pv in self.cache_pvs:
-            c[pv.split(':')[0][-2:]][pv.split(':')[1]] = caget(pv)
-        camonitor(self.cache_pvs, self.update_cache)
+#        self.cache_pvs = (
+#                [ctrl + ':OFFSET' for ctrl in CTRLS] +
+#                [ctrl + ':WFSCA' for ctrl in CTRLS])
+#        self.cache = c = {}
+#        for i in range(1, 6):
+#            c['%02d' % i] = {}
+#        for pv in self.cache_pvs:
+#            c[pv.split(':')[0][-2:]][pv.split(':')[1]] = caget(pv)
+#        camonitor(self.cache_pvs, self.update_cache)
 
     def update_float(self, var, row, col):
         """Updates a table widget populated with a float."""
@@ -284,19 +288,12 @@ class Gui(QMainWindow):
         item.setBackground(QtGui.QBrush(i10buttons.ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
-    def update_cache(self, var, dummy):
-        """
-        Called by camonitor. Updates values in the cache and uses
-        them to provide new high and low values to the table.
-        """
-        ioc_1 = var.name.split(':')[0][-2:]
-        ioc_2 = var.name.split(':')[1]
-        c = self.cache[ioc_1]
-        c[ioc_2] = var
-        high = c['OFFSET'] + c['WFSCA']
-        low = c['OFFSET'] - c['WFSCA']
-        self.update_float(high, int(ioc_1)-1, self.Columns.HIGH)
-        self.update_float(low, int(ioc_1)-1, self.Columns.LOW)
+    def update_cache(self, cache, index):
+
+        high = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] + cache['%02d' % index][i10controls.ARRAYS.SCALES]
+        low = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] - cache['%02d' % index][i10controls.ARRAYS.SCALES]
+        self.update_float(high, index, self.Columns.HIGH)
+        self.update_float(low, index, self.Columns.LOW)
 
 #class JogButtonHandler(object): #try amalgamating this with class above
 

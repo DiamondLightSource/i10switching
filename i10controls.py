@@ -122,12 +122,6 @@ class PvMonitors(object):
         self.arrays[key][index] = val
         [l(key, index) for l in self.listeners[listener_key]] # why does this need to pass the index at all?
 
-#    def set_new_pvs(self, pvs, values):
-#        caput(pvs, values)
-
-    # OR
-    # @property
-    # def offsets(self):
     def get_offsets(self):
         return self._get_array_value(ARRAYS.OFFSETS)
 
@@ -148,6 +142,15 @@ class PvMonitors(object):
 
     def get_errors(self):
         return self._get_array_value(ARRAYS.ERRORS)
+
+    def get_cache(self):
+
+        self.cache = c = {}
+        for i in range(5):
+            c['%02d' % i] = {} # need this line?
+            c['%02d' % i] = {ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i], ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]}
+
+        return c
 
     def _get_array_value(self, array_key):
         return self.arrays[array_key]
