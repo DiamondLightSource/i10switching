@@ -105,7 +105,7 @@ class Layout(object):
         self.ids = self.get_elements('insertiondevice')
         self.kickers = self.get_elements('kicker')
         self.detector = self.get_elements('detector')
-        self.p_coord = [[self.ids[i].s, self.detector[0].s]
+        self.photon_coordinates = [[self.ids[i].s, self.detector[0].s]
                          for i in range(len(self.ids))]
         self.xaxis = [0]
         self.xaxis.extend([i.s for i in self.path
@@ -165,8 +165,8 @@ class Layout(object):
         """Take initialised photon beams and extend them to the detector."""
 
         for i in range(len(self.ids)):
-            self.travel[i].set_length(self.p_coord[i][1]
-                                      - self.p_coord[i][0])
+            self.travel[i].set_length(self.photon_coordinates[i][1]
+                                      - self.photon_coordinates[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector

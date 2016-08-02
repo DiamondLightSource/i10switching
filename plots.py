@@ -27,9 +27,9 @@ class Simulation(BaseFigureCanvas):
 
     """Plot the simulation of the I10 fast chicane."""
 
-    def __init__(self, collectdata):
+    def __init__(self, straight):
         BaseFigureCanvas.__init__(self)
-        self.info = collectdata
+        self.straight = straight
         self.ax = self.fig_setup()
         self.beams = self.data_setup()
         self.anim = animation.FuncAnimation(self.figure, self.animate,
@@ -39,14 +39,14 @@ class Simulation(BaseFigureCanvas):
 
         """Set up axes."""
         ax1 = self.figure.add_subplot(1, 1, 1)
-        ax1.set_xlim(self.info.data.path[0].s, self.info.data.path[-1].s)
-        ax1.get_yaxis().set_visible(False)
+        ax1.set_xlim(self.straight.data.path[0].s,
+                     self.straight.data.path[-1].s)
         ax1.set_ylim(-0.01, 0.01)
 
         """Plot positions of kickers and IDs."""
-        for i in self.info.data.kickers:
+        for i in self.straight.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
-        for i in self.info.data.ids:
+        for i in self.straight.data.ids:
             ax1.axvline(x=i.s, color='b', linestyle='dashed')
 
         return ax1
@@ -74,13 +74,13 @@ class Simulation(BaseFigureCanvas):
 
         """Extract electron and photon beam positions for plotting."""
 
-        e_positions = np.array(self.info.step(t)[0])[:, 0].tolist()
+        e_positions = np.array(self.straight.step(t)[0])[:, 0].tolist()
         """Remove duplicates in data."""
-        for i in range(len(self.info.data.get_elements('drift'))):
+        for i in range(len(self.straight.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
-        p_positions = np.array(self.info.step(t)[1])[:, [0, 2]]
+        p_positions = np.array(self.straight.step(t)[1])[:, [0, 2]]
 
         return e_positions, p_positions
 
@@ -93,8 +93,9 @@ class Simulation(BaseFigureCanvas):
         p_data = data[1]
 
         beams = self.init_data()
-        beams[0].set_data(self.info.data.xaxis, e_data)
-        for line, x, y in zip(beams[1:], self.info.data.p_coord, p_data):
+        beams[0].set_data(self.straight.data.xaxis, e_data)
+        for line, x, y in zip(beams[1:],
+                              self.straight.data.photon_coordinates, p_data):
             line.set_data(x, y)
 
         return beams
@@ -106,16 +107,19 @@ class Simulation(BaseFigureCanvas):
         strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
         edges = [[], []]
         for s in range(2):
-            edges[s] = np.array(self.info.p_beam_range(strengths[s]))[:, [0, 2]]
+            edges[s] = np.array(self.straight.p_beam_range(strengths[s])
+                               )[:, [0, 2]]
 
         beam1max = edges[0][0]
         beam1min = edges[1][0]
         beam2max = edges[1][1]
         beam2min = edges[0][1]
 
-        self.fill1 = self.ax.fill_between(self.info.data.p_coord[0],
+        self.fill1 = self.ax.fill_between(
+                               self.straight.data.photon_coordinates[0],
                                beam1min, beam1max, facecolor='blue', alpha=0.2)
-        self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
+        self.fill2 = self.ax.fill_between(
+                               self.straight.data.photon_coordinates[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
     def magnet_limits(self):
@@ -133,13 +137,16 @@ class Simulation(BaseFigureCanvas):
 
         edges = [[], []]
         for s in range(2):
-            edges[s] = np.array(self.info.p_beam_lim(strengths[s]))[:, [0, 2]]
+            edges[s] = np.array(self.straight.p_beam_lim(strengths[s])
+                               )[:, [0, 2]]
 
         beam1max = edges[0][0]
         beam2max = edges[1][1]
 
-        self.limit1 = self.ax.plot(self.info.data.p_coord[0], beam1max, 'r--')
-        self.limit2 = self.ax.plot(self.info.data.p_coord[1], beam2max, 'r--')
+        self.limit1 = self.ax.plot(self.straight.data.photon_coordinates[0],
+                                   beam1max, 'r--')
+        self.limit2 = self.ax.plot(self.straight.data.photon_coordinates[1],
+                                   beam2max, 'r--')
 
 
 class Traces(BaseFigureCanvas):
