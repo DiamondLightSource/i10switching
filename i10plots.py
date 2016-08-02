@@ -9,6 +9,7 @@ from cothread.catools import caget, camonitor
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
+import i10controls
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -17,9 +18,10 @@ class BaseFigureCanvas(FigureCanvas):
 
     def __init__(self):
         self.figure = plt.figure()
+        FigureCanvas.__init__(self, self.figure)
         self.figure.patch.set_facecolor('blue')
         self.figure.patch.set_alpha(0.0)
-        FigureCanvas.__init__(self, self.figure)
+        self.pv_monitor = i10controls.PvMonitors.get_instance()
 
 
 class Simulation(BaseFigureCanvas):
@@ -27,12 +29,10 @@ class Simulation(BaseFigureCanvas):
     """Plot the simulation of the I10 fast chicane."""
 
     def __init__(self, collectdata):
-
-        self.info = collectdata
         BaseFigureCanvas.__init__(self)
+        self.info = collectdata
         self.ax = self.fig_setup()
         self.beams = self.data_setup()
-
         self.anim = animation.FuncAnimation(self.figure, self.animate,
                     init_func=self.init_data, frames=1000, interval=20)
 
@@ -119,11 +119,9 @@ class Simulation(BaseFigureCanvas):
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
-    def magnet_limits(self, pv_monitor):
+    def magnet_limits(self):
 
         """Show maximum currents that can be passed through the magnets."""
-
-        self.pv_monitor = pv_monitor
 
         max_currents = self.pv_monitor.get_max_currents()
 
@@ -153,7 +151,6 @@ class Traces(BaseFigureCanvas):
         BaseFigureCanvas.__init__(self)
         self.ax = self.figure.add_subplot(1, 1, 1)
         self.controls = controls
-        self.pv_monitor = self.controls.PvMonitors.get_instance()
         self.pv_monitor.register_trace_listener(self.update_waveforms)
         trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
         trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]

@@ -139,7 +139,7 @@ class Gui(QMainWindow):
         dotted lines indicating limits of magnet tolerances.
         """
         self.simulation.update_colourin()
-        self.simulation.magnet_limits(self.pv_monitor)
+        self.simulation.magnet_limits()
 
     def set_jog_scaling(self):
         """Change the scaling applied to magnet corrections."""
