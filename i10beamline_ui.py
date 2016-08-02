@@ -134,22 +134,22 @@ class KnobsUi(QMainWindow):
     """Methods controlling the theoretical gaussian."""
 
     def amp_plus(self):
-        self.amp = self.amp + 0.1
+        self.amp += 0.1
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def amp_minus(self):
-        self.amp = self.amp - 0.1
+        self.amp -= 0.1
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_plus(self):
-        self.sig = self.sig + 10
+        self.sig += 10
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_minus(self):
-        self.sig = self.sig - 10
+        self.sig -= 10
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
@@ -199,4 +199,3 @@ if __name__ == '__main__':
     kui = KnobsUi()
     kui.ui.show()
     cothread.WaitForQuit()
-
