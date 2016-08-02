@@ -133,7 +133,7 @@ class Simulation(BaseFigureCanvas):
                                max_currents[2], 0, 0]),
                      np.array([0, 0, max_currents[2],
                               -max_currents[3], 
-                               max_currents[4]])] # target offset?
+                               max_currents[4]])]
 
         edges = [[], []]
         for s in range(2):
