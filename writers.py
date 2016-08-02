@@ -39,17 +39,17 @@ class PvWriter(AbstractWriter):
         self.set_scale_pvs = [name + ':SETWFSCA' for name in PvReferences.NAMES]
         self.offset_pvs = [ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]
 
-    def write(self, key, factor):
-        if key == 'SCALE':
+    def write(self, move, factor):
+        if move == 'SCALE':
             scale_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_scales(), key, factor)
+                PvMonitors.get_instance().get_scales(), move, factor)
             set_scale_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_set_scales(), key, factor)
+                PvMonitors.get_instance().get_set_scales(), move, factor)
             self.write_to_pvs(self.scale_pvs, scale_jog_values)
             self.write_to_pvs(self.set_scale_pvs, set_scale_jog_values)
         else:
             offset_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_offsets(), key, factor)
+                PvMonitors.get_instance().get_offsets(), move, factor)
             self.write_to_pvs(self.offset_pvs, offset_jog_values)
 
     def write_to_pvs(self, pvs, jog_values):
@@ -67,15 +67,15 @@ class SimWriter(AbstractWriter):
         AbstractWriter.__init__(self)
         self.controller = controller
 
-    def write(self, key, factor):
-        if key == magnet_jogs.Moves.SCALE:
+    def write(self, move, factor):
+        if move == magnet_jogs.Moves.SCALE:
             jog_values = self.magnet_coordinator.jog(
-                self.controller.scales, key, factor)
+                self.controller.scales, move, factor)
         else:
             jog_values = self.magnet_coordinator.jog(
-                self.controller.offsets, key, factor)
-        self.check_bounds(key, jog_values)
-        self.update_sim_values(key, jog_values)
+                self.controller.offsets, move, factor)
+        self.check_bounds(move, jog_values)
+        self.update_sim_values(move, jog_values)
 
     def update_sim_values(self, key, jog_values):
         if key == magnet_jogs.Moves.SCALE:
