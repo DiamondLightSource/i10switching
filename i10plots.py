@@ -75,13 +75,13 @@ class Simulation(BaseFigureCanvas):
 
         """Extract electron and photon beam positions for plotting."""
 
-        e_positions = np.array(self.info.timestep(t)[0])[:, 0].tolist()
+        e_positions = np.array(self.info.step(t)[0])[:, 0].tolist()
         """Remove duplicates in data."""
         for i in range(len(self.info.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
 
-        p_positions = np.array(self.info.timestep(t)[1])[:, [0, 2]]
+        p_positions = np.array(self.info.step(t)[1])[:, [0, 2]]
 
         return e_positions, p_positions
 

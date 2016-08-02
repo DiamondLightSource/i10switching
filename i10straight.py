@@ -152,7 +152,7 @@ class Straight(object):
         for kicker, strength in zip(self.data.kickers, strength_values):
             kicker.set_strength(strength)
 
-    def timestep(self, t):
+    def step(self, t):
 
         """
         Create electron and photon beams.
