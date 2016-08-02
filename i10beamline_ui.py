@@ -121,7 +121,7 @@ class KnobsUi(QMainWindow):
         self.ui.ampminusButton.setEnabled(enabled)
         self.ui.sigmaplusButton.setEnabled(enabled)
         self.ui.sigmaminusButton.setEnabled(enabled)
-        if enabled == True:
+        if enabled:
             self.graph.gaussian(self.amp, self.sig)
         else:
             self.graph.clear_gaussian()
