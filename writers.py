@@ -64,39 +64,32 @@ class SimWriter(AbstractWriter):
     Write coordinated magnets moves to the manual simulation controller.
     """
 
-    def __init__(self):
+    def __init__(self, controller):
 
         AbstractWriter.__init__(self)
-        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        self.simulated_scales =  np.array([23.2610, 23.2145,
-                                          10.188844, 23.106842, 23.037771]) # like this or start with a caget??
-        self.controllers = []
-
-    def register_controller(self, controller):
-        """Add new listener function to the list."""
-        self.controllers.append(controller)
+        self.controller = controller
 
     def write(self, key, factor, jog_scale):
         if key == i10buttons.Moves.SCALE:
             jog_values = self.magnet_coordinator.jog(
-                self.simulated_scales, key, factor, jog_scale)
+                self.controller.scales, key, factor, jog_scale)
         else:
             jog_values = self.magnet_coordinator.jog(
-                self.simulated_offsets, key, factor, jog_scale)
+                self.controller.offsets, key, factor, jog_scale)
 
         self.update_sim_values(key, jog_values)
 
     def update_sim_values(self, key, jog_values):
         if key == i10buttons.Moves.SCALE:
-            self.simulated_scales = jog_values
-            [c(ARRAYS.SCALES, jog_values) for c in self.controllers]
+            self.controller.update_sim(ARRAYS.SCALES, jog_values)
         else:
-            self.simulated_offsets = jog_values
-            [c(ARRAYS.OFFSETS, jog_values) for c in self.controllers]
+            self.controller.update_sim(ARRAYS.OFFSETS, jog_values)
 
     def reset(self):
-        self.simulated_scales =  np.array([23.2610, 23.2145,
-                                          10.188844, 23.106842, 23.037771])
-        [c(ARRAYS.SCALES, self.simulated_scales) for c in self.controllers]
-        self.simulated_offsets = np.array([0, 0, 0, 0, 0])
-        [c(ARRAYS.OFFSETS, self.simulated_offsets) for c in self.controllers]
+        simulated_scales =  PvMonitors.get_instance().get_scales()
+        self.controller.update_sim(ARRAYS.SCALES, simulated_scales)
+        simulated_offsets = PvMonitors.get_instance().get_offsets()
+        self.controller.update_sim(ARRAYS.OFFSETS, simulated_offsets)
+
+
+

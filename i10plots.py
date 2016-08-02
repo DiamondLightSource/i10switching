@@ -119,7 +119,7 @@ class Simulation(BaseFigureCanvas):
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
-    def magnet_limits(self):
+    def magnet_limits(self): # send in offset...
 
         """Show maximum currents that can be passed through the magnets."""
 

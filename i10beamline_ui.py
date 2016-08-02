@@ -7,7 +7,7 @@
 Buttons to move I10 fast chicane magnet offsets and scales.
 
 Provides a gui to control magnet scaling and offsets in order
-to allow independant steering of photon and electron beams to
+to allow independent steering of photon and electron beams to
 maintain a closed bump. Displays the two x-ray peaks such that
 they overlap and calculates the area of each to indicate their
 relative intensities.

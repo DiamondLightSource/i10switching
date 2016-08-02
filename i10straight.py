@@ -52,7 +52,7 @@ class SimModeController(object):
     def __init__(self):
 
         self.straights = []
-        self.offsets = np.array([0, 0, 0, 0, 0])
+        self.offsets = np.array([0, 0, 0, 0, 0]) # placeholder, use pvs later
         self.scales =  np.array([23.2610, 23.2145, 
                                  10.188844, 23.106842, 23.037771]) # like this or start with a caget?? # unfortunate duplication but not sure it can be avoided easily
 

@@ -80,16 +80,15 @@ class Gui(QMainWindow):
         """Get instances of required classes."""
         self.straight = i10straight.Straight()
         self.pv_monitor = i10controls.PvMonitors.get_instance()
-        self.knobs = i10buttons.MagnetCoordinator()
         self.simcontrol = i10straight.SimModeController()
         self.realcontrol = i10straight.RealModeController()
         self.pv_writer = writers.PvWriter()
-        self.sim_writer = writers.SimWriter()
+        self.sim_writer = writers.SimWriter(self.simcontrol)
 
         """Register listeners."""
         self.realcontrol.register_straight(self.straight)
         self.pv_monitor.register_straight_listener(self.update_table)
-        self.sim_writer.register_controller(self.simcontrol.update_sim)
+#        self.sim_writer.register_controller(self.simcontrol.update_sim)
 
         """Set up simulation, toolbar and table in the GUI."""
         self.simulation = i10plots.Simulation(self.straight)

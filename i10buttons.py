@@ -56,24 +56,26 @@ class MagnetCoordinator(object):
 
         values = old_values + ofs
 
-        self._check_bounds(ofs)
+        _check_bounds(ofs)
 
         return values
 
-    def _check_bounds(self, ofs):
 
-        """Raises exception if new value exceeds magnet current limit."""
+def _check_bounds(ofs):
 
-        pvm = PvMonitors.get_instance()
-        scales = [abs(scale) for scale in pvm.get_scales()]
-        offsets = pvm.get_offsets()
-        imaxs = pvm.get_max_currents()
-        imins = pvm.get_min_currents()
+    """Raises exception if new value exceeds magnet current limit."""
 
-        # Check errors on limits.
-        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(
-                zip(imaxs, imins, offsets, scales, ofs)):
-            high = offset + new_val + scale
-            low = offset + new_val - scale
-            if high > max_val or low < min_val:
-                raise OverCurrentException(idx) # this doesn't work in simulation mode BUT got the limits on the graph as a visual guide instead...
+    pvm = PvMonitors.get_instance()
+    scales = [abs(scale) for scale in pvm.get_scales()]
+    offsets = pvm.get_offsets()
+    imaxs = pvm.get_max_currents()
+    imins = pvm.get_min_currents()
+
+    # Check errors on limits.
+    for idx, (max_val, min_val, offset, scale, new_val) in enumerate(
+            zip(imaxs, imins, offsets, scales, ofs)):
+        high = offset + new_val + scale
+        low = offset + new_val - scale
+        if high > max_val or low < min_val:
+            raise OverCurrentException(idx) # this doesn't work in simulation mode BUT got the limits on the graph as a visual guide instead...
+
