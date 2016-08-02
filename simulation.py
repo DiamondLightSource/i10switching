@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python2.7
-#i10simulation
-# Contains Element classes, Layout (which now includes 'send_electrons_through')
+#simulation
+# Contains Element classes, Layout
 
 import numpy as np
 
@@ -13,11 +13,19 @@ class Element(object):
         self.s = displacement
 
     def increment(self, e):
+        """
+        Overarching class to modify electron beam.
+
+        Args:
+            e: electron beam vector
+        Returns:
+            e
+        """
         return e
 
     def get_type(self):
         """
-        The device name is the name of the class extending :class:`Element`
+        The device name is the name of the class extending :class:`Element`.
 
         Returns:
             str: Name of the element.
@@ -38,9 +46,23 @@ class Drift(Element):
         self.length = length
 
     def set_length(self, length):
+        """
+        Set length of the drift.
+
+        Args:
+            length (float): length between adjacent devices along the straight.
+        """
         self.length = length
 
     def increment(self, e):
+        """
+        Modify electron beam vector by distance travelled.
+
+        Args:
+            e: electron beam vector
+        Returns:
+            e
+        """
         drift = np.array([[1, self.length],
                           [0, 1]])
         return np.dot(drift, e)

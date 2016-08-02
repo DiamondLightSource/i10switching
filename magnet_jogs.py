@@ -13,7 +13,7 @@ class Moves(object):
     BUMP_RIGHT = 2
     BPM1 = 3
     BPM2 = 4
-    SCALE = 5 # should this be a subclass of MagnetCoordinator?
+    SCALE = 5
 
 
 class OverCurrentException(Exception):
