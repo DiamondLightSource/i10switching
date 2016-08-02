@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python2.7
 # accelerators_ui.py
-# Gui linking to i10plots, straight, simulation
+# Gui linking to plots, magnet_jogs, straight, controls, writers
 # Contains Gui
 
 """

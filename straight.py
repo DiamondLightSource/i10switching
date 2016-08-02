@@ -1,7 +1,7 @@
 #!/usr/bin/env dls-python2.7
-#i10straight
-# Contains Straight
-# Calls i10simulation
+# straight.py
+# Contains RealModeController, SimModeController, Straight
+# Calls simulation, controls
 
 import numpy as np
 import scipy.constants

@@ -1,6 +1,6 @@
 #!/usr/bin/env dls-python2.7
 # beamline_ui.py
-# Gui linking to i10plots, straight, buttons
+# Gui linking to plots, magnet_jogs, controls, writers
 # Contains KnobsUi
 
 """

@@ -1,3 +1,8 @@
+#!/usr/bin/env dls-python2.7
+# writers.py
+# Imports magnet_jogs
+# Contains AbstractWriter, PvWriter, SimWriter
+
 from cothread.catools import caput
 from controls import PvReferences, PvMonitors, ARRAYS
 import numpy as np

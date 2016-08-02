@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python2.7
-#i10plots
+# plots.py
 # Contains BaseFigureCanvas, Simulation, Traces, OverlaidWaveforms, RangeError
 
 import numpy as np

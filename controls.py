@@ -1,4 +1,6 @@
-#i10controls.py
+#!/usr/bin/env dls-python2.7
+# controls.py
+# Contains PvReferences, ARRAYS, PvMonitors
 
 import cothread
 from cothread.catools import caget, camonitor, FORMAT_TIME

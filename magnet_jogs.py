@@ -1,6 +1,7 @@
 #!/usr/bin/env dls-python2.7
-#i10buttons
-# Contains ButtonData, OverCurrentException, MagnetCoordinator, Moves
+# magnet_jogs.py
+# Contains Moves, OverCurrentException, MagnetCoordinator
+# Imports PvMonitors from controls
 
 import numpy as np
 

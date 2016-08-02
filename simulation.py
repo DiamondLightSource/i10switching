@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python2.7
-#simulation
+# simulation.py
 # Contains Element classes, Layout
 
 import numpy as np
