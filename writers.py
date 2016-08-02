@@ -1,6 +1,5 @@
 from cothread.catools import caput
 from controls import PvReferences, PvMonitors, ARRAYS
-import numpy as np
 
 import magnet_jogs
 

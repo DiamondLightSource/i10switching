@@ -30,6 +30,8 @@ class Simulation(BaseFigureCanvas):
     def __init__(self, straight):
         BaseFigureCanvas.__init__(self)
         self.straight = straight
+        self.fill1 = None
+        self.fill2 = None
         self.ax = self.fig_setup()
         self.beams = self.data_setup()
         self.anim = animation.FuncAnimation(self.figure, self.animate,
@@ -43,7 +45,7 @@ class Simulation(BaseFigureCanvas):
                      self.straight.data.path[-1].s)
         ax1.set_ylim(-0.01, 0.01)
 
-        """Plot positions of kickers and IDs."""
+        # Plot positions of kickers and IDs.
         for i in self.straight.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.straight.data.ids:
@@ -75,7 +77,7 @@ class Simulation(BaseFigureCanvas):
         """Extract electron and photon beam positions for plotting."""
 
         e_positions = np.array(self.straight.step(t)[0])[:, 0].tolist()
-        """Remove duplicates in data."""
+        # Remove duplicates in data.
         for i in range(len(self.straight.data.get_elements('drift'))):
             if e_positions[i] == e_positions[i+1]:
                 e_positions.pop(i+1)
@@ -101,8 +103,11 @@ class Simulation(BaseFigureCanvas):
         return beams
 
     def update_colourin(self):
-
         """Shade in the range over which each photon beam sweeps."""
+        if self.fill1:
+            self.ax.collections.remove(self.fill1)
+        if self.fill2:
+            self.ax.collections.remove(self.fill2)
 
         strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
         edges = [[], []]
@@ -143,9 +148,9 @@ class Simulation(BaseFigureCanvas):
         beam1max = edges[0][0]
         beam2max = edges[1][1]
 
-        self.limit1 = self.ax.plot(self.straight.data.photon_coordinates[0],
+        self.ax.plot(self.straight.data.photon_coordinates[0],
                                    beam1max, 'r--')
-        self.limit2 = self.ax.plot(self.straight.data.photon_coordinates[1],
+        self.ax.plot(self.straight.data.photon_coordinates[1],
                                    beam2max, 'r--')
 
 
@@ -191,7 +196,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.controls = controls
         self.pv_monitor = self.controls.PvMonitors.get_instance()
         self.pv_monitor.register_trace_listener(self.update_plot)
-        """Initialise with real data the first time to set axis ranges."""
+        # Initialise with real data the first time to set axis ranges.
         self.trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
         self.trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
         data1, data2 = self.get_windowed_data(self.trigger, self.trace)
@@ -259,8 +264,8 @@ class OverlaidWaveforms(BaseFigureCanvas):
         """Plot a theoretical gaussian for comparison with the x-ray peaks."""
         l = len(self.x)
         x = np.linspace(0, l, l) - l/2 # centre of data
-        self.gauss = self.ax.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
-        self.lines.append(self.gauss)
+        gauss = self.ax.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
+        self.lines.append(gauss)
         self.draw()
 
     def clear_gaussian(self):

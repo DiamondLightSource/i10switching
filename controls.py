@@ -128,7 +128,8 @@ class PvMonitors(object):
     def update_values(self, val, key, index, listener_key):
         """Update arrays and tell listeners when a value has changed."""
         self.arrays[key][index] = val
-        [l(key, index) for l in self.listeners[listener_key]]
+        for l in self.listeners[listener_key]:
+            l(key, index)
 
     def get_offsets(self):
         return self._get_array_value(ARRAYS.OFFSETS)

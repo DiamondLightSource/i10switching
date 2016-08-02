@@ -20,7 +20,7 @@ require('cothread==2.13')
 
 import sys
 import cothread
-from cothread.catools import *
+from cothread.catools import camonitor, FORMAT_CTRL
 from matplotlib.backends.backend_qt4agg import (
     NavigationToolbar2QT as NavigationToolbar)
 from PyQt4 import uic, QtGui, QtCore
@@ -76,7 +76,7 @@ class Gui(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        """Get instances of required classes."""
+        # Get instances of required classes.
         self.straight = straight.Straight()
         self.pv_monitor = controls.PvMonitors.get_instance()
         self.simcontrol = straight.SimModeController()
@@ -84,20 +84,20 @@ class Gui(QMainWindow):
         self.pv_writer = writers.PvWriter()
         self.sim_writer = writers.SimWriter(self.simcontrol)
 
-        """Register listeners."""
+        # Register listeners.
         self.realcontrol.register_straight(self.straight)
         self.pv_monitor.register_straight_listener(self.update_table)
 
-        """Set up simulation, toolbar and table in the GUI."""
+        # Set up simulation, toolbar and table in the GUI.
         self.simulation = plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
         self.setup_table()
 
-        """Initial settings for GUI: connected to PVs and jog scale = 1."""
+        # Initial settings for GUI: connected to PVs and jog scale = 1.
         self.writer = self.pv_writer
         self.jog_scale = 1.0
 
-        """Connect buttons to PVs."""
+        # Connect buttons to PVs.
         self.ui.kplusButton.clicked.connect(
             lambda: self.jog_handler(magnet_jogs.Moves.STEP_K3, 1))
         self.ui.kminusButton.clicked.connect(
@@ -132,21 +132,19 @@ class Gui(QMainWindow):
         self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
-        """Monitor the states of magnets, BURT and cycling."""
+        # Monitor the states of magnets, BURT and cycling.
         camonitor(controls.PvReferences.BURT_STATUS_PV, self.update_burt_led)
         camonitor(controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
         camonitor(controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        """Add simulation and toolbar to the GUI."""
+        # Add simulation and toolbar to the GUI.
         self.ui.matplotlib_layout.addWidget(self.simulation)
         self.ui.matplotlib_layout.addWidget(self.toolbar)
 
-        """
-        Add shading to indicate ranges over which photon beams sweep, and
-        dotted lines indicating limits of magnet tolerances.
-        """
+        # Add shading to indicate ranges over which photon beams sweep, and
+        # dotted lines indicating limits of magnet tolerances.
         self.simulation.update_colourin()
         self.simulation.magnet_limits()
 
@@ -182,11 +180,7 @@ class Gui(QMainWindow):
             self.simulation.figure.patch.set_alpha(0.0)
 
     def update_shading(self):
-
         """Update the x-ray beam range shading."""
-
-        self.simulation.ax.collections.remove(self.simulation.fill1)
-        self.simulation.ax.collections.remove(self.simulation.fill2)
         self.simulation.update_colourin()
 
     def update_cycling_textbox(self, var):
@@ -232,8 +226,6 @@ class Gui(QMainWindow):
     def setup_table(self):
 
         """Initialise all values required for the currents table."""
-
-        VERTICAL_HEADER_SIZE = 38  # Just enough for two lines of text
 
         table = self.ui.table_widget
 
@@ -326,7 +318,7 @@ class Gui(QMainWindow):
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Cothread Exception: %s' % e)
             msgBox.exec_()
-        except Exception, e:
+        except StandardError, e:
             print 'Unexpected Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Unexpected Exception: %s' % e)
