@@ -23,7 +23,7 @@ class AbstractWriter(object):
             move (magnet_jogs.Move): which move to perform.
             factor (float): scale factor to apply to move, usually +/- 1.
         """
-        raise NotImplemented()
+        raise NotImplementedError()
 
 
 class PvWriter(AbstractWriter):
