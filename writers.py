@@ -21,7 +21,7 @@ class AbstractWriter(object):
 
         Args:
             move (magnet_jogs.Move): which move to perform.
-            factor (float): scale factor to apply to move, usually +/- 1.
+            factor (float): scale factor to apply to move.
         """
         raise NotImplementedError()
 
@@ -39,18 +39,17 @@ class PvWriter(AbstractWriter):
         self.set_scale_pvs = [name + ':SETWFSCA' for name in PvReferences.NAMES]
         self.offset_pvs = [ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]
 
-    def write(self, key, factor, jog_scale):
+    def write(self, key, factor):
         if key == 'SCALE':
             scale_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_scales(), key, factor, jog_scale)
+                PvMonitors.get_instance().get_scales(), key, factor)
             set_scale_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_set_scales(),
-                key, factor, jog_scale)
+                PvMonitors.get_instance().get_set_scales(), key, factor)
             self.write_to_pvs(self.scale_pvs, scale_jog_values)
             self.write_to_pvs(self.set_scale_pvs, set_scale_jog_values)
         else:
             offset_jog_values = self.magnet_coordinator.jog(
-                PvMonitors.get_instance().get_offsets(), key, factor, jog_scale)
+                PvMonitors.get_instance().get_offsets(), key, factor)
             self.write_to_pvs(self.offset_pvs, offset_jog_values)
 
     def write_to_pvs(self, pvs, jog_values):
@@ -68,13 +67,13 @@ class SimWriter(AbstractWriter):
         AbstractWriter.__init__(self)
         self.controller = controller
 
-    def write(self, key, factor, jog_scale):
+    def write(self, key, factor):
         if key == magnet_jogs.Moves.SCALE:
             jog_values = self.magnet_coordinator.jog(
-                self.controller.scales, key, factor, jog_scale)
+                self.controller.scales, key, factor)
         else:
             jog_values = self.magnet_coordinator.jog(
-                self.controller.offsets, key, factor, jog_scale)
+                self.controller.offsets, key, factor)
         self.check_bounds(key, jog_values)
         self.update_sim_values(key, jog_values)
 

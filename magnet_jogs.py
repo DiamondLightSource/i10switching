@@ -46,11 +46,11 @@ class MagnetCoordinator(object):
     def __init__(self):
         pass
 
-    def jog(self, old_values, ofs, factor, jog_scale):
+    def jog(self, old_values, ofs, factor):
 
         """Increment the list of PVs by the appropriate offset from the list."""
 
-        ofs = factor * self.BUTTON_DATA[ofs] * jog_scale
+        ofs = factor * self.BUTTON_DATA[ofs]
 
         values = old_values + ofs
 

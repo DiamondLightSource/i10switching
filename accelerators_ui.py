@@ -308,7 +308,7 @@ class Gui(QMainWindow):
         """
 
         try:
-            self.writer.write(key, factor, self.jog_scale)
+            self.writer.write(key, factor * self.jog_scale)
             self.update_shading()
 
         except magnet_jogs.OverCurrentException, e:
