@@ -157,5 +157,3 @@ class PvMonitors(object):
 
     def _get_array_value(self, array_key):
         return self.arrays[array_key]
-
-
