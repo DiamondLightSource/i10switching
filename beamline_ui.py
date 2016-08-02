@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python2.7
-# i10beamline_ui.py
+# beamline_ui.py
 # Gui linking to i10plots, straight, buttons
 # Contains KnobsUi
 
@@ -30,9 +30,9 @@ from PyQt4 import QtCore
 from PyQt4 import uic
 from PyQt4.QtGui import QMainWindow
 
-import i10plots
-import i10buttons
-import i10controls
+import plots
+import magnet_jogs
+import controls
 import writers
 
 
@@ -64,8 +64,8 @@ class KnobsUi(QMainWindow):
         self.ui = uic.loadUi(filename)
         self.parent = QtGui.QMainWindow()
 
-        self.pv_monitor = i10controls.PvMonitors.get_instance()
-        self.knobs = i10buttons.MagnetCoordinator()
+        self.pv_monitor = controls.PvMonitors.get_instance()
+        self.knobs = magnet_jogs.MagnetCoordinator()
         self.pv_writer = writers.PvWriter()
 
         """Initial setting for GUI: jog scaling = 1."""
@@ -75,18 +75,18 @@ class KnobsUi(QMainWindow):
         self.amp = 2.5
         self.sig = 900
 
-        self.traces = i10plots.Traces(i10controls)
-        self.graph = i10plots.OverlaidWaveforms(i10controls)
+        self.traces = plots.Traces(controls)
+        self.graph = plots.OverlaidWaveforms(controls)
 
         """Connect buttons to PVs."""
         self.ui.bumpleftplusButton.clicked.connect(
-                lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+                lambda: self.jog_handler(magnet_jogs.Moves.BUMP_LEFT, 1))
         self.ui.bumpleftminusButton.clicked.connect(
-                lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+                lambda: self.jog_handler(magnet_jogs.Moves.BUMP_LEFT, -1))
         self.ui.bumprightplusButton.clicked.connect(
-                lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+                lambda: self.jog_handler(magnet_jogs.Moves.BUMP_RIGHT, 1))
         self.ui.bumprightminusButton.clicked.connect(
-                lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+                lambda: self.jog_handler(magnet_jogs.Moves.BUMP_RIGHT, -1))
 
         self.ui.ampplusButton.clicked.connect(self.amp_plus)
         self.ui.ampminusButton.clicked.connect(self.amp_minus)
@@ -103,9 +103,9 @@ class KnobsUi(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets and cycling."""
-        camonitor(i10controls.PvReferences.MAGNET_STATUS_PV,
+        camonitor(controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10controls.PvReferences.CYCLING_STATUS_PV,
+        camonitor(controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add graphs to the GUI."""
@@ -166,7 +166,7 @@ class KnobsUi(QMainWindow):
             self.pv_writer.write(key, factor, self.jog_scale)
             self.update_shading()
 
-        except i10buttons.OverCurrentException, e:
+        except magnet_jogs.OverCurrentException, e:
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('OverCurrent Exception: current applied to magnet ' +
                            '%s is too high.' % e.magnet_index)

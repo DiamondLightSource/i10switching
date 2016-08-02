@@ -1,8 +1,8 @@
 from cothread.catools import caput
-from i10controls import PvReferences, PvMonitors, ARRAYS
+from controls import PvReferences, PvMonitors, ARRAYS
 import numpy as np
 
-import i10buttons
+import magnet_jogs
 
 
 class AbstractWriter(object):
@@ -14,14 +14,14 @@ class AbstractWriter(object):
     """
 
     def __init__(self):
-        self.magnet_coordinator = i10buttons.MagnetCoordinator()
+        self.magnet_coordinator = magnet_jogs.MagnetCoordinator()
 
     def write(self, move, factor):
         """
         Applies the requested move.
 
         Args:
-            move (i10buttons.Move): which move to perform.
+            move (magnet_jogs.Move): which move to perform.
             factor (float): scale factor to apply to move, usually +/- 1.
         """
         raise NotImplemented()
@@ -70,7 +70,7 @@ class SimWriter(AbstractWriter):
         self.controller = controller
 
     def write(self, key, factor, jog_scale):
-        if key == i10buttons.Moves.SCALE:
+        if key == magnet_jogs.Moves.SCALE:
             jog_values = self.magnet_coordinator.jog(
                 self.controller.scales, key, factor, jog_scale)
         else:
@@ -80,7 +80,7 @@ class SimWriter(AbstractWriter):
         self.update_sim_values(key, jog_values)
 
     def update_sim_values(self, key, jog_values):
-        if key == i10buttons.Moves.SCALE:
+        if key == magnet_jogs.Moves.SCALE:
             self.controller.update_sim(ARRAYS.SCALES, jog_values)
         else:
             self.controller.update_sim(ARRAYS.OFFSETS, jog_values)
@@ -104,12 +104,12 @@ class SimWriter(AbstractWriter):
         # Check errors on limits.
         for idx, (max_val, min_val, offset, scale, new_val) in enumerate(
                 zip(imaxs, imins, offsets, scales, jog_values)):
-            if key == i10buttons.Moves.SCALE:
+            if key == magnet_jogs.Moves.SCALE:
                 high = offset + new_val
                 low = offset - new_val
             else:
                 high = new_val + scale
                 low = new_val - scale
             if high > max_val or low < min_val:
-                raise i10buttons.OverCurrentException(idx)
+                raise magnet_jogs.OverCurrentException(idx)
 

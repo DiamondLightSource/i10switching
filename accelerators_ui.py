@@ -1,5 +1,5 @@
 #!/usr/bin/env dls-python2.7
-# i10accelerators_ui.py
+# accelerators_ui.py
 # Gui linking to i10plots, straight, simulation
 # Contains Gui
 
@@ -28,10 +28,10 @@ from PyQt4.QtGui import QMainWindow
 import os
 import traceback
 
-import i10plots
-import i10buttons
-import i10straight
-import i10controls
+import plots
+import magnet_jogs
+import straight
+import controls
 import writers
 
 
@@ -77,10 +77,10 @@ class Gui(QMainWindow):
         self.parent = QtGui.QMainWindow()
 
         """Get instances of required classes."""
-        self.straight = i10straight.Straight()
-        self.pv_monitor = i10controls.PvMonitors.get_instance()
-        self.simcontrol = i10straight.SimModeController()
-        self.realcontrol = i10straight.RealModeController()
+        self.straight = straight.Straight()
+        self.pv_monitor = controls.PvMonitors.get_instance()
+        self.simcontrol = straight.SimModeController()
+        self.realcontrol = straight.RealModeController()
         self.pv_writer = writers.PvWriter()
         self.sim_writer = writers.SimWriter(self.simcontrol)
 
@@ -89,7 +89,7 @@ class Gui(QMainWindow):
         self.pv_monitor.register_straight_listener(self.update_table)
 
         """Set up simulation, toolbar and table in the GUI."""
-        self.simulation = i10plots.Simulation(self.straight)
+        self.simulation = plots.Simulation(self.straight)
         self.toolbar = NavigationToolbar(self.simulation, self)
         self.setup_table()
 
@@ -99,29 +99,29 @@ class Gui(QMainWindow):
 
         """Connect buttons to PVs."""
         self.ui.kplusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.STEP_K3, 1))
         self.ui.kminusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.STEP_K3, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.STEP_K3, -1))
         self.ui.bumpleftplusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BUMP_LEFT, 1))
         self.ui.bumpleftminusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BUMP_LEFT, -1))
         self.ui.bumprightplusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BUMP_RIGHT, 1))
         self.ui.bumprightminusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BUMP_RIGHT, -1))
         self.ui.bpm1plusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BPM1, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BPM1, 1))
         self.ui.bpm1minusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BPM1, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BPM1, -1))
         self.ui.bpm2plusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BPM2, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BPM2, 1))
         self.ui.bpm2minusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.BPM2, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.BPM2, -1))
         self.ui.scaleplusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.SCALE, 1))
+            lambda: self.jog_handler(magnet_jogs.Moves.SCALE, 1))
         self.ui.scaleminusButton.clicked.connect(
-            lambda: self.jog_handler(i10buttons.Moves.SCALE, -1))
+            lambda: self.jog_handler(magnet_jogs.Moves.SCALE, -1))
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
@@ -133,10 +133,10 @@ class Gui(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
         """Monitor the states of magnets, BURT and cycling."""
-        camonitor(i10controls.PvReferences.BURT_STATUS_PV, self.update_burt_led)
-        camonitor(i10controls.PvReferences.MAGNET_STATUS_PV,
+        camonitor(controls.PvReferences.BURT_STATUS_PV, self.update_burt_led)
+        camonitor(controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
-        camonitor(i10controls.PvReferences.CYCLING_STATUS_PV,
+        camonitor(controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         """Add simulation and toolbar to the GUI."""
@@ -255,28 +255,28 @@ class Gui(QMainWindow):
 
         """When this is called the table values and cache are updated.""" # connect table to simulation mode!!
 
-        if key == i10controls.ARRAYS.IMAX:
+        if key == controls.ARRAYS.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index],
                               index, self.Columns.MAX)
 
-        elif key == i10controls.ARRAYS.IMIN:
+        elif key == controls.ARRAYS.IMIN:
             self.update_float(self.pv_monitor.get_min_currents()[index],
                             index, self.Columns.MIN)
 
-        elif key == i10controls.ARRAYS.OFFSETS:
+        elif key == controls.ARRAYS.OFFSETS:
             self.update_float(self.pv_monitor.get_offsets()[index],
                               index, self.Columns.OFFSET)
             self.update_cache(self.pv_monitor.get_cache(), index)
 
-        elif key == i10controls.ARRAYS.SETI:
+        elif key == controls.ARRAYS.SETI:
             self.update_float(self.pv_monitor.get_actual_offsets()[index],
                               index, self.Columns.SETI)
 
-        elif key == i10controls.ARRAYS.ERRORS:
+        elif key == controls.ARRAYS.ERRORS:
             self.update_alarm(self.pv_monitor.get_errors()[index],
                               index, self.Columns.ERRORS)
 
-        elif key == i10controls.ARRAYS.SCALES:
+        elif key == controls.ARRAYS.SCALES:
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
@@ -299,10 +299,10 @@ class Gui(QMainWindow):
 
         """Updates cached values of offsets and scales for the table."""
 
-        high = (cache['%02d' % index][i10controls.ARRAYS.OFFSETS] +
-                cache['%02d' % index][i10controls.ARRAYS.SCALES])
-        low = (cache['%02d' % index][i10controls.ARRAYS.OFFSETS] -
-               cache['%02d' % index][i10controls.ARRAYS.SCALES])
+        high = (cache['%02d' % index][controls.ARRAYS.OFFSETS] +
+                cache['%02d' % index][controls.ARRAYS.SCALES])
+        low = (cache['%02d' % index][controls.ARRAYS.OFFSETS] -
+               cache['%02d' % index][controls.ARRAYS.SCALES])
         self.update_float(high, index, self.Columns.HIGH)
         self.update_float(low, index, self.Columns.LOW)
 
@@ -319,7 +319,7 @@ class Gui(QMainWindow):
             self.writer.write(key, factor, self.jog_scale)
             self.update_shading()
 
-        except i10buttons.OverCurrentException, e:
+        except magnet_jogs.OverCurrentException, e:
             self.flash_table_cell(self.Columns.OFFSET, e.magnet_index)
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
             print 'Cothread Exception:', e

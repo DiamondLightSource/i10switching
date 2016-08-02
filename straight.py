@@ -6,8 +6,8 @@
 import numpy as np
 import scipy.constants
 
-import i10simulation
-import i10controls
+import simulation
+import controls
 
 
 class RealModeController(object):
@@ -17,7 +17,7 @@ class RealModeController(object):
     """
 
     def __init__(self):
-        self.pvm = i10controls.PvMonitors.get_instance()
+        self.pvm = controls.PvMonitors.get_instance()
         self.pvm.register_straight_listener(self.update)
         self.straights = []
 
@@ -25,11 +25,11 @@ class RealModeController(object):
 
         """Update scales and offsets whenever they change."""
 
-        if key == i10controls.ARRAYS.SCALES:
+        if key == controls.ARRAYS.SCALES:
             for straight in self.straights:
                 straight.set_scales(self.pvm.get_scales())
 
-        elif key == i10controls.ARRAYS.OFFSETS:
+        elif key == controls.ARRAYS.OFFSETS:
             for straight in self.straights:
                 straight.set_offsets(self.pvm.get_offsets())
 
@@ -38,8 +38,8 @@ class RealModeController(object):
         """Register the straight with the controller linked to PVs."""
 
         self.straights.append(straight)
-        self.update(i10controls.ARRAYS.SCALES, 0)
-        self.update(i10controls.ARRAYS.OFFSETS, 0)
+        self.update(controls.ARRAYS.SCALES, 0)
+        self.update(controls.ARRAYS.OFFSETS, 0)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
@@ -52,18 +52,18 @@ class SimModeController(object):
     def __init__(self):
 
         self.straights = []
-        self.offsets = i10controls.PvMonitors.get_instance().get_offsets()
-        self.scales =  i10controls.PvMonitors.get_instance().get_scales()
+        self.offsets = controls.PvMonitors.get_instance().get_offsets()
+        self.scales =  controls.PvMonitors.get_instance().get_scales()
 
     def update_sim(self, key, values):
 
         """Update simulated scales and offsets whenever they change."""
 
-        if key == i10controls.ARRAYS.SCALES:
+        if key == controls.ARRAYS.SCALES:
             self.scales = values
             self.update_scales()
 
-        if key == i10controls.ARRAYS.OFFSETS:
+        if key == controls.ARRAYS.OFFSETS:
             self.offsets = values
             self.update_offsets()
 
@@ -72,8 +72,8 @@ class SimModeController(object):
         """Register the straight with controller linked to the simulation."""
 
         self.straights.append(straight)
-        self.update_sim(i10controls.ARRAYS.SCALES, self.scales)
-        self.update_sim(i10controls.ARRAYS.OFFSETS, self.offsets)
+        self.update_sim(controls.ARRAYS.SCALES, self.scales)
+        self.update_sim(controls.ARRAYS.OFFSETS, self.offsets)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
@@ -106,9 +106,9 @@ class Straight(object):
         """Get layout of straight, initialise values of PVs and link them
         up to listen to the monitored PV values."""
 
-        self.data = i10simulation.Layout('config.txt')
-        self.scales = i10controls.PvMonitors.get_instance().get_scales()
-        self.offsets = i10controls.PvMonitors.get_instance().get_offsets()
+        self.data = simulation.Layout('config.txt')
+        self.scales = controls.PvMonitors.get_instance().get_scales()
+        self.offsets = controls.PvMonitors.get_instance().get_offsets()
 
     def set_scales(self, scales):
 

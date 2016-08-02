@@ -4,7 +4,7 @@
 
 import numpy as np
 
-from i10controls import PvMonitors
+from controls import PvMonitors
 
 
 class Moves(object):

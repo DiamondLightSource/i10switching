@@ -8,7 +8,7 @@ import matplotlib.animation as animation
 from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
-import i10controls
+import controls
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -20,7 +20,7 @@ class BaseFigureCanvas(FigureCanvas):
         FigureCanvas.__init__(self, self.figure)
         self.figure.patch.set_facecolor('blue')
         self.figure.patch.set_alpha(0.0)
-        self.pv_monitor = i10controls.PvMonitors.get_instance()
+        self.pv_monitor = controls.PvMonitors.get_instance()
 
 
 class Simulation(BaseFigureCanvas):
