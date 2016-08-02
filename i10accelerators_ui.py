@@ -93,7 +93,7 @@ class Gui(QMainWindow):
         self.toolbar = NavigationToolbar(self.simulation, self)
         self.setup_table()
 
-        """Initial settings for GUI: connected to PVs and with jog scaling = 1."""
+        """Initial settings for GUI: connected to PVs and jog scale = 1."""
         self.writer = self.pv_writer
         self.jog_scale = 1.0
 
@@ -253,7 +253,7 @@ class Gui(QMainWindow):
 
     def update_table(self, key, index):
 
-        """When this is called the table values and cache are updated."""
+        """When this is called the table values and cache are updated.""" # connect table to simulation mode!!
 
         if key == i10controls.ARRAYS.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index],
