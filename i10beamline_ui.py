@@ -33,6 +33,7 @@ from PyQt4.QtGui import QMainWindow
 import i10plots
 import i10buttons
 import i10controls
+import writers
 
 
 # Alarm colours
@@ -65,7 +66,7 @@ class KnobsUi(QMainWindow):
 
         self.pv_monitor = i10controls.PvMonitors.get_instance()
         self.knobs = i10buttons.MagnetCoordinator()
-        self.pv_writer = i10controls.PvWriter()
+        self.pv_writer = writers.PvWriter()
 
         """Initial setting for GUI: jog scaling = 1."""
         self.jog_scale = 1.0

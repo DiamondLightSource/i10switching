@@ -33,6 +33,7 @@ import i10plots
 import i10buttons
 import i10straight
 import i10controls
+import writers
 
 
 # Alarm colours
@@ -82,8 +83,8 @@ class Gui(QMainWindow):
         self.knobs = i10buttons.MagnetCoordinator()
         self.simcontrol = i10straight.SimModeController()
         self.realcontrol = i10straight.RealModeController()
-        self.pv_writer = i10controls.PvWriter()
-        self.sim_writer = i10controls.SimWriter()
+        self.pv_writer = writers.PvWriter()
+        self.sim_writer = writers.SimWriter()
 
         """Register listeners."""
         self.realcontrol.register_straight(self.straight)
