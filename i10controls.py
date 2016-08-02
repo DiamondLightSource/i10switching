@@ -1,7 +1,7 @@
 #i10controls.py
 
 import cothread
-from cothread.catools import *
+from cothread.catools import caget, camonitor, FORMAT_TIME
 
 
 class PvReferences(object):

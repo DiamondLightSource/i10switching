@@ -27,7 +27,6 @@ from PyQt4 import uic, QtGui, QtCore
 from PyQt4.QtGui import QMainWindow
 import os
 import traceback
-import numpy as np
 
 import i10plots
 import i10buttons

@@ -2,9 +2,7 @@
 #i10buttons
 # Contains ButtonData, OverCurrentException, MagnetCoordinator, Moves
 
-from cothread.catools import caget, caput, FORMAT_TIME
 import numpy as np
-from PyQt4 import QtGui
 
 from i10controls import PvMonitors
 
