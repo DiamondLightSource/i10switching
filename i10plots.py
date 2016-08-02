@@ -118,7 +118,7 @@ class Simulation(BaseFigureCanvas):
         self.fill2 = self.ax.fill_between(self.info.data.p_coord[1],
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
-    def magnet_limits(self): # send in offset...
+    def magnet_limits(self):
 
         """Show maximum currents that can be passed through the magnets."""
 
@@ -129,7 +129,7 @@ class Simulation(BaseFigureCanvas):
                                max_currents[2], 0, 0]),
                      np.array([0, 0, max_currents[2],
                               -max_currents[3], 
-                               max_currents[4]])]
+                               max_currents[4]])] # target offset?
 
         edges = [[], []]
         for s in range(2):

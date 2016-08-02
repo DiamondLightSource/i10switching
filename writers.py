@@ -76,7 +76,7 @@ class SimWriter(AbstractWriter):
         else:
             jog_values = self.magnet_coordinator.jog(
                 self.controller.offsets, key, factor, jog_scale)
-
+        self.check_bounds(key, jog_values)
         self.update_sim_values(key, jog_values)
 
     def update_sim_values(self, key, jog_values):
@@ -91,5 +91,25 @@ class SimWriter(AbstractWriter):
         simulated_offsets = PvMonitors.get_instance().get_offsets()
         self.controller.update_sim(ARRAYS.OFFSETS, simulated_offsets)
 
+    def check_bounds(self, key, jog_values):
 
+        """Raises exception if new value exceeds magnet current limit."""
+
+        pvm = PvMonitors.get_instance()
+        scales = self.controller.scales
+        offsets = self.controller.offsets
+        imaxs = pvm.get_max_currents()
+        imins = pvm.get_min_currents()
+
+        # Check errors on limits.
+        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(
+                zip(imaxs, imins, offsets, scales, jog_values)):
+            if key == i10buttons.Moves.SCALE:
+                high = offset + new_val
+                low = offset - new_val
+            else:
+                high = new_val + scale
+                low = new_val - scale
+            if high > max_val or low < min_val:
+                raise i10buttons.OverCurrentException(idx)
 
