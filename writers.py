@@ -16,9 +16,13 @@ class AbstractWriter(object):
     def __init__(self):
         self.magnet_coordinator = i10buttons.MagnetCoordinator()
 
-    def write(move, factor):
+    def write(self, move, factor):
         """
+        Applies the requested move.
 
+        Args:
+            move (i10buttons.Move): which move to perform.
+            factor (float): scale factor to apply to move, usually +/- 1.
         """
         raise NotImplemented()
 
@@ -26,7 +30,7 @@ class AbstractWriter(object):
 class PvWriter(AbstractWriter):
 
     """
-    Write coordainted magnets moves to PV's on the machine.
+    Write coordinated magnets moves to PV's on the machine.
     """
 
     def __init__(self):
@@ -38,12 +42,16 @@ class PvWriter(AbstractWriter):
 
     def write(self, key, factor, jog_scale):
         if key == 'SCALE':
-            scale_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_scales(), key, factor, jog_scale)
-            set_scale_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_set_scales(), key, factor, jog_scale)
+            scale_jog_values = self.magnet_coordinator.jog(
+                PvMonitors.get_instance().get_scales(), key, factor, jog_scale)
+            set_scale_jog_values = self.magnet_coordinator.jog(
+                PvMonitors.get_instance().get_set_scales(),
+                key, factor, jog_scale)
             self.write_to_pvs(self.scale_pvs, scale_jog_values)
             self.write_to_pvs(self.set_scale_pvs, set_scale_jog_values)
         else:
-            offset_jog_values = self.magnet_coordinator.jog(PvMonitors.get_instance().get_offsets(), key, factor, jog_scale)
+            offset_jog_values = self.magnet_coordinator.jog(
+                PvMonitors.get_instance().get_offsets(), key, factor, jog_scale)
             self.write_to_pvs(self.offset_pvs, offset_jog_values)
 
     def write_to_pvs(self, pvs, jog_values):
@@ -53,7 +61,7 @@ class PvWriter(AbstractWriter):
 class SimWriter(AbstractWriter):
 
     """
-    Write coordainted magnets moves to the manual simulation controller.
+    Write coordinated magnets moves to the manual simulation controller.
     """
 
     def __init__(self):
@@ -70,9 +78,11 @@ class SimWriter(AbstractWriter):
 
     def write(self, key, factor, jog_scale):
         if key == i10buttons.Moves.SCALE:
-            jog_values = self.magnet_coordinator.jog(self.simulated_scales, key, factor, jog_scale)
+            jog_values = self.magnet_coordinator.jog(
+                self.simulated_scales, key, factor, jog_scale)
         else:
-            jog_values = self.magnet_coordinator.jog(self.simulated_offsets, key, factor, jog_scale)
+            jog_values = self.magnet_coordinator.jog(
+                self.simulated_offsets, key, factor, jog_scale)
 
         self.update_sim_values(key, jog_values)
 

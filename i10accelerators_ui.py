@@ -101,18 +101,30 @@ class Gui(QMainWindow):
         self.jog_scale = 1.0
 
         """Connect buttons to PVs."""
-        self.ui.kplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1))
-        self.ui.kminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.STEP_K3, -1))
-        self.ui.bumpleftplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
-        self.ui.bumpleftminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
-        self.ui.bumprightplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
-        self.ui.bumprightminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
-        self.ui.bpm1plusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM1, 1))
-        self.ui.bpm1minusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM1, -1))
-        self.ui.bpm2plusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM2, 1))
-        self.ui.bpm2minusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.BPM2, -1))
-        self.ui.scaleplusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.SCALE, 1))
-        self.ui.scaleminusButton.clicked.connect(lambda: self.jog_handler(i10buttons.Moves.SCALE, -1))
+        self.ui.kplusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.STEP_K3, 1))
+        self.ui.kminusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.STEP_K3, -1))
+        self.ui.bumpleftplusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, 1))
+        self.ui.bumpleftminusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BUMP_LEFT, -1))
+        self.ui.bumprightplusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, 1))
+        self.ui.bumprightminusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BUMP_RIGHT, -1))
+        self.ui.bpm1plusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BPM1, 1))
+        self.ui.bpm1minusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BPM1, -1))
+        self.ui.bpm2plusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BPM2, 1))
+        self.ui.bpm2minusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.BPM2, -1))
+        self.ui.scaleplusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.SCALE, 1))
+        self.ui.scaleminusButton.clicked.connect(
+            lambda: self.jog_handler(i10buttons.Moves.SCALE, -1))
 
         self.ui.simButton.setChecked(False)
         self.ui.simButton.clicked.connect(self.toggle_simulation)
@@ -247,20 +259,25 @@ class Gui(QMainWindow):
         """When this is called the table values and cache are updated."""
 
         if key == i10controls.ARRAYS.IMAX:
-            self.update_float(self.pv_monitor.get_max_currents()[index], index, self.Columns.MAX)
+            self.update_float(self.pv_monitor.get_max_currents()[index],
+                              index, self.Columns.MAX)
 
         elif key == i10controls.ARRAYS.IMIN:
-            self.update_float(self.pv_monitor.get_min_currents()[index], index, self.Columns.MIN)
+            self.update_float(self.pv_monitor.get_min_currents()[index],
+                            index, self.Columns.MIN)
 
         elif key == i10controls.ARRAYS.OFFSETS:
-            self.update_float(self.pv_monitor.get_offsets()[index], index, self.Columns.OFFSET)
+            self.update_float(self.pv_monitor.get_offsets()[index],
+                              index, self.Columns.OFFSET)
             self.update_cache(self.pv_monitor.get_cache(), index)
 
         elif key == i10controls.ARRAYS.SETI:
-            self.update_float(self.pv_monitor.get_actual_offsets()[index], index, self.Columns.SETI)
+            self.update_float(self.pv_monitor.get_actual_offsets()[index],
+                              index, self.Columns.SETI)
 
         elif key == i10controls.ARRAYS.ERRORS:
-            self.update_alarm(self.pv_monitor.get_errors()[index], index, self.Columns.ERRORS)
+            self.update_alarm(self.pv_monitor.get_errors()[index],
+                              index, self.Columns.ERRORS)
 
         elif key == i10controls.ARRAYS.SCALES:
             self.update_cache(self.pv_monitor.get_cache(), index)
@@ -285,8 +302,10 @@ class Gui(QMainWindow):
 
         """Updates cached values of offsets and scales for the table."""
 
-        high = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] + cache['%02d' % index][i10controls.ARRAYS.SCALES]
-        low = cache['%02d' % index][i10controls.ARRAYS.OFFSETS] - cache['%02d' % index][i10controls.ARRAYS.SCALES]
+        high = (cache['%02d' % index][i10controls.ARRAYS.OFFSETS] +
+                cache['%02d' % index][i10controls.ARRAYS.SCALES])
+        low = (cache['%02d' % index][i10controls.ARRAYS.OFFSETS] -
+               cache['%02d' % index][i10controls.ARRAYS.SCALES])
         self.update_float(high, index, self.Columns.HIGH)
         self.update_float(low, index, self.Columns.LOW)
 

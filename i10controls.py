@@ -70,47 +70,51 @@ class PvMonitors(object):
                                'If you require an instance use get_instance.')
 
         self.arrays = {
-                      ARRAYS.OFFSETS: caget([
-                                    ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]),
-                      ARRAYS.SCALES: caget([
-                                    ctrl + ':WFSCA' for ctrl in PvReferences.CTRLS]),
-
-                      ARRAYS.SET_SCALES: caget([
-                                    name + ':SETWFSCA' for name in PvReferences.NAMES]),
-                      ARRAYS.WAVEFORMS: caget(PvReferences.TRACES),
-                      ARRAYS.SETI: caget([name + ':SETI' for name in PvReferences.NAMES]),
-                      ARRAYS.IMIN: caget([
-                                    name + ':IMIN' for name in PvReferences.NAMES]),
-                      ARRAYS.IMAX: caget([
-                                    name + ':IMAX' for name in PvReferences.NAMES]),
-                      ARRAYS.ERRORS: caget([
-                                    name + ':ERRGSTR' for name in PvReferences.NAMES])
-                      }
+            ARRAYS.OFFSETS: caget(
+                [ctrl + ':OFFSET' for ctrl in PvReferences.CTRLS]),
+            ARRAYS.SCALES: caget(
+                [ctrl + ':WFSCA' for ctrl in PvReferences.CTRLS]),
+            ARRAYS.SET_SCALES: caget(
+                [name + ':SETWFSCA' for name in PvReferences.NAMES]),
+            ARRAYS.WAVEFORMS: caget(PvReferences.TRACES),
+            ARRAYS.SETI: caget([name + ':SETI' for name in PvReferences.NAMES]),
+            ARRAYS.IMIN: caget([name + ':IMIN' for name in PvReferences.NAMES]),
+            ARRAYS.IMAX: caget([name + ':IMAX' for name in PvReferences.NAMES]),
+            ARRAYS.ERRORS: caget(
+                [name + ':ERRGSTR' for name in PvReferences.NAMES])
+        }
 
         self.listeners = {'straight': [], 'trace': []}
 
         for i in range(len(PvReferences.CTRLS)):
             camonitor(PvReferences.CTRLS[i] + ':OFFSET',
-                lambda x, i=i: self.update_values(x, ARRAYS.OFFSETS, i, 'straight'))
+                lambda x, i=i: self.update_values(
+                    x, ARRAYS.OFFSETS, i, 'straight'))
             camonitor(PvReferences.CTRLS[i] + ':WFSCA',
-                lambda x, i=i: self.update_values(x, ARRAYS.SCALES, i, 'straight'))
+                lambda x, i=i: self.update_values(
+                    x, ARRAYS.SCALES, i, 'straight'))
 
         for idx, ioc in enumerate(PvReferences.NAMES):
             camonitor(ioc + ':SETWFSCA',
-                lambda x, i=idx: self.update_values(x, ARRAYS.SET_SCALES, i, 'straight'))
+                lambda x, i=idx: self.update_values(
+                    x, ARRAYS.SET_SCALES, i, 'straight'))
             camonitor(ioc + ':SETI',
-                lambda x, i=idx: self.update_values(x, ARRAYS.SETI, i, 'straight'))
+                lambda x, i=idx: self.update_values(
+                    x, ARRAYS.SETI, i, 'straight'))
             camonitor(ioc + ':IMIN',
-                lambda x, i=idx: self.update_values(x, ARRAYS.IMIN, i, 'straight'))
+                lambda x, i=idx: self.update_values(
+                    x, ARRAYS.IMIN, i, 'straight'))
             camonitor(ioc + ':IMAX',
-                lambda x, i=idx: self.update_values(x, ARRAYS.IMAX, i, 'straight'))
+                lambda x, i=idx: self.update_values(
+                    x, ARRAYS.IMAX, i, 'straight'))
             camonitor(ioc + ':ERRGSTR',
-                lambda x, i=idx: self.update_values(x, ARRAYS.ERRORS, i, 'straight'),
-                format=FORMAT_TIME)
+                lambda x, i=idx: self.update_values(
+                    x, ARRAYS.ERRORS, i, 'straight'), format=FORMAT_TIME)
 
         for i in range(len(PvReferences.TRACES)):
             camonitor(PvReferences.TRACES[i],
-                lambda x, i=i: self.update_values(x, ARRAYS.WAVEFORMS, i, 'trace'))
+                lambda x, i=i: self.update_values(
+                    x, ARRAYS.WAVEFORMS, i, 'trace'))
 
         cothread.Yield()  # Ensure monitored values are connected
 
@@ -151,8 +155,10 @@ class PvMonitors(object):
 
         self.cache = c = {}
         for i in range(5):
-            c['%02d' % i] = {ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i], ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]}
-
+            c['%02d' % i] = {
+                ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i],
+                ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]
+            }
         return c
 
     def _get_array_value(self, array_key):

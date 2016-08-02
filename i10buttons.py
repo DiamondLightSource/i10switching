@@ -71,7 +71,8 @@ class MagnetCoordinator(object):
         imins = pvm.get_min_currents()
 
         # Check errors on limits.
-        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(zip(imaxs, imins, offsets, scales, ofs)):
+        for idx, (max_val, min_val, offset, scale, new_val) in enumerate(
+                zip(imaxs, imins, offsets, scales, ofs)):
             high = offset + new_val + scale
             low = offset + new_val - scale
             if high > max_val or low < min_val:

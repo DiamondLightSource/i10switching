@@ -12,7 +12,9 @@ import i10controls
 
 class RealModeController(object):
 
-    """Control simulation using the camonitored offsets/scales from PvMonitors."""
+    """
+    Control simulation using the camonitored offsets/scales from PvMonitors.
+    """
 
     def __init__(self):
         self.pvm = i10controls.PvMonitors.get_instance()
@@ -141,7 +143,8 @@ class Straight(object):
                    -(np.sin(t*np.pi/100) + 1),
                    2,
                    np.sin(t*np.pi/100) - 1,
-                  -np.sin(t*np.pi/100) + 1]) + self.amps_to_radians(self.offsets)
+                  -np.sin(t*np.pi/100) + 1]) \
+                      + self.amps_to_radians(self.offsets)
 
         return kick
 
@@ -176,7 +179,7 @@ class Straight(object):
         """
 
         self.strength_setup(self.amps_to_radians(self.scales) * strength_values
-                          + self.amps_to_radians(self.offsets))
+                            + self.amps_to_radians(self.offsets))
 
         p_beam = self.data.generate_beams()[1]
 

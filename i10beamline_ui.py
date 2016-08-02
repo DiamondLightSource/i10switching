@@ -168,7 +168,8 @@ class KnobsUi(QMainWindow):
 
         except i10buttons.OverCurrentException, e:
             msgBox = QtGui.QMessageBox(self.parent)
-            msgBox.setText('OverCurrent Exception: current applied to magnet %s is too high.' % e.magnet_index)
+            msgBox.setText('OverCurrent Exception: current applied to magnet ' +
+                           '%s is too high.' % e.magnet_index)
             msgBox.exec_()
         except (cothread.catools.ca_nothing, cothread.cadef.CAException), e:
             print 'Cothread Exception:', e
