@@ -51,7 +51,6 @@ class PvMonitors(object):
     multiple times yields the same instance.
     """
 
-
     __instance = None
     __guard = True
 
@@ -113,7 +112,6 @@ class PvMonitors(object):
         for i in range(len(PvReferences.TRACES)):
             camonitor(PvReferences.TRACES[i],
                 lambda x, i=i: self.update_values(x, ARRAYS.WAVEFORMS, i, 'trace'))
-
 
         cothread.Yield()  # Ensure monitored values are connected
 
@@ -247,7 +245,3 @@ class SimWriter(AbstractWriter):
         [c(ARRAYS.SCALES, self.simulated_scales) for c in self.controllers]
         self.simulated_offsets = np.array([0, 0, 0, 0, 0])
         [c(ARRAYS.OFFSETS, self.simulated_offsets) for c in self.controllers]
-
-
-
-

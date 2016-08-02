@@ -29,6 +29,7 @@ class Detector(Element):
     """End of the straight where the sample is located."""
     pass
 
+
 class Drift(Element):
     """Allow electron beam to move along path described by its beam vector."""
 
@@ -147,4 +148,3 @@ class Layout(object):
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector
-

@@ -45,10 +45,8 @@ class MagnetCoordinator(object):
         Moves.SCALE: np.array([1e-2, 1e-2, 0, 1e-2, 1e-2]),
         }
 
-
     def __init__(self): # does it matter that it's initialised 3 times or should I pass it as an argument to the writers from the gui?
         pass
-
 
     def jog(self, old_values, ofs, factor, jog_scale):
 
@@ -78,5 +76,3 @@ class MagnetCoordinator(object):
             low = offset + new_val - scale
             if high > max_val or low < min_val:
                 raise OverCurrentException(idx) # this doesn't work in simulation mode BUT got the limits on the graph as a visual guide instead...
-
-

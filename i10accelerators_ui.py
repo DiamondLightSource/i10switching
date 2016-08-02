@@ -316,7 +316,6 @@ class Gui(QMainWindow):
             msgBox.setInformativeText(traceback.format_exc(3))
             msgBox.exec_()
 
-
     def reset(self):
 
         """
@@ -329,6 +328,7 @@ class Gui(QMainWindow):
             self.writer.reset()
             self.update_shading()
 
+
 def main():
     cothread.iqt()
     the_ui = Gui()
@@ -338,5 +338,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-

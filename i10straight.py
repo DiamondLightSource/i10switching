@@ -85,6 +85,7 @@ class SimModeController(object):
         for straight in self.straights:
             straight.set_offsets(self.offsets)
 
+
 class Straight(object):
 
     """
@@ -195,4 +196,3 @@ class Straight(object):
         p_beam = self.data.generate_beams()[1]
 
         return p_beam
-
