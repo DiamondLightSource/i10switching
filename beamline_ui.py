@@ -20,7 +20,7 @@ require('matplotlib==1.3.1')
 require('cothread==2.13')
 
 import cothread
-from cothread.catools import caput, camonitor, FORMAT_TIME, FORMAT_CTRL
+from cothread.catools import caput, camonitor, FORMAT_CTRL
 
 import os
 import traceback
@@ -102,13 +102,13 @@ class KnobsUi(QMainWindow):
         self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
-        """Monitor the states of magnets and cycling."""
+        # Monitor the states of magnets and cycling.
         camonitor(controls.PvReferences.MAGNET_STATUS_PV,
                   self.update_magnet_led, format=FORMAT_CTRL)
         camonitor(controls.PvReferences.CYCLING_STATUS_PV,
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
-        """Add graphs to the GUI."""
+        # Add graphs to the GUI.
         self.ui.graph_layout.addWidget(self.traces)
         self.ui.graph_layout.addWidget(self.graph)
 
@@ -131,8 +131,7 @@ class KnobsUi(QMainWindow):
         self.jog_scale = self.ui.jog_scale_slider.value() * 0.1
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
-    """Methods controlling the theoretical gaussian."""
-
+    # Methods controlling the theoretical gaussian.
     def amp_plus(self):
         self.amp += 0.1
         self.graph.clear_gaussian()
@@ -176,7 +175,7 @@ class KnobsUi(QMainWindow):
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Cothread Exception: %s' % e)
             msgBox.exec_()
-        except Exception, e:
+        except StandardError, e:
             print 'Unexpected Exception:', e
             msgBox = QtGui.QMessageBox(self.parent)
             msgBox.setText('Unexpected Exception: %s' % e)

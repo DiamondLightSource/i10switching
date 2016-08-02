@@ -37,21 +37,21 @@ class MagnetCoordinator(object):
         Moves.STEP_K3: np.array([0, 0, 1e-2, 0, 0]),
         Moves.BUMP_LEFT: np.array([23.2610, -23.2145, 10.1888, 0, 0]) / 600,
         Moves.BUMP_RIGHT: np.array([0, 0, 10.1888, -23.1068, 23.0378]) / 600,
-        Moves.BPM1: np.array([136.71614094, 135.51675771, 0, -128.72713879,
-                          -127.34037684])*1e-4,
-        Moves.BPM2: np.array([-128.7237158, -129.31031648, 0, 134.90558954,
-                           135.24691079])*1e-4,
+        Moves.BPM1: np.array([
+            136.71614094, 135.51675771, 0, -128.72713879, -127.34037684])*1e-4,
+        Moves.BPM2: np.array([
+            -128.7237158, -129.31031648, 0, 134.90558954, 135.24691079])*1e-4,
         Moves.SCALE: np.array([1e-2, 1e-2, 0, 1e-2, 1e-2]),
         }
 
     def __init__(self):
         pass
 
-    def jog(self, old_values, ofs, factor, jog_scale):
+    def jog(self, old_values, ofs, factor):
 
         """Increment the list of PVs by the appropriate offset from the list."""
 
-        ofs = factor * self.BUTTON_DATA[ofs] * jog_scale
+        ofs = factor * self.BUTTON_DATA[ofs]
 
         values = old_values + ofs
 

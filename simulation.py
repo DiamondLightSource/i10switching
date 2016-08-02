@@ -121,7 +121,7 @@ class Layout(object):
                            for cls in Element.__subclasses__()}
         path = [element_classes[x[0]](float(x[1])) for x in raw_data]
 
-        """Set lengths of drifts."""
+        # Set lengths of drifts.
 
         for p in path:
             if p.get_type() == 'drift':
