@@ -45,12 +45,16 @@ class Simulation(BaseFigureCanvas):
         ax1.set_xlim(self.straight.data.path[0].s,
                      self.straight.data.path[-1].s)
         ax1.set_ylim(-0.01, 0.01)
+        ax1.set_xlabel('Distance along the straight/m')
+        ax1.set_ylabel('Deflection off axis/m') # Is it in m or other size??
 
         # Plot positions of kickers and IDs.
         for i in self.straight.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.straight.data.ids:
             ax1.axvline(x=i.s, color='b', linestyle='dashed')
+
+        plt.tight_layout()
 
         return ax1
 
@@ -181,15 +185,21 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      self.ax.plot(traces_x_axis, trigger, 'b')[0],
                      self.ax.plot(traces_x_axis, trace, 'g')[0]
                      ]
+        self.ax.set_xlabel('Time/s')
+        self.ax.set_ylabel('Voltage/V')
+        self.ax.set_title('Square wave trigger signal and beam intensity trace')
 
         self.ax2 = self.figure.add_subplot(2, 1, 2)
-
         data1, data2 = self.get_windowed_data(trigger, trace)
         self.overlaid_x_axis = range(len(data1))
         self.overlaid_lines = [
                      self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0], # colours??
                      self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
                      ]
+        # x label??
+        self.ax2.set_ylabel('Voltage/V')
+        self.ax2.set_title('Beam intensity peaks overlaid')
+        plt.tight_layout()
 
     def update_waveforms(self, key, index):
 
@@ -232,7 +242,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         """Overlay the two peaks."""
 
         try:
-            diff = np.diff(trigger)#.tolist()
+            diff = np.diff(trigger)
 
             length = len(trace)
             stepvalue = 0.5 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
