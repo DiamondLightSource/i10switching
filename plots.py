@@ -219,8 +219,11 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
             self.lines[0].set_ydata(data1)
+            self.lines[0].set_xdata(range(len(data1)))
             self.lines[1].set_ydata(data2)
-            labels = [integ.simps(data1), integ.simps(data2)]
+            self.lines[1].set_xdata(range(len(data2)))
+            labels = [integ.simps(data1), integ.simps(data2)] 
+
 #            for area in labels:
 #                if area < 0.1:
 #                    raise RangeError # calculation warning error for example
