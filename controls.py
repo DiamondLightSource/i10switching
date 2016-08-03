@@ -154,13 +154,13 @@ class PvMonitors(object):
 
     def get_cache(self):
 
-        self.cache = c = {}
+        cache = {}
         for i in range(5):
-            c['%02d' % i] = {
+            cache['%02d' % i] = {
                 ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i],
                 ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]
             }
-        return c
+        return cache
 
     def _get_array_value(self, array_key):
         return self.arrays[array_key]

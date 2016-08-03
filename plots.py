@@ -155,31 +155,32 @@ class Simulation(BaseFigureCanvas):
                                    beam2max, 'r--')
 
 
-class Traces(BaseFigureCanvas):
-
-    """Plot the traces of the trigger waveform and x-ray peaks."""
-
-    def __init__(self, controls):
-        BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.controls = controls
-        self.pv_monitor.register_trace_listener(self.update_waveforms)
-        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
-
-        x = range(len(trace))
-        self.lines = [
-                     self.ax.plot(x, trigger, 'b')[0],
-                     self.ax.plot(x, trace, 'g')[0]
-                     ]
-
-    def update_waveforms(self, key, index):
-
-        """Update plot data whenever it changes."""
-
-        if key == self.controls.ARRAYS.WAVEFORMS:
-            self.lines[index].set_ydata(self.pv_monitor.arrays[key][index])
-            self.draw()
+#class Traces(BaseFigureCanvas):
+#
+#    """Plot the traces of the trigger waveform and x-ray peaks."""
+#
+#    def __init__(self, ctrls):
+#        BaseFigureCanvas.__init__(self)
+#        self.ax = self.figure.add_subplot(1, 1, 1)
+#        self.controls = ctrls
+#        self.pv_monitor.register_trace_listener(self.update_waveforms)
+#        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+#        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+#
+#        x_axis = range(len(trace))
+#        self.lines = [
+#                     self.ax.plot(x_axis, trigger, 'b')[0],
+#                     self.ax.plot(x_axis, trace, 'g')[0]
+#                     ]
+#
+#    def update_waveforms(self, key, index):
+#
+#        """Update plot data whenever it changes."""
+#
+#        if key == self.controls.ARRAYS.WAVEFORMS:
+#            self.lines[0].set_ydata(self.pv_monitor.arrays[key][0])
+#            self.lines[1].set_ydata(self.pv_monitor.arrays[key][1])
+#            self.draw()
 
 
 class OverlaidWaveforms(BaseFigureCanvas):
@@ -191,23 +192,46 @@ class OverlaidWaveforms(BaseFigureCanvas):
     for visual comparison of peak shapes.
     """
 
-    def __init__(self, controls):
+    def __init__(self, ctrls):
         BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.controls = controls
+
+        self.ax = self.figure.add_subplot(2, 1, 1)
+        self.controls = ctrls
         self.pv_monitor = self.controls.PvMonitors.get_instance()
-        self.pv_monitor.register_trace_listener(self.update_plot)
-        # Initialise with real data the first time to set axis ranges.
-        self.trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        self.trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
-        data1, data2 = self.get_windowed_data(self.trigger, self.trace)
-        self.x = range(len(data1))
-        self.lines = [
-                     self.ax.plot(self.x, data1, 'b')[0],
-                     self.ax.plot(self.x, data2, 'g')[0]
+        self.pv_monitor.register_trace_listener(self.update_waveforms)
+        self.pv_monitor.register_trace_listener(self.update_overlaid_plot)
+
+        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+
+        traces_x_axis = range(len(trace))
+        self.trace_lines = [
+                     self.ax.plot(traces_x_axis, trigger, 'b')[0],
+                     self.ax.plot(traces_x_axis, trace, 'g')[0]
                      ]
 
-    def update_plot(self, key, index):
+        self.ax2 = self.figure.add_subplot(2, 1, 2)
+
+        # Initialise with real data the first time to set axis ranges.
+#        self.trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+#        self.trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+        data1, data2 = self.get_windowed_data(trigger, trace)
+        self.overlaid_x_axis = range(len(data1))
+        self.overlaid_lines = [
+                     self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0],
+                     self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
+                     ]
+
+    def update_waveforms(self, key, index):
+
+        """Update plot data whenever it changes."""
+
+        if key == self.controls.ARRAYS.WAVEFORMS:
+            self.trace_lines[0].set_ydata(self.pv_monitor.arrays[key][0])
+            self.trace_lines[1].set_ydata(self.pv_monitor.arrays[key][1])
+            self.draw()
+
+    def update_overlaid_plot(self, key, index):
 
         """Update plot data whenever it changes, calculate areas."""
 
@@ -218,16 +242,16 @@ class OverlaidWaveforms(BaseFigureCanvas):
             waveforms = [trigger, trace]
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
-            self.lines[0].set_ydata(data1)
-            self.lines[0].set_xdata(range(len(data1)))
-            self.lines[1].set_ydata(data2)
-            self.lines[1].set_xdata(range(len(data2)))
+            self.overlaid_lines[0].set_ydata(data1)
+            self.overlaid_lines[0].set_xdata(range(len(data1)))
+            self.overlaid_lines[1].set_ydata(data2)
+            self.overlaid_lines[1].set_xdata(range(len(data2)))
             labels = [integ.simps(data1), integ.simps(data2)] 
 
 #            for area in labels:
 #                if area < 0.1:
 #                    raise RangeError # calculation warning error for example
-            self.ax.legend([self.lines[0], self.lines[1]],
+            self.ax2.legend([self.overlaid_lines[0], self.overlaid_lines[1]],
                            labels)
         
         self.draw()
@@ -260,6 +284,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
                             - trigger_length/4)[:trigger_length/2]
             data2 = np.roll(trace[:trigger_length], - edges[1]
                             - trigger_length/4)[:trigger_length/2]
+
             return data1, data2  ### what are data1/2
 
         except RangeError:
@@ -271,16 +296,16 @@ class OverlaidWaveforms(BaseFigureCanvas):
     def gaussian(self, a, sigma):
 
         """Plot a theoretical gaussian for comparison with the x-ray peaks."""
-        l = len(self.x)
+        l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
-        gauss = self.ax.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
-        self.lines.append(gauss)
+        gauss = self.ax2.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
+        self.overlaid_lines.append(gauss)
         self.draw()
 
     def clear_gaussian(self):
-        self.ax.lines.pop(-1)
-        self.ax.relim()
-        self.ax.autoscale_view()
+        self.ax2.lines.pop(-1)
+        self.ax2.relim()
+        self.ax2.autoscale_view()
         self.draw()
 
 

@@ -29,6 +29,8 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4 import uic
 from PyQt4.QtGui import QMainWindow
+from matplotlib.backends.backend_qt4agg import (
+    NavigationToolbar2QT as NavigationToolbar)
 
 import plots
 import magnet_jogs
@@ -75,8 +77,9 @@ class KnobsUi(QMainWindow):
         self.amp = 2.5
         self.sig = 900
 
-        self.traces = plots.Traces(controls)
+#        self.traces = plots.Traces(controls)
         self.graph = plots.OverlaidWaveforms(controls)
+        self.toolbar = NavigationToolbar(self.graph, self) #######
 
         """Connect buttons to PVs."""
         self.ui.bumpleftplusButton.clicked.connect(
@@ -109,8 +112,9 @@ class KnobsUi(QMainWindow):
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         # Add graphs to the GUI.
-        self.ui.graph_layout.addWidget(self.traces)
+#        self.ui.graph_layout.addWidget(self.traces)
         self.ui.graph_layout.addWidget(self.graph)
+        self.ui.graph_layout.addWidget(self.toolbar)
 
     def gauss_fit(self):
         
