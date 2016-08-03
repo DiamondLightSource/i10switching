@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
 import controls
+import cothread
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -210,17 +211,19 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
         """Update plot data whenever it changes, calculate areas."""
 
-        waveforms = [self.trigger, self.trace]
         if key == self.controls.ARRAYS.WAVEFORMS:
-            waveforms[index] = self.pv_monitor.arrays[key][index]
+
+            trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+            trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+            waveforms = [trigger, trace]
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
             self.lines[0].set_ydata(data1)
             self.lines[1].set_ydata(data2)
-            labels = [integ.simps(data1), integ.simps(data2)]            
-            for area in labels:
-                if area < 0.1:
-                    raise RangeError
+            labels = [integ.simps(data1), integ.simps(data2)]
+#            for area in labels:
+#                if area < 0.1:
+#                    raise RangeError # calculation warning error for example
             self.ax.legend([self.lines[0], self.lines[1]],
                            labels)
         
@@ -231,21 +234,24 @@ class OverlaidWaveforms(BaseFigureCanvas):
         """Overlay the two peaks."""
 
         try:
-            diff = np.diff(trigger).tolist()
+            diff = np.diff(trigger)#.tolist()
+
             length = len(trace)
-            stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+            stepvalue = 0.5 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
 
             maxtrig = next(x for x in diff if x > stepvalue)
             mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [diff.index(maxtrig), diff.index(mintrig)]
+            edges = [np.where(diff == maxtrig)[0][0], np.where(diff == mintrig)[0][0]]
 
+
+    	    cothread.Yield()
             trigger_length = (edges[1]-edges[0])*2
 
-            if length < trigger_length:
-                raise RangeError
+#            if length < trigger_length:
+#                raise RangeError
 
             data1 = np.roll(trace[:trigger_length], - edges[0]
                             - trigger_length/4)[:trigger_length/2]

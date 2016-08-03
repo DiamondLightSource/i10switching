@@ -35,8 +35,8 @@ class MagnetCoordinator(object):
 
     BUTTON_DATA = {
         Moves.STEP_K3: np.array([0, 0, 1e-2, 0, 0]),
-        Moves.BUMP_LEFT: np.array([23.2610, -23.2145, 10.1888, 0, 0]) / 600,
-        Moves.BUMP_RIGHT: np.array([0, 0, 10.1888, -23.1068, 23.0378]) / 600,
+        Moves.BUMP_LEFT: np.array([23.2610, 23.2145, 10.1888, 0, 0]) / 600,
+        Moves.BUMP_RIGHT: np.array([0, 0, 10.1888, 23.1068, 23.0378]) / 600,
         Moves.BPM1: np.array([
             136.71614094, 135.51675771, 0, -128.72713879, -127.34037684])*1e-4,
         Moves.BPM2: np.array([

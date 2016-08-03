@@ -113,10 +113,8 @@ class PvMonitors(object):
                 lambda x, i=idx: self.update_values(
                     x, ARRAYS.ERRORS, i, 'straight'), format=FORMAT_TIME)
 
-        for i in range(len(PvReferences.TRACES)):
-            camonitor(PvReferences.TRACES[i],
-                lambda x, i=i: self.update_values(
-                    x, ARRAYS.WAVEFORMS, i, 'trace'))
+        camonitor(PvReferences.TRACES[0], lambda x: self.update_values(x, ARRAYS.WAVEFORMS, 0, 'trace'))
+        camonitor(PvReferences.TRACES[1], lambda x: self.update_values(x, ARRAYS.WAVEFORMS, 1, 'trace'))
 
         cothread.Yield()  # Ensure monitored values are connected
 

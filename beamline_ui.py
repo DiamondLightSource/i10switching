@@ -162,8 +162,7 @@ class KnobsUi(QMainWindow):
         """
 
         try:
-            self.pv_writer.write(key, factor, self.jog_scale)
-            self.update_shading()
+            self.pv_writer.write(key, factor * self.jog_scale)
 
         except magnet_jogs.OverCurrentException, e:
             msgBox = QtGui.QMessageBox(self.parent)

@@ -143,7 +143,7 @@ class Straight(object):
                    2,
                    np.sin(t*np.pi/100) - 1,
                   -np.sin(t*np.pi/100) + 1]) \
-                      + self.amps_to_radians(self.offsets)
+             + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1]))
 
         return kick
 
@@ -178,7 +178,7 @@ class Straight(object):
         """
 
         self.strength_setup(self.amps_to_radians(self.scales) * strength_values
-                            + self.amps_to_radians(self.offsets))
+                            + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1])))
 
         p_beam = self.data.generate_beams()[1]
 
