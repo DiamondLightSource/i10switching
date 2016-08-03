@@ -215,9 +215,11 @@ class OverlaidWaveforms(BaseFigureCanvas):
             self.overlaid_lines[0].set_xdata(range(len(data1)))
             self.overlaid_lines[1].set_ydata(data2)
             self.overlaid_lines[1].set_xdata(range(len(data2)))
-            labels = [integ.simps(data1), integ.simps(data2)] 
 
-#            for area in labels:
+            areas = [integ.simps(data1), integ.simps(data2)] #sig figs
+            labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
+            
+#            for area in areas:
 #                if area < 0.1:
 #                    raise RangeError # calculation warning error for example
             self.ax2.legend([self.overlaid_lines[0], self.overlaid_lines[1]],
