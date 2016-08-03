@@ -74,12 +74,11 @@ class KnobsUi(QMainWindow):
         self.jog_scale = 1.0
 
         """Initialise amplitude and standard deviation of gaussian."""
-        self.amp = 2.5
-        self.sig = 900
+        self.amp = 1
+        self.sig = 100 # not useful place really
 
-#        self.traces = plots.Traces(controls)
         self.graph = plots.OverlaidWaveforms(controls)
-        self.toolbar = NavigationToolbar(self.graph, self) #######
+        self.toolbar = NavigationToolbar(self.graph, self)
 
         """Connect buttons to PVs."""
         self.ui.bumpleftplusButton.clicked.connect(
@@ -112,7 +111,6 @@ class KnobsUi(QMainWindow):
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         # Add graphs to the GUI.
-#        self.ui.graph_layout.addWidget(self.traces)
         self.ui.graph_layout.addWidget(self.graph)
         self.ui.graph_layout.addWidget(self.toolbar)
 
@@ -155,6 +153,8 @@ class KnobsUi(QMainWindow):
         self.sig -= 10
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
+
+    # add gaussian scale control!!!!!!!!!!! and autoscale!
 
     def jog_handler(self, key, factor):
 
