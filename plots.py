@@ -196,7 +196,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0], # colours??
                      self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
                      ]
-        # x label??
+        self.ax2.set_xlabel('Time/s')
         self.ax2.set_ylabel('Voltage/V')
         self.ax2.set_title('Beam intensity peaks overlaid')
         plt.tight_layout()
