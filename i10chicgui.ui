@@ -11,7 +11,7 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>i10chic_gui</string>
+   <string>accelerator_gui</string>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
@@ -122,9 +122,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="1" column="0" rowspan="6">
-     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
     <item row="7" column="0">
      <widget class="QTableWidget" name="table_widget">
@@ -501,6 +498,9 @@ Limit</string>
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0" rowspan="6">
+     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
    </layout>
   </widget>

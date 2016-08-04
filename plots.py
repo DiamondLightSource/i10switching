@@ -201,7 +201,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.ax2.set_title('Beam intensity peaks overlaid')
         plt.tight_layout()
 
-    def update_waveforms(self, key, index):
+    def update_waveforms(self, key, _):
 
         """Update plot data whenever it changes."""
 
@@ -210,7 +210,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             self.trace_lines[1].set_ydata(self.pv_monitor.arrays[key][1])
             self.draw()
 
-    def update_overlaid_plot(self, key, index):
+    def update_overlaid_plot(self, key, _):
 
         """Update plot data whenever it changes, calculate areas."""
 
