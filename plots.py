@@ -185,7 +185,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      self.ax.plot(traces_x_axis, trigger, 'b')[0],
                      self.ax.plot(traces_x_axis, trace, 'g')[0]
                      ]
-        self.ax.set_xlabel('Time/s')
+        self.ax.set_xlabel('Time samples')
         self.ax.set_ylabel('Voltage/V')
         self.ax.set_title('Square wave trigger signal and beam intensity trace')
 
@@ -196,7 +196,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
                      self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0], # colours??
                      self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
                      ]
-        self.ax2.set_xlabel('Time/s')
+        self.ax2.set_xlabel('Time samples')
         self.ax2.set_ylabel('Voltage/V')
         self.ax2.set_title('Beam intensity peaks overlaid')
         plt.tight_layout()

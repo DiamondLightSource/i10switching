@@ -56,7 +56,7 @@ class Gui(QMainWindow):
     in a table.
     """
 
-    UI_FILENAME = 'i10chicgui.ui'
+    UI_FILENAME = 'acceleratorui.ui'
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):

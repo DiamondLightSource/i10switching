@@ -57,7 +57,7 @@ class KnobsUi(QMainWindow):
     waveform are displayed overlapped with their areas calculated.
     """
 
-    UI_FILENAME = 'i10beamlineui.ui'
+    UI_FILENAME = 'beamlineui.ui'
 
     def __init__(self):
 
@@ -165,7 +165,6 @@ class KnobsUi(QMainWindow):
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
-    # add gaussian scale control!!!!!!!!!!!
     def set_gauss_scaling(self):
         """Change the scaling applied to magnet corrections."""
         self.gauss_scale = self.ui.gauss_scale_slider.value()
