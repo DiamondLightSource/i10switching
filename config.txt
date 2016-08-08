@@ -13,4 +13,4 @@ kicker 214.2560
 drift 214.2560
 kicker 215.0836
 drift 215.0836
-detector 220.0
+detector 229.5

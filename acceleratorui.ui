@@ -6,12 +6,12 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>801</width>
-    <height>709</height>
+    <width>833</width>
+    <height>757</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>i10chic_gui</string>
+   <string>accelerator_gui</string>
   </property>
   <property name="tabShape">
    <enum>QTabWidget::Rounded</enum>
@@ -33,7 +33,7 @@
       <item row="0" column="1">
        <widget class="QPushButton" name="bumpleftplusButton">
         <property name="text">
-         <string>BUMP LEFT +</string>
+         <string>Bump Upstream +</string>
         </property>
        </widget>
       </item>
@@ -47,21 +47,21 @@
       <item row="1" column="1">
        <widget class="QPushButton" name="bumpleftminusButton">
         <property name="text">
-         <string>BUMP LEFT -</string>
+         <string>Bump Upstream -</string>
         </property>
        </widget>
       </item>
       <item row="0" column="2">
        <widget class="QPushButton" name="bumprightplusButton">
         <property name="text">
-         <string>BUMP RIGHT +</string>
+         <string>Bump Downstream +</string>
         </property>
        </widget>
       </item>
       <item row="1" column="2">
        <widget class="QPushButton" name="bumprightminusButton">
         <property name="text">
-         <string>BUMP RIGHT -</string>
+         <string>Bump Downstream -</string>
         </property>
        </widget>
       </item>
@@ -122,9 +122,6 @@
        </widget>
       </item>
      </layout>
-    </item>
-    <item row="1" column="0" rowspan="6">
-     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
     <item row="7" column="0">
      <widget class="QTableWidget" name="table_widget">
@@ -496,11 +493,14 @@ Limit</string>
       <item row="1" column="1">
        <widget class="QLabel" name="label_2">
         <property name="text">
-         <string>Size of correction:</string>
+         <string>Size of bump correction applied:</string>
         </property>
        </widget>
       </item>
      </layout>
+    </item>
+    <item row="1" column="0" rowspan="6">
+     <layout class="QVBoxLayout" name="matplotlib_layout"/>
     </item>
    </layout>
   </widget>
@@ -509,7 +509,7 @@ Limit</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>801</width>
+     <width>833</width>
      <height>25</height>
     </rect>
    </property>

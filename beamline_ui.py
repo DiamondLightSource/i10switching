@@ -29,6 +29,8 @@ from PyQt4 import QtGui
 from PyQt4 import QtCore
 from PyQt4 import uic
 from PyQt4.QtGui import QMainWindow
+from matplotlib.backends.backend_qt4agg import (
+    NavigationToolbar2QT as NavigationToolbar)
 
 import plots
 import magnet_jogs
@@ -55,7 +57,7 @@ class KnobsUi(QMainWindow):
     waveform are displayed overlapped with their areas calculated.
     """
 
-    UI_FILENAME = 'i10beamlineui.ui'
+    UI_FILENAME = 'beamlineui.ui'
 
     def __init__(self):
 
@@ -70,13 +72,14 @@ class KnobsUi(QMainWindow):
 
         """Initial setting for GUI: jog scaling = 1."""
         self.jog_scale = 1.0
+        self.gauss_scale = 1.0
 
         """Initialise amplitude and standard deviation of gaussian."""
-        self.amp = 2.5
-        self.sig = 900
+        self.amp = 1
+        self.sig = 100 # not useful place really # measure this?
 
-        self.traces = plots.Traces(controls)
         self.graph = plots.OverlaidWaveforms(controls)
+        self.toolbar = NavigationToolbar(self.graph, self)
 
         """Connect buttons to PVs."""
         self.ui.bumpleftplusButton.clicked.connect(
@@ -96,11 +99,15 @@ class KnobsUi(QMainWindow):
         self.ui.ampminusButton.setEnabled(False)
         self.ui.sigmaplusButton.setEnabled(False)
         self.ui.sigmaminusButton.setEnabled(False)
+        self.ui.autoscaleButton.clicked.connect(self.autoscale)
 
         self.ui.checkBox.clicked.connect(self.gauss_fit)
 
         self.ui.jog_scale_slider.valueChanged.connect(self.set_jog_scaling)
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
+
+        self.ui.gauss_scale_slider.valueChanged.connect(self.set_gauss_scaling)
+        self.ui.gauss_scale_textbox.setText(str(self.gauss_scale))
 
         # Monitor the states of magnets and cycling.
         camonitor(controls.PvReferences.MAGNET_STATUS_PV,
@@ -109,8 +116,14 @@ class KnobsUi(QMainWindow):
                   self.update_cycling_textbox, format=FORMAT_CTRL)
 
         # Add graphs to the GUI.
-        self.ui.graph_layout.addWidget(self.traces)
         self.ui.graph_layout.addWidget(self.graph)
+        self.ui.graph_layout.addWidget(self.toolbar)
+
+    def autoscale(self): # does this work??
+        self.graph.ax.relim()
+        self.graph.ax.autoscale_view()
+        self.graph.ax.relim()
+        self.graph.ax2.autoscale_view()
 
     def gauss_fit(self):
         
@@ -133,24 +146,29 @@ class KnobsUi(QMainWindow):
 
     # Methods controlling the theoretical gaussian.
     def amp_plus(self):
-        self.amp += 0.1
+        self.amp += self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def amp_minus(self):
-        self.amp -= 0.1
+        self.amp -= self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_plus(self):
-        self.sig += 10
+        self.sig += 10*self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_minus(self):
-        self.sig -= 10
+        self.sig -= 10*self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
+
+    def set_gauss_scaling(self):
+        """Change the scaling applied to magnet corrections."""
+        self.gauss_scale = self.ui.gauss_scale_slider.value()
+        self.ui.gauss_scale_textbox.setText(str(self.gauss_scale))
 
     def jog_handler(self, key, factor):
 
@@ -162,8 +180,7 @@ class KnobsUi(QMainWindow):
         """
 
         try:
-            self.pv_writer.write(key, factor, self.jog_scale)
-            self.update_shading()
+            self.pv_writer.write(key, factor * self.jog_scale)
 
         except magnet_jogs.OverCurrentException, e:
             msgBox = QtGui.QMessageBox(self.parent)

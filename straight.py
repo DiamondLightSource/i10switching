@@ -21,7 +21,7 @@ class RealModeController(object):
         self.pvm.register_straight_listener(self.update)
         self.straights = []
 
-    def update(self, key, index):
+    def update(self, key, _):
 
         """Update scales and offsets whenever they change."""
 
@@ -56,9 +56,7 @@ class SimModeController(object):
         self.scales =  controls.PvMonitors.get_instance().get_scales()
 
     def update_sim(self, key, values):
-
         """Update simulated scales and offsets whenever they change."""
-
         if key == controls.ARRAYS.SCALES:
             self.scales = values
             self.update_scales()
@@ -143,7 +141,7 @@ class Straight(object):
                    2,
                    np.sin(t*np.pi/100) - 1,
                   -np.sin(t*np.pi/100) + 1]) \
-                      + self.amps_to_radians(self.offsets)
+             + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1]))
 
         return kick
 
@@ -178,7 +176,7 @@ class Straight(object):
         """
 
         self.strength_setup(self.amps_to_radians(self.scales) * strength_values
-                            + self.amps_to_radians(self.offsets))
+                            + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1])))
 
         p_beam = self.data.generate_beams()[1]
 

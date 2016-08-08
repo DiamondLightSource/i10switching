@@ -113,10 +113,8 @@ class PvMonitors(object):
                 lambda x, i=idx: self.update_values(
                     x, ARRAYS.ERRORS, i, 'straight'), format=FORMAT_TIME)
 
-        for i in range(len(PvReferences.TRACES)):
-            camonitor(PvReferences.TRACES[i],
-                lambda x, i=i: self.update_values(
-                    x, ARRAYS.WAVEFORMS, i, 'trace'))
+        camonitor(PvReferences.TRACES[0], lambda x: self.update_values(x, ARRAYS.WAVEFORMS, 0, 'trace'))
+        camonitor(PvReferences.TRACES[1], lambda x: self.update_values(x, ARRAYS.WAVEFORMS, 1, 'trace'))
 
         cothread.Yield()  # Ensure monitored values are connected
 
@@ -156,13 +154,13 @@ class PvMonitors(object):
 
     def get_cache(self):
 
-        self.cache = c = {}
+        cache = {}
         for i in range(5):
-            c['%02d' % i] = {
+            cache['%02d' % i] = {
                 ARRAYS.OFFSETS: self._get_array_value(ARRAYS.OFFSETS)[i],
                 ARRAYS.SCALES: self._get_array_value(ARRAYS.SCALES)[i]
             }
-        return c
+        return cache
 
     def _get_array_value(self, array_key):
         return self.arrays[array_key]

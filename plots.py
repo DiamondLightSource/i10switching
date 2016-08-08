@@ -9,6 +9,7 @@ from matplotlib.backends.backend_qt4agg import (
     FigureCanvasQTAgg as FigureCanvas)
 import scipy.integrate as integ
 import controls
+import cothread
 
 
 class BaseFigureCanvas(FigureCanvas):
@@ -44,12 +45,16 @@ class Simulation(BaseFigureCanvas):
         ax1.set_xlim(self.straight.data.path[0].s,
                      self.straight.data.path[-1].s)
         ax1.set_ylim(-0.01, 0.01)
+        ax1.set_xlabel('Distance along the straight/m')
+        ax1.set_ylabel('Deflection off axis/m') # Is it in m or other size??
 
         # Plot positions of kickers and IDs.
         for i in self.straight.data.kickers:
             ax1.axvline(x=i.s, color='k', linestyle='dashed')
         for i in self.straight.data.ids:
             ax1.axvline(x=i.s, color='b', linestyle='dashed')
+
+        plt.tight_layout()
 
         return ax1
 
@@ -154,33 +159,6 @@ class Simulation(BaseFigureCanvas):
                                    beam2max, 'r--')
 
 
-class Traces(BaseFigureCanvas):
-
-    """Plot the traces of the trigger waveform and x-ray peaks."""
-
-    def __init__(self, controls):
-        BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.controls = controls
-        self.pv_monitor.register_trace_listener(self.update_waveforms)
-        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
-
-        x = range(len(trace))
-        self.lines = [
-                     self.ax.plot(x, trigger, 'b')[0],
-                     self.ax.plot(x, trace, 'g')[0]
-                     ]
-
-    def update_waveforms(self, key, index):
-
-        """Update plot data whenever it changes."""
-
-        if key == self.controls.ARRAYS.WAVEFORMS:
-            self.lines[index].set_ydata(self.pv_monitor.arrays[key][index])
-            self.draw()
-
-
 class OverlaidWaveforms(BaseFigureCanvas):
 
     """
@@ -190,38 +168,71 @@ class OverlaidWaveforms(BaseFigureCanvas):
     for visual comparison of peak shapes.
     """
 
-    def __init__(self, controls):
+    def __init__(self, ctrls):
         BaseFigureCanvas.__init__(self)
-        self.ax = self.figure.add_subplot(1, 1, 1)
-        self.controls = controls
-        self.pv_monitor = self.controls.PvMonitors.get_instance()
-        self.pv_monitor.register_trace_listener(self.update_plot)
-        # Initialise with real data the first time to set axis ranges.
-        self.trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        self.trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
-        data1, data2 = self.get_windowed_data(self.trigger, self.trace)
-        self.x = range(len(data1))
-        self.lines = [
-                     self.ax.plot(self.x, data1, 'b')[0],
-                     self.ax.plot(self.x, data2, 'g')[0]
-                     ]
 
-    def update_plot(self, key, index):
+        self.ax = self.figure.add_subplot(2, 1, 1)
+        self.controls = ctrls
+        self.pv_monitor = self.controls.PvMonitors.get_instance()
+        self.pv_monitor.register_trace_listener(self.update_waveforms)
+        self.pv_monitor.register_trace_listener(self.update_overlaid_plot)
+
+        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+
+        traces_x_axis = range(len(trace))
+        self.trace_lines = [
+                     self.ax.plot(traces_x_axis, trigger, 'b')[0],
+                     self.ax.plot(traces_x_axis, trace, 'g')[0]
+                     ]
+        self.ax.set_xlabel('Time samples')
+        self.ax.set_ylabel('Voltage/V')
+        self.ax.set_title('Square wave trigger signal and beam intensity trace')
+
+        self.ax2 = self.figure.add_subplot(2, 1, 2)
+        data1, data2 = self.get_windowed_data(trigger, trace)
+        self.overlaid_x_axis = range(len(data1))
+        self.overlaid_lines = [
+                     self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0], # colours??
+                     self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
+                     ]
+        self.ax2.set_xlabel('Time samples')
+        self.ax2.set_ylabel('Voltage/V')
+        self.ax2.set_title('Beam intensity peaks overlaid')
+        plt.tight_layout()
+
+    def update_waveforms(self, key, _):
+
+        """Update plot data whenever it changes."""
+
+        if key == self.controls.ARRAYS.WAVEFORMS:
+            self.trace_lines[0].set_ydata(self.pv_monitor.arrays[key][0])
+            self.trace_lines[1].set_ydata(self.pv_monitor.arrays[key][1])
+            self.draw()
+
+    def update_overlaid_plot(self, key, _):
 
         """Update plot data whenever it changes, calculate areas."""
 
-        waveforms = [self.trigger, self.trace]
         if key == self.controls.ARRAYS.WAVEFORMS:
-            waveforms[index] = self.pv_monitor.arrays[key][index]
+
+            trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
+            trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+            waveforms = [trigger, trace]
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
-            self.lines[0].set_ydata(data1)
-            self.lines[1].set_ydata(data2)
-            labels = [integ.simps(data1), integ.simps(data2)]            
-            for area in labels:
-                if area < 0.1:
-                    raise RangeError
-            self.ax.legend([self.lines[0], self.lines[1]],
+            self.overlaid_lines[0].set_ydata(data1)
+            self.overlaid_lines[0].set_xdata(range(len(data1)))
+            self.overlaid_lines[1].set_ydata(data2)
+            self.overlaid_lines[1].set_xdata(range(len(data2)))
+
+            areas = [integ.simps(data1), integ.simps(data2)] #sig figs
+            labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
+            
+#            for area in areas:
+#                if area < 0.1:
+#                    raise RangeError # calculation warning error for example
+            self.ax2.legend([self.overlaid_lines[0], self.overlaid_lines[1]],
                            labels)
         
         self.draw()
@@ -231,26 +242,35 @@ class OverlaidWaveforms(BaseFigureCanvas):
         """Overlay the two peaks."""
 
         try:
-            diff = np.diff(trigger).tolist()
+            diff = np.diff(trigger)
+
             length = len(trace)
-            stepvalue = 0.001 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+            stepvalue = 0.5 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
 
             if min(diff) > -1*stepvalue or max(diff) < stepvalue:
                 raise RangeError
 
             maxtrig = next(x for x in diff if x > stepvalue)
             mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [diff.index(maxtrig), diff.index(mintrig)]
+            edges = [np.where(diff == maxtrig)[0][0], np.where(diff == mintrig)[0][0]]
 
+
+    	    cothread.Yield()
             trigger_length = (edges[1]-edges[0])*2
 
             if length < trigger_length:
                 raise RangeError
+            if edges[1] > edges[0]:
+                data1 = np.roll(trace[:trigger_length], - edges[0]
+                                - trigger_length/4)[:trigger_length/2]
+                data2 = np.roll(trace[:trigger_length], - edges[1]
+                                - trigger_length/4)[:trigger_length/2]
+            else:
+                data1 = np.roll(trace[:trigger_length], - edges[1]
+                                - trigger_length/4)[:trigger_length/2]
+                data2 = np.roll(trace[:trigger_length], - edges[0]
+                                - trigger_length/4)[:trigger_length/2] # so that colours don't swap around...
 
-            data1 = np.roll(trace[:trigger_length], - edges[0]
-                            - trigger_length/4)[:trigger_length/2]
-            data2 = np.roll(trace[:trigger_length], - edges[1]
-                            - trigger_length/4)[:trigger_length/2]
             return data1, data2  ### what are data1/2
 
         except RangeError:
@@ -262,16 +282,16 @@ class OverlaidWaveforms(BaseFigureCanvas):
     def gaussian(self, a, sigma):
 
         """Plot a theoretical gaussian for comparison with the x-ray peaks."""
-        l = len(self.x)
+        l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
-        gauss = self.ax.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
-        self.lines.append(gauss)
+        gauss = self.ax2.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
+        self.overlaid_lines.append(gauss)
         self.draw()
 
     def clear_gaussian(self):
-        self.ax.lines.pop(-1)
-        self.ax.relim()
-        self.ax.autoscale_view()
+        self.ax2.lines.pop(-1)
+        self.ax2.relim()
+        self.ax2.autoscale_view()
         self.draw()
 
 
