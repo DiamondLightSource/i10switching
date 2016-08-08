@@ -13,17 +13,11 @@ import os
 from PyQt4 import QtGui
 
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", ".."))
-import i10knobs
+from accelerators_ui import Gui
 
 
-class I10KnobsTest(unittest.TestCase):
-
+class GuiTests(unittest.TestCase):
 
     def test_import(self):
         pass
-
-    def test_init(self):
-        cothread.iqt()
-        window = QtGui.QMainWindow()
-        _ = i10knobs.KnobsUi(window)
 

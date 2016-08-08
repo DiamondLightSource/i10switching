@@ -34,11 +34,14 @@ class Element(object):
 
 
 class Detector(Element):
+
     """End of the straight where the sample is located."""
+
     pass
 
 
 class Drift(Element):
+
     """Allow electron beam to move along path described by its beam vector."""
 
     def __init__(self, displacement, length=0):
@@ -69,6 +72,7 @@ class Drift(Element):
 
 
 class Kicker(Element):
+
     """Magnet responsible for deflecting the electron beam."""
 
     def __init__(self, displacement, kick=0):
@@ -84,7 +88,9 @@ class Kicker(Element):
 
 
 class InsertionDevice(Element):
+
     """Generates x-ray beam."""
+
     pass
 
 
@@ -113,9 +119,7 @@ class Layout(object):
         self.travel = [Drift(self.ids[i].s) for i in range(len(self.ids))]
 
     def _load(self, filename):
-
         """Load data from configuration file."""
-
         raw_data = [line.split() for line in open(filename)]
         element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
@@ -130,13 +134,10 @@ class Layout(object):
         return path
 
     def get_elements(self, which):
-
         """Return list of elements of a particular type from the straight."""
-
         return [x for x in self.path if x.get_type() == which]
 
     def generate_beams(self):
-
         """
         Generate electron beam and photon beams.
 
@@ -144,7 +145,6 @@ class Layout(object):
         complete electron beam from list of vectors at positions along straight.
         Photon beams are initialised at the two insertion devices.
         """
-
         e_vector = np.array([0, 0])
         e_beam = np.zeros((len(self.path), 2))
         p_vector = []
@@ -161,9 +161,7 @@ class Layout(object):
         return e_beam, p_beam
 
     def create_photon_beam(self, vector):
-
         """Take initialised photon beams and extend them to the detector."""
-
         for i in range(len(self.ids)):
             self.travel[i].set_length(self.photon_coordinates[i][1]
                                       - self.photon_coordinates[i][0])

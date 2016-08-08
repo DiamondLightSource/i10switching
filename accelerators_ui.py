@@ -13,10 +13,10 @@ indicates the effects of changes to the scaling and offsets.
 """
 
 from pkg_resources import require
-require('numpy==1.11.1')
-require('scipy==0.10.1')
-require('matplotlib==1.3.1')
-require('cothread==2.13')
+require('numpy>=1.10.1')
+require('scipy>=0.10.1')
+require('matplotlib>=1.3.1')
+require('cothread>=2.13')
 
 import sys
 import cothread
@@ -51,7 +51,7 @@ class Gui(QMainWindow):
     GUI for the accelerator physicists.
 
     GUI containing a simulation of the beamline and buttons
-    to control the beam and/or simulation. Relevant status 
+    to control the beam and/or simulation. Relevant status
     information is also gathered from PVs and shown to the user
     in a table.
     """
@@ -60,16 +60,15 @@ class Gui(QMainWindow):
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):
-        MAX=0
-        HIGH=1
-        OFFSET=2
-        SETI=3
-        LOW=4
-        MIN=5
-        ERRORS=6
+        MAX = 0
+        HIGH = 1
+        OFFSET = 2
+        SETI = 3
+        LOW = 4
+        MIN = 5
+        ERRORS = 6
 
     def __init__(self):
-
         """Initialise GUI."""
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
@@ -154,7 +153,6 @@ class Gui(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
     def toggle_simulation(self):
-
         """
         Toggle in and out of simulation mode.
 
@@ -162,7 +160,6 @@ class Gui(QMainWindow):
         update graph accordingly and change background colour
         to indicate simulation mode enabled.
         """
-
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
@@ -205,9 +202,7 @@ class Gui(QMainWindow):
         self.ui.burt_led_2.setPalette(palette)
 
     def flash_table_cell(self, row, column):
-
         """Flash a cell twice with the major alarm colour."""
-
         table = self.ui.table_widget
         item = table.item(column, row)
 
@@ -224,9 +219,7 @@ class Gui(QMainWindow):
                 900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
 
     def setup_table(self):
-
         """Initialise all values required for the currents table."""
-
         table = self.ui.table_widget
 
         # Initialise items in all table cells
@@ -244,69 +237,60 @@ class Gui(QMainWindow):
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
     def update_table(self, key, index):
-
-        """When this is called the table values and cache are updated.""" # connect table to simulation mode!!
-
-        if key == controls.ARRAYS.IMAX:
+        """When this is called the table values and cache are updated."""
+        # TODO: connect table to simulation mode!!
+        if key == controls.Arrays.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index],
                               index, self.Columns.MAX)
 
-        elif key == controls.ARRAYS.IMIN:
+        elif key == controls.Arrays.IMIN:
             self.update_float(self.pv_monitor.get_min_currents()[index],
                             index, self.Columns.MIN)
 
-        elif key == controls.ARRAYS.OFFSETS:
+        elif key == controls.Arrays.OFFSETS:
             self.update_float(self.pv_monitor.get_offsets()[index],
                               index, self.Columns.OFFSET)
             self.update_cache(self.pv_monitor.get_cache(), index)
 
-        elif key == controls.ARRAYS.SETI:
+        elif key == controls.Arrays.SETI:
             self.update_float(self.pv_monitor.get_actual_offsets()[index],
                               index, self.Columns.SETI)
 
-        elif key == controls.ARRAYS.ERRORS:
+        elif key == controls.Arrays.ERRORS:
             self.update_alarm(self.pv_monitor.get_errors()[index],
                               index, self.Columns.ERRORS)
 
-        elif key == controls.ARRAYS.SCALES:
+        elif key == controls.Arrays.SCALES:
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
-
         """Updates a table widget populated with a float."""
-
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
-
         """Updates an alarm sensitive table widget."""
-
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, cache, index):
-
         """Updates cached values of offsets and scales for the table."""
-
-        high = (cache['%02d' % index][controls.ARRAYS.OFFSETS] +
-                cache['%02d' % index][controls.ARRAYS.SCALES])
-        low = (cache['%02d' % index][controls.ARRAYS.OFFSETS] -
-               cache['%02d' % index][controls.ARRAYS.SCALES])
+        high = (cache['%02d' % index][controls.Arrays.OFFSETS] +
+                cache['%02d' % index][controls.Arrays.SCALES])
+        low = (cache['%02d' % index][controls.Arrays.OFFSETS] -
+               cache['%02d' % index][controls.Arrays.SCALES])
         self.update_float(high, index, self.Columns.HIGH)
         self.update_float(low, index, self.Columns.LOW)
 
     def jog_handler(self, key, factor):
-
         """
         Handle button clicks.
 
         When button clicked this class sends information to the writer and
         provides exception handling in callbacks.
         """
-
         try:
             self.writer.write(key, factor * self.jog_scale)
             self.update_shading()
@@ -326,13 +310,11 @@ class Gui(QMainWindow):
             msgBox.exec_()
 
     def reset(self):
-
         """
         Reset the offsets and scales to the starting point.
 
         Only whilst in simulation mode. Does not affect the PVs.
         """
-
         if self.ui.simButton.isChecked():
             self.writer.reset()
             self.update_shading()

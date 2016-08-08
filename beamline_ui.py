@@ -20,7 +20,7 @@ require('matplotlib==1.3.1')
 require('cothread==2.13')
 
 import cothread
-from cothread.catools import caput, camonitor, FORMAT_CTRL
+from cothread.catools import camonitor, FORMAT_CTRL
 
 import os
 import traceback
@@ -70,18 +70,18 @@ class KnobsUi(QMainWindow):
         self.knobs = magnet_jogs.MagnetCoordinator()
         self.pv_writer = writers.PvWriter()
 
-        """Initial setting for GUI: jog scaling = 1."""
+        # Initial setting for GUI: jog scaling = 1.
         self.jog_scale = 1.0
         self.gauss_scale = 1.0
 
-        """Initialise amplitude and standard deviation of gaussian."""
+        # Initialise amplitude and standard deviation of gaussian.
         self.amp = 1
         self.sig = 100 # not useful place really # measure this?
 
         self.graph = plots.OverlaidWaveforms(controls)
         self.toolbar = NavigationToolbar(self.graph, self)
 
-        """Connect buttons to PVs."""
+        # Connect buttons to PVs.
         self.ui.bumpleftplusButton.clicked.connect(
                 lambda: self.jog_handler(magnet_jogs.Moves.BUMP_LEFT, 1))
         self.ui.bumpleftminusButton.clicked.connect(
@@ -126,9 +126,7 @@ class KnobsUi(QMainWindow):
         self.graph.ax2.autoscale_view()
 
     def gauss_fit(self):
-        
         """Overlay theoretical gaussian and enable buttons to modify it."""
-
         enabled = self.ui.checkBox.isChecked()
         self.ui.ampplusButton.setEnabled(enabled)
         self.ui.ampminusButton.setEnabled(enabled)
@@ -171,14 +169,12 @@ class KnobsUi(QMainWindow):
         self.ui.gauss_scale_textbox.setText(str(self.gauss_scale))
 
     def jog_handler(self, key, factor):
-
         """
         Handle button clicks.
 
         When button clicked this class sends information to the writer and
         provides exception handling in callbacks.
         """
-
         try:
             self.pv_writer.write(key, factor * self.jog_scale)
 

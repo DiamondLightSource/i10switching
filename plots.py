@@ -39,7 +39,6 @@ class Simulation(BaseFigureCanvas):
                     init_func=self.init_data, frames=1000, interval=20)
 
     def fig_setup(self):
-
         """Set up axes."""
         ax1 = self.figure.add_subplot(1, 1, 1)
         ax1.set_xlim(self.straight.data.path[0].s,
@@ -59,9 +58,7 @@ class Simulation(BaseFigureCanvas):
         return ax1
 
     def data_setup(self):
-
         """Set up data for the animation."""
-
         beams = [
                 self.ax.plot([], [], 'b')[0],
                 self.ax.plot([], [], 'r')[0],
@@ -78,9 +75,7 @@ class Simulation(BaseFigureCanvas):
         return self.beams
 
     def beam_plot(self, t):
-
         """Extract electron and photon beam positions for plotting."""
-
         e_positions = np.array(self.straight.step(t)[0])[:, 0].tolist()
         # Remove duplicates in data.
         for i in range(len(self.straight.data.get_elements('drift'))):
@@ -92,9 +87,7 @@ class Simulation(BaseFigureCanvas):
         return e_positions, p_positions
 
     def animate(self, t):
-
         """Animation function."""
-
         data = self.beam_plot(t)
         e_data = data[0]
         p_data = data[1]
@@ -133,16 +126,14 @@ class Simulation(BaseFigureCanvas):
                                beam2min, beam2max, facecolor='green', alpha=0.2)
 
     def magnet_limits(self):
-
         """Show maximum currents that can be passed through the magnets."""
-
         max_currents = self.pv_monitor.get_max_currents()
 
         strengths = [np.array([max_currents[0],
                               -max_currents[1],
                                max_currents[2], 0, 0]),
                      np.array([0, 0, max_currents[2],
-                              -max_currents[3], 
+                              -max_currents[3],
                                max_currents[4]])]
 
         edges = [[], []]
@@ -202,18 +193,14 @@ class OverlaidWaveforms(BaseFigureCanvas):
         plt.tight_layout()
 
     def update_waveforms(self, key, _):
-
         """Update plot data whenever it changes."""
-
         if key == self.controls.ARRAYS.WAVEFORMS:
             self.trace_lines[0].set_ydata(self.pv_monitor.arrays[key][0])
             self.trace_lines[1].set_ydata(self.pv_monitor.arrays[key][1])
             self.draw()
 
     def update_overlaid_plot(self, key, _):
-
         """Update plot data whenever it changes, calculate areas."""
-
         if key == self.controls.ARRAYS.WAVEFORMS:
 
             trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
@@ -228,19 +215,17 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
             areas = [integ.simps(data1), integ.simps(data2)] #sig figs
             labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
-            
+
 #            for area in areas:
 #                if area < 0.1:
 #                    raise RangeError # calculation warning error for example
             self.ax2.legend([self.overlaid_lines[0], self.overlaid_lines[1]],
                            labels)
-        
+
         self.draw()
 
     def get_windowed_data(self, trigger, trace):
-
         """Overlay the two peaks."""
-
         try:
             diff = np.diff(trigger)
 
@@ -255,7 +240,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             edges = [np.where(diff == maxtrig)[0][0], np.where(diff == mintrig)[0][0]]
 
 
-    	    cothread.Yield()
+            cothread.Yield()
             trigger_length = (edges[1]-edges[0])*2
 
             if length < trigger_length:
@@ -280,7 +265,6 @@ class OverlaidWaveforms(BaseFigureCanvas):
             return data1, data2
 
     def gaussian(self, a, sigma):
-
         """Plot a theoretical gaussian for comparison with the x-ray peaks."""
         l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
@@ -298,4 +282,5 @@ class OverlaidWaveforms(BaseFigureCanvas):
 class RangeError(Exception):
 
     """Raised when the trace data is partially cut off."""
+
     pass
