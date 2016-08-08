@@ -95,9 +95,7 @@ class SimWriter(AbstractWriter):
         self.controller.update_sim(ARRAYS.OFFSETS, simulated_offsets)
 
     def check_bounds(self, key, jog_values):
-
         """Raises exception if new value exceeds magnet current limit."""
-
         pvm = PvMonitors.get_instance()
         scales = self.controller.scales
         offsets = self.controller.offsets
@@ -115,4 +113,3 @@ class SimWriter(AbstractWriter):
                 low = new_val - scale
             if high > max_val or low < min_val:
                 raise magnet_jogs.OverCurrentException(idx)
-

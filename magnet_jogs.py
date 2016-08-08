@@ -48,9 +48,7 @@ class MagnetCoordinator(object):
         pass
 
     def jog(self, old_values, ofs, factor):
-
         """Increment the list of PVs by the appropriate offset from the list."""
-
         ofs = factor * self.BUTTON_DATA[ofs]
 
         values = old_values + ofs
@@ -61,9 +59,7 @@ class MagnetCoordinator(object):
 
 
 def _check_bounds(ofs):
-
     """Raises exception if new value exceeds magnet current limit."""
-
     pvm = PvMonitors.get_instance()
     scales = [abs(scale) for scale in pvm.get_scales()]
     offsets = pvm.get_offsets()
@@ -77,4 +73,3 @@ def _check_bounds(ofs):
         low = offset + new_val - scale
         if high > max_val or low < min_val:
             raise OverCurrentException(idx)
-

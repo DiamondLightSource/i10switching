@@ -64,9 +64,7 @@ class PvMonitors(object):
         return PvMonitors.__instance
 
     def __init__(self):
-
         """Monitor values of PVs: offsets, scales etc."""
-
         if self.__guard:
             raise RuntimeError('Do not instantiate. ' +
                                'If you require an instance use get_instance.')

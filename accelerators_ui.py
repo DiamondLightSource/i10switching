@@ -69,7 +69,6 @@ class Gui(QMainWindow):
         ERRORS=6
 
     def __init__(self):
-
         """Initialise GUI."""
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
@@ -154,7 +153,6 @@ class Gui(QMainWindow):
         self.ui.jog_scale_textbox.setText(str(self.jog_scale))
 
     def toggle_simulation(self):
-
         """
         Toggle in and out of simulation mode.
 
@@ -162,7 +160,6 @@ class Gui(QMainWindow):
         update graph accordingly and change background colour
         to indicate simulation mode enabled.
         """
-
         enabled = self.ui.simButton.isChecked()
         self.ui.resetButton.setEnabled(enabled)
 
@@ -205,9 +202,7 @@ class Gui(QMainWindow):
         self.ui.burt_led_2.setPalette(palette)
 
     def flash_table_cell(self, row, column):
-
         """Flash a cell twice with the major alarm colour."""
-
         table = self.ui.table_widget
         item = table.item(column, row)
 
@@ -224,9 +219,7 @@ class Gui(QMainWindow):
                 900, lambda: item.setBackground(QtGui.QBrush(ALARM_BACKGROUND)))
 
     def setup_table(self):
-
         """Initialise all values required for the currents table."""
-
         table = self.ui.table_widget
 
         # Initialise items in all table cells
@@ -244,9 +237,8 @@ class Gui(QMainWindow):
         table.horizontalHeader().setResizeMode(QtGui.QHeaderView.Stretch)
 
     def update_table(self, key, index):
-
-        """When this is called the table values and cache are updated.""" # connect table to simulation mode!!
-
+        """When this is called the table values and cache are updated."""
+        # TODO: connect table to simulation mode!!
         if key == controls.ARRAYS.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index],
                               index, self.Columns.MAX)
@@ -272,25 +264,19 @@ class Gui(QMainWindow):
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
-
         """Updates a table widget populated with a float."""
-
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
-
         """Updates an alarm sensitive table widget."""
-
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, cache, index):
-
         """Updates cached values of offsets and scales for the table."""
-
         high = (cache['%02d' % index][controls.ARRAYS.OFFSETS] +
                 cache['%02d' % index][controls.ARRAYS.SCALES])
         low = (cache['%02d' % index][controls.ARRAYS.OFFSETS] -
@@ -299,14 +285,12 @@ class Gui(QMainWindow):
         self.update_float(low, index, self.Columns.LOW)
 
     def jog_handler(self, key, factor):
-
         """
         Handle button clicks.
 
         When button clicked this class sends information to the writer and
         provides exception handling in callbacks.
         """
-
         try:
             self.writer.write(key, factor * self.jog_scale)
             self.update_shading()
@@ -326,13 +310,11 @@ class Gui(QMainWindow):
             msgBox.exec_()
 
     def reset(self):
-
         """
         Reset the offsets and scales to the starting point.
 
         Only whilst in simulation mode. Does not affect the PVs.
         """
-
         if self.ui.simButton.isChecked():
             self.writer.reset()
             self.update_shading()
