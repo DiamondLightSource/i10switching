@@ -239,28 +239,28 @@ class Gui(QMainWindow):
     def update_table(self, key, index):
         """When this is called the table values and cache are updated."""
         # TODO: connect table to simulation mode!!
-        if key == controls.ARRAYS.IMAX:
+        if key == controls.Arrays.IMAX:
             self.update_float(self.pv_monitor.get_max_currents()[index],
                               index, self.Columns.MAX)
 
-        elif key == controls.ARRAYS.IMIN:
+        elif key == controls.Arrays.IMIN:
             self.update_float(self.pv_monitor.get_min_currents()[index],
                             index, self.Columns.MIN)
 
-        elif key == controls.ARRAYS.OFFSETS:
+        elif key == controls.Arrays.OFFSETS:
             self.update_float(self.pv_monitor.get_offsets()[index],
                               index, self.Columns.OFFSET)
             self.update_cache(self.pv_monitor.get_cache(), index)
 
-        elif key == controls.ARRAYS.SETI:
+        elif key == controls.Arrays.SETI:
             self.update_float(self.pv_monitor.get_actual_offsets()[index],
                               index, self.Columns.SETI)
 
-        elif key == controls.ARRAYS.ERRORS:
+        elif key == controls.Arrays.ERRORS:
             self.update_alarm(self.pv_monitor.get_errors()[index],
                               index, self.Columns.ERRORS)
 
-        elif key == controls.ARRAYS.SCALES:
+        elif key == controls.Arrays.SCALES:
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
@@ -277,10 +277,10 @@ class Gui(QMainWindow):
 
     def update_cache(self, cache, index):
         """Updates cached values of offsets and scales for the table."""
-        high = (cache['%02d' % index][controls.ARRAYS.OFFSETS] +
-                cache['%02d' % index][controls.ARRAYS.SCALES])
-        low = (cache['%02d' % index][controls.ARRAYS.OFFSETS] -
-               cache['%02d' % index][controls.ARRAYS.SCALES])
+        high = (cache['%02d' % index][controls.Arrays.OFFSETS] +
+                cache['%02d' % index][controls.Arrays.SCALES])
+        low = (cache['%02d' % index][controls.Arrays.OFFSETS] -
+               cache['%02d' % index][controls.Arrays.SCALES])
         self.update_float(high, index, self.Columns.HIGH)
         self.update_float(low, index, self.Columns.LOW)
 

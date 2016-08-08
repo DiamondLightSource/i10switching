@@ -4,7 +4,7 @@
 # Contains AbstractWriter, PvWriter, SimWriter
 
 from cothread.catools import caput
-from controls import PvReferences, PvMonitors, ARRAYS
+from controls import PvReferences, PvMonitors, Arrays
 
 import magnet_jogs
 
@@ -84,15 +84,15 @@ class SimWriter(AbstractWriter):
 
     def update_sim_values(self, key, jog_values):
         if key == magnet_jogs.Moves.SCALE:
-            self.controller.update_sim(ARRAYS.SCALES, jog_values)
+            self.controller.update_sim(Arrays.SCALES, jog_values)
         else:
-            self.controller.update_sim(ARRAYS.OFFSETS, jog_values)
+            self.controller.update_sim(Arrays.OFFSETS, jog_values)
 
     def reset(self):
         simulated_scales =  PvMonitors.get_instance().get_scales()
-        self.controller.update_sim(ARRAYS.SCALES, simulated_scales)
+        self.controller.update_sim(Arrays.SCALES, simulated_scales)
         simulated_offsets = PvMonitors.get_instance().get_offsets()
-        self.controller.update_sim(ARRAYS.OFFSETS, simulated_offsets)
+        self.controller.update_sim(Arrays.OFFSETS, simulated_offsets)
 
     def check_bounds(self, key, jog_values):
         """Raises exception if new value exceeds magnet current limit."""

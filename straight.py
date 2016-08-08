@@ -23,19 +23,19 @@ class RealModeController(object):
 
     def update(self, key, _):
         """Update scales and offsets whenever they change."""
-        if key == controls.ARRAYS.SCALES:
+        if key == controls.Arrays.SCALES:
             for straight in self.straights:
                 straight.set_scales(self.pvm.get_scales())
 
-        elif key == controls.ARRAYS.OFFSETS:
+        elif key == controls.Arrays.OFFSETS:
             for straight in self.straights:
                 straight.set_offsets(self.pvm.get_offsets())
 
     def register_straight(self, straight):
         """Register the straight with the controller linked to PVs."""
         self.straights.append(straight)
-        self.update(controls.ARRAYS.SCALES, 0)
-        self.update(controls.ARRAYS.OFFSETS, 0)
+        self.update(controls.Arrays.SCALES, 0)
+        self.update(controls.Arrays.OFFSETS, 0)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
@@ -53,19 +53,19 @@ class SimModeController(object):
 
     def update_sim(self, key, values):
         """Update simulated scales and offsets whenever they change."""
-        if key == controls.ARRAYS.SCALES:
+        if key == controls.Arrays.SCALES:
             self.scales = values
             self.update_scales()
 
-        if key == controls.ARRAYS.OFFSETS:
+        if key == controls.Arrays.OFFSETS:
             self.offsets = values
             self.update_offsets()
 
     def register_straight(self, straight):
         """Register the straight with controller linked to the simulation."""
         self.straights.append(straight)
-        self.update_sim(controls.ARRAYS.SCALES, self.scales)
-        self.update_sim(controls.ARRAYS.OFFSETS, self.offsets)
+        self.update_sim(controls.Arrays.SCALES, self.scales)
+        self.update_sim(controls.Arrays.OFFSETS, self.offsets)
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
