@@ -133,7 +133,7 @@ class Simulation(BaseFigureCanvas):
                               -max_currents[1],
                                max_currents[2], 0, 0]),
                      np.array([0, 0, max_currents[2],
-                              -max_currents[3], 
+                              -max_currents[3],
                                max_currents[4]])]
 
         edges = [[], []]
@@ -215,13 +215,13 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
             areas = [integ.simps(data1), integ.simps(data2)] #sig figs
             labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
-            
+
 #            for area in areas:
 #                if area < 0.1:
 #                    raise RangeError # calculation warning error for example
             self.ax2.legend([self.overlaid_lines[0], self.overlaid_lines[1]],
                            labels)
-        
+
         self.draw()
 
     def get_windowed_data(self, trigger, trace):
@@ -240,7 +240,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             edges = [np.where(diff == maxtrig)[0][0], np.where(diff == mintrig)[0][0]]
 
 
-    	    cothread.Yield()
+            cothread.Yield()
             trigger_length = (edges[1]-edges[0])*2
 
             if length < trigger_length:

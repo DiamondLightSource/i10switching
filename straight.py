@@ -39,7 +39,7 @@ class RealModeController(object):
 
     def deregister_straight(self, straight):
         self.straights.remove(straight)
-    
+
 
 class SimModeController(object):
 
@@ -122,7 +122,7 @@ class Straight(object):
                 new kicker strengths (array of 5 by 1)
         """
         kick = self.amps_to_radians(self.scales) * 0.5 * np.array([
-                   np.sin(t*np.pi/100) + 1, 
+                   np.sin(t*np.pi/100) + 1,
                    -(np.sin(t*np.pi/100) + 1),
                    2,
                    np.sin(t*np.pi/100) - 1,

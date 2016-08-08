@@ -51,7 +51,7 @@ class Gui(QMainWindow):
     GUI for the accelerator physicists.
 
     GUI containing a simulation of the beamline and buttons
-    to control the beam and/or simulation. Relevant status 
+    to control the beam and/or simulation. Relevant status
     information is also gathered from PVs and shown to the user
     in a table.
     """

@@ -46,7 +46,7 @@ class PvMonitors(object):
     """
     The link between GUI and PVs.
 
-    Monitors PVs, informs listeners when they 
+    Monitors PVs, informs listeners when they
     are changed and inputs new PV values. This
     is a singleton class, calling the constructor
     multiple times yields the same instance.
