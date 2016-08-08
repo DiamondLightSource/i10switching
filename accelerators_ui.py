@@ -14,7 +14,7 @@ indicates the effects of changes to the scaling and offsets.
 
 from pkg_resources import require
 require('numpy>=1.10.1')
-require('scipy==0.10.1')
+require('scipy>=0.10.1')
 require('matplotlib==1.3.1')
 require('cothread==2.13')
 
