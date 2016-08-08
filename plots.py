@@ -280,5 +280,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
 
 class RangeError(Exception):
+
     """Raised when the trace data is partially cut off."""
+
     pass
