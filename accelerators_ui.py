@@ -60,13 +60,13 @@ class Gui(QMainWindow):
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):
-        MAX=0
-        HIGH=1
-        OFFSET=2
-        SETI=3
-        LOW=4
-        MIN=5
-        ERRORS=6
+        MAX = 0
+        HIGH = 1
+        OFFSET = 2
+        SETI = 3
+        LOW = 4
+        MIN = 5
+        ERRORS = 6
 
     def __init__(self):
         """Initialise GUI."""
