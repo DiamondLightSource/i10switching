@@ -90,8 +90,8 @@ class Straight(object):
     """
 
     BEAM_RIGIDITY = 3e9/scipy.constants.c
-    AMP_TO_TESLA = np.array([0.034796/23, 0.044809/23, 0.011786/12,
-                             0.045012/23, 0.035174/23])
+    AMP_TO_TESLA = np.array([0.034796/23, -0.044809/23, 0.011786/12,
+                            -0.045012/23,  0.035174/23])
 
     def __init__(self):
         """Get layout of straight, initialise values of PVs and link them
@@ -121,14 +121,17 @@ class Straight(object):
             Returns:
                 new kicker strengths (array of 5 by 1)
         """
-        kick = self.amps_to_radians(self.scales) * 0.5 * np.array([
-                   np.sin(t*np.pi/100) + 1,
-                   -(np.sin(t*np.pi/100) + 1),
-                   2,
-                   np.sin(t*np.pi/100) - 1,
-                  -np.sin(t*np.pi/100) + 1]) \
-             + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1]))
+        waves = np.array([
+                np.sin(t * np.pi / 100) + 1,
+                np.sin(t * np.pi / 100) + 1,
+                2,
+                -np.sin(t * np.pi / 100) + 1,
+                -np.sin(t * np.pi / 100) + 1])
+        return self.amps_to_radians(self.scales * waves + self.offsets)
 
+        kick = self.amps_to_radians(
+                0.5 * self.scales *
+                + self.offsets)
         return kick
 
     def strength_setup(self, strength_values): # put underscore at start
@@ -155,8 +158,8 @@ class Straight(object):
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
         """
-        self.strength_setup(self.amps_to_radians(self.scales) * strength_values
-                            + (self.amps_to_radians(self.offsets) * np.array([1, -1, 1, -1, 1])))
+        self.strength_setup(self.amps_to_radians(
+            self.scales * strength_values + self.offsets))
 
         p_beam = self.data.generate_beams()[1]
 
