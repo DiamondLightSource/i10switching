@@ -110,8 +110,8 @@ class Simulation(BaseFigureCanvas):
         strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
         edges = [[], []]
         for s in range(2):
-            edges[s] = np.array(self.straight.p_beam_range(strengths[s])
-                               )[:, [0, 2]]
+            edges[s] = np.array(
+                self.straight.p_beam_range(strengths[s]))[:, [0, 2]]
 
         beam1max = edges[0][0]
         beam1min = edges[1][0]
@@ -184,7 +184,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         data1, data2 = self.get_windowed_data(trigger, trace)
         self.overlaid_x_axis = range(len(data1))
         self.overlaid_lines = [
-                     self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0], # colours??
+                     self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0],
                      self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
                      ]
         self.ax2.set_xlabel('Time samples')
@@ -230,14 +230,16 @@ class OverlaidWaveforms(BaseFigureCanvas):
             diff = np.diff(trigger)
 
             length = len(trace)
-            stepvalue = 0.5 # hard coded as assumed step will be larger than this and noise smaller - ok to do??
+            # TODO: this parameter probably shouldn't be hard coded
+            stepvalue = 0.5
 
-            if min(diff) > -1*stepvalue or max(diff) < stepvalue:
+            if min(diff) > -1 * stepvalue or max(diff) < stepvalue:
                 raise RangeError
 
             maxtrig = next(x for x in diff if x > stepvalue)
-            mintrig = next(x for x in diff if x < -1*stepvalue)
-            edges = [np.where(diff == maxtrig)[0][0], np.where(diff == mintrig)[0][0]]
+            mintrig = next(x for x in diff if x < -1 * stepvalue)
+            edges = [np.where(diff == maxtrig)[0][0],
+                     np.where(diff == mintrig)[0][0]]
 
 
             cothread.Yield()
@@ -245,7 +247,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
             if length < trigger_length:
                 raise RangeError
-            if edges[1] > edges[0]:
+            if edges[1] > edges[0]:  # So that colours don't swap around
                 data1 = np.roll(trace[:trigger_length], - edges[0]
                                 - trigger_length/4)[:trigger_length/2]
                 data2 = np.roll(trace[:trigger_length], - edges[1]
@@ -254,9 +256,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
                 data1 = np.roll(trace[:trigger_length], - edges[1]
                                 - trigger_length/4)[:trigger_length/2]
                 data2 = np.roll(trace[:trigger_length], - edges[0]
-                                - trigger_length/4)[:trigger_length/2] # so that colours don't swap around...
+                                - trigger_length/4)[:trigger_length/2]
 
-            return data1, data2  ### what are data1/2
+            return data1, data2  # TODO: rename variable 'data'
 
         except RangeError:
             print 'Trace is partially cut off' # status bar? callback?

@@ -109,8 +109,8 @@ class Straight(object):
     def amps_to_radians(self, current):
         """Convert currents (Amps) to fields (Tesla) to kick strength (rads)."""
         field = current * self.AMP_TO_TESLA
-        kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
-                                  for x in field])
+        kick = np.array([2.0 * np.arcsin(x / (2.0 * self.BEAM_RIGIDITY))
+                            for x in field])
         return kick
 
     def calculate_strengths(self, t):
