@@ -49,7 +49,7 @@ class SimModeController(object):
 
         self.straights = []
         self.offsets = controls.PvMonitors.get_instance().get_offsets()
-        self.scales =  controls.PvMonitors.get_instance().get_scales()
+        self.scales = controls.PvMonitors.get_instance().get_scales()
 
     def update_sim(self, key, values):
         """Update simulated scales and offsets whenever they change."""
@@ -90,8 +90,8 @@ class Straight(object):
     """
 
     BEAM_RIGIDITY = 3e9/scipy.constants.c
-    AMP_TO_TESLA = np.array([0.034796/23, -0.044809/23, 0.011786/12,
-                            -0.045012/23,  0.035174/23])
+    AMP_TO_TESLA = np.array([  # Values from MML magnet_calibrations.csv
+        0.034796/23, -0.044809/23, 0.011786/12, -0.045012/23, 0.035174/23])
 
     def __init__(self):
         """Get layout of straight, initialise values of PVs and link them
