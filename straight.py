@@ -129,11 +129,6 @@ class Straight(object):
                 -np.sin(t * np.pi / 100) + 1])
         return self.amps_to_radians(self.scales * waves + self.offsets)
 
-        kick = self.amps_to_radians(
-                0.5 * self.scales *
-                + self.offsets)
-        return kick
-
     def strength_setup(self, strength_values): # put underscore at start
         """Apply strengths to kickers."""
         for kicker, strength in zip(self.data.kickers, strength_values):
