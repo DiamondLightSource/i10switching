@@ -107,7 +107,7 @@ class Simulation(BaseFigureCanvas):
         if self.fill2:
             self.ax.collections.remove(self.fill2)
 
-        strengths = [np.array([1, -1, 1, 0, 0]), np.array([0, 0, 1, -1, 1])]
+        strengths = [np.array([1, 1, 1, 0, 0]), np.array([0, 0, 1, 1, 1])]
         edges = [[], []]
         for s in range(2):
             edges[s] = np.array(
