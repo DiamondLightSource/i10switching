@@ -1,6 +1,9 @@
 #!/usr/bin/env dls-python2.7
-# plots.py
-# Contains BaseFigureCanvas, Simulation, Traces, OverlaidWaveforms, RangeError
+"""Selection of Qt plots that show information about the I10 chicane.
+
+Plots are available for use in eithier the beamline or accelerator GUIs.
+"""
+
 
 import numpy as np
 import matplotlib.pyplot as plt

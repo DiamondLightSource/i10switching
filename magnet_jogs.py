@@ -1,7 +1,11 @@
 #!/usr/bin/env dls-python2.7
-# magnet_jogs.py
-# Contains Moves, OverCurrentException, MagnetCoordinator
-# Imports PvMonitors from controls
+"""Calculate the current values required for coordinated magnet moves.
+
+Provides arrays of current values that correspond to the entries in Moves.
+Lookup functions perform error checking to ensure that magnets do not exceed
+their maximum current values.
+"""
+
 
 import numpy as np
 

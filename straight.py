@@ -1,7 +1,13 @@
 #!/usr/bin/env dls-python2.7
-# straight.py
-# Contains RealModeController, SimModeController, Straight
-# Calls simulation, controls
+"""A simulation of the I10 fast chicane straight.
+
+Simulates the effect of the chicane magnets on the electron beam, and the
+resultant photon beams.
+
+The straight is controller by eithier a SimModeController or a
+RealModeController.
+"""
+
 
 import numpy as np
 import scipy.constants
