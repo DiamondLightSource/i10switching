@@ -1,16 +1,12 @@
 #!/usr/bin/env dls-python2.7
-# accelerators_ui.py
-# Gui linking to plots, magnet_jogs, straight, controls, writers
-# Contains Gui
-
-"""
-Buttons to move I10 fast chicane magnet offsets and scales.
+"""Control room GUI to move I10 fast chicane magnet offsets and scales.
 
 Provides a gui to control magnet scaling and offsets in order
 to allow independent steering of photon and electron beams to
 maintain a closed bump and a simulation of the beamline that
 indicates the effects of changes to the scaling and offsets.
 """
+
 
 from pkg_resources import require
 require('numpy>=1.10.1')

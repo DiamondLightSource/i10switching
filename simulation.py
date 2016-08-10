@@ -1,6 +1,10 @@
 #!/usr/bin/env dls-python2.7
-# simulation.py
-# Contains Element classes, Layout
+"""Physics simulation of basic accelerator components.
+
+Generate a Layout from a configuration file that contains the information
+to setup basic accelerator lattice components.
+"""
+
 
 import numpy as np
 

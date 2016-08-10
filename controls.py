@@ -1,6 +1,10 @@
 #!/usr/bin/env dls-python2.7
-# controls.py
-# Contains PvReferences, Arrays, PvMonitors
+"""Wrapper around channel access control of the I10 chicane.
+
+Aids reading and writing from the many magnet PVs associated with the
+fast chicane. PvMonitors is a singleton and users should use get_instance.
+"""
+
 
 import cothread
 from cothread.catools import caget, camonitor, FORMAT_TIME
@@ -111,8 +115,10 @@ class PvMonitors(object):
                       lambda x, i=idx: self.update_values(
                     x, Arrays.ERRORS, i, 'straight'), format=FORMAT_TIME)
 
-        camonitor(PvReferences.TRACES[0], lambda x: self.update_values(x, Arrays.WAVEFORMS, 0, 'trace'))
-        camonitor(PvReferences.TRACES[1], lambda x: self.update_values(x, Arrays.WAVEFORMS, 1, 'trace'))
+        camonitor(PvReferences.TRACES[0],
+                  lambda x: self.update_values(x, Arrays.WAVEFORMS, 0, 'trace'))
+        camonitor(PvReferences.TRACES[1],
+                  lambda x: self.update_values(x, Arrays.WAVEFORMS, 1, 'trace'))
 
         cothread.Yield()  # Ensure monitored values are connected
 

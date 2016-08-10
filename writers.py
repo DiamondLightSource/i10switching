@@ -1,7 +1,10 @@
 #!/usr/bin/env dls-python2.7
-# writers.py
-# Imports magnet_jogs
-# Contains AbstractWriter, PvWriter, SimWriter
+"""Write coordinated magnet moves to different outputs.
+
+A PvWriter and a Simulation writer are available to take magnet_jogs.Moves
+and apply them to their respective interfaces.
+"""
+
 
 from cothread.catools import caput
 from controls import PvReferences, PvMonitors, Arrays

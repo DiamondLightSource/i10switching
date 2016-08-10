@@ -1,10 +1,5 @@
 #!/usr/bin/env dls-python2.7
-# beamline_ui.py
-# Gui linking to plots, magnet_jogs, controls, writers
-# Contains KnobsUi
-
-"""
-Buttons to move I10 fast chicane magnet offsets and scales.
+"""Beamline to produce closed bumps on the I10 chicane.
 
 Provides a gui to control magnet scaling and offsets in order
 to allow independent steering of photon and electron beams to
@@ -12,6 +7,7 @@ maintain a closed bump. Displays the two x-ray peaks such that
 they overlap and calculates the area of each to indicate their
 relative intensities.
 """
+
 
 from pkg_resources import require
 require('numpy==1.11.1')

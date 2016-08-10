@@ -1,7 +1,13 @@
 #!/usr/bin/env dls-python2.7
-# straight.py
-# Contains RealModeController, SimModeController, Straight
-# Calls simulation, controls
+"""A simulation of the I10 fast chicane straight.
+
+Simulates the effect of the chicane magnets on the electron beam, and the
+resultant photon beams.
+
+The straight is controller by eithier a SimModeController or a
+RealModeController.
+"""
+
 
 import numpy as np
 import scipy.constants
@@ -49,7 +55,7 @@ class SimModeController(object):
 
         self.straights = []
         self.offsets = controls.PvMonitors.get_instance().get_offsets()
-        self.scales =  controls.PvMonitors.get_instance().get_scales()
+        self.scales = controls.PvMonitors.get_instance().get_scales()
 
     def update_sim(self, key, values):
         """Update simulated scales and offsets whenever they change."""
@@ -90,8 +96,8 @@ class Straight(object):
     """
 
     BEAM_RIGIDITY = 3e9/scipy.constants.c
-    AMP_TO_TESLA = np.array([0.034796/23, -0.044809/23, 0.011786/12,
-                            -0.045012/23,  0.035174/23])
+    AMP_TO_TESLA = np.array([  # Values from MML magnet_calibrations.csv
+        0.034796/23, -0.044809/23, 0.011786/12, -0.045012/23, 0.035174/23])
 
     def __init__(self):
         """Get layout of straight, initialise values of PVs and link them
@@ -109,8 +115,8 @@ class Straight(object):
     def amps_to_radians(self, current):
         """Convert currents (Amps) to fields (Tesla) to kick strength (rads)."""
         field = current * self.AMP_TO_TESLA
-        kick = np.array([2 * np.arcsin(x/(2*self.BEAM_RIGIDITY))
-                                  for x in field])
+        kick = np.array([2.0 * np.arcsin(x / (2.0 * self.BEAM_RIGIDITY))
+                            for x in field])
         return kick
 
     def calculate_strengths(self, t):
@@ -128,11 +134,6 @@ class Straight(object):
                 -np.sin(t * np.pi / 100) + 1,
                 -np.sin(t * np.pi / 100) + 1])
         return self.amps_to_radians(self.scales * waves + self.offsets)
-
-        kick = self.amps_to_radians(
-                0.5 * self.scales *
-                + self.offsets)
-        return kick
 
     def strength_setup(self, strength_values): # put underscore at start
         """Apply strengths to kickers."""
