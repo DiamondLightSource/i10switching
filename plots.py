@@ -217,7 +217,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             self.overlaid_lines[1].set_ydata(data2)
             self.overlaid_lines[1].set_xdata(range(len(data2)))
 
-            areas = [integ.simps(data1), integ.simps(data2)] #sig figs
+            areas = [integ.simps(data1), integ.simps(data2)]
             labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
 
 #            for area in areas:

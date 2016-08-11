@@ -13,6 +13,9 @@ from controls import PvMonitors
 
 
 class Moves(object):
+
+    """Names of the jogs applied to magnets."""
+
     STEP_K3 = 0
     BUMP_LEFT = 1
     BUMP_RIGHT = 2
@@ -22,6 +25,9 @@ class Moves(object):
 
 
 class OverCurrentException(Exception):
+
+    """Exception in the case of a jog that exceeds magnet tolerances."""
+
     def __init__(self, magnet_index):
         super(OverCurrentException, self).__init__()
         self.magnet_index = magnet_index
@@ -63,7 +69,7 @@ class MagnetCoordinator(object):
 
 
 def _check_bounds(ofs):
-    """Raises exception if new value exceeds magnet current limit."""
+    """Raise exception if new value exceeds magnet current limit."""
     pvm = PvMonitors.get_instance()
     scales = [abs(scale) for scale in pvm.get_scales()]
     offsets = pvm.get_offsets()

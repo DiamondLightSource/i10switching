@@ -56,7 +56,9 @@ class Gui(QMainWindow):
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):
+
         """Column names of the table."""
+
         MAX = 0
         HIGH = 1
         OFFSET = 2

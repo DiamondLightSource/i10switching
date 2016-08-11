@@ -56,7 +56,7 @@ class KnobsUi(QMainWindow):
     UI_FILENAME = 'beamlineui.ui'
 
     def __init__(self):
-
+        """Initialise GUI."""
         QMainWindow.__init__(self)
         filename = os.path.join(os.path.dirname(__file__), self.UI_FILENAME)
         self.ui = uic.loadUi(filename)
@@ -116,6 +116,7 @@ class KnobsUi(QMainWindow):
         self.ui.graph_layout.addWidget(self.toolbar)
 
     def autoscale(self): # does this work??
+        """Autoscale the graph axes to the correct size."""
         self.graph.ax.relim()
         self.graph.ax.autoscale_view()
         self.graph.ax.relim()
@@ -140,21 +141,25 @@ class KnobsUi(QMainWindow):
 
     # Methods controlling the theoretical gaussian.
     def amp_plus(self):
+        """Increase amplitude."""
         self.amp += self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def amp_minus(self):
+        """Decrease amplitude."""
         self.amp -= self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_plus(self):
+        """Increase standard deviation."""
         self.sig += 10*self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
 
     def sig_minus(self):
+        """Decrease standard deviation."""
         self.sig -= 10*self.gauss_scale
         self.graph.clear_gaussian()
         self.graph.gaussian(self.amp, self.sig)
@@ -192,11 +197,11 @@ class KnobsUi(QMainWindow):
             msgBox.exec_()
 
     def update_cycling_textbox(self, var):
-        """Updates cycling status from enum attached to pv"""
+        """Update cycling status from enum attached to pv."""
         self.ui.cycling_textbox_3.setText(QtCore.QString('%s' % var.enums[var]))
 
     def update_magnet_led(self, var):
-        """Uses PV alarm status to choose color for qframe"""
+        """Use PV alarm status to choose color for qframe."""
         palette = QtGui.QPalette()
         palette.setColor(QtGui.QPalette.Background, ALARM_COLORS[var.severity])
         self.ui.magnet_led_3.setPalette(palette)

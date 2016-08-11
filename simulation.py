@@ -127,7 +127,7 @@ class Layout(object):
     def __init__(self, name):
         """
         Initialise layout, elements and x axis.
-        
+
         Args:
             name (str): configuration file to set up the straight
         """
