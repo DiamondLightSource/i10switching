@@ -21,9 +21,9 @@ class Element(object):
         Overarching class to modify electron beam.
 
         Args:
-            e: electron beam vector
+            e (numpy array): electron beam vector
         Returns:
-            e
+            numpy array: e
         """
         return e
 
@@ -57,7 +57,7 @@ class Drift(Element):
         Set length of the drift.
 
         Args:
-            length (float): length between adjacent devices along the straight.
+            length (float): length between adjacent devices along the straight
         """
         self.length = length
 
@@ -66,9 +66,9 @@ class Drift(Element):
         Modify electron beam vector by distance travelled.
 
         Args:
-            e: electron beam vector
+            e (numpy array): electron beam vector
         Returns:
-            e
+            numpy array: e
         """
         drift = np.array([[1, self.length],
                           [0, 1]])
@@ -84,9 +84,23 @@ class Kicker(Element):
         self.set_strength(kick)
 
     def set_strength(self, kick):
+        """
+        Set strength of the kicker magnet.
+
+        Args:
+            kick (float): magnet strength
+        """
         self.k = kick
 
     def increment(self, e):
+        """
+        Modify electron beam directions.
+
+        Args:
+            e (numpy array): electron beam vector
+        Returns:
+            numpy array
+        """
         kick = np.array([0, self.k])
         return e + kick
 
@@ -111,6 +125,12 @@ class Layout(object):
     """
 
     def __init__(self, name):
+        """
+        Initialise layout, elements and x axis.
+        
+        Args:
+            name (str): configuration file to set up the straight
+        """
         self.path = self._load(name)
         self.ids = self.get_elements('insertiondevice')
         self.kickers = self.get_elements('kicker')
@@ -123,7 +143,13 @@ class Layout(object):
         self.travel = [Drift(self.ids[i].s) for i in range(len(self.ids))]
 
     def _load(self, filename):
-        """Load data from configuration file."""
+        """Load data from configuration file.
+
+        Args:
+            filename (str): configuration file to set up the straight
+        Returns:
+            path (list): list of elements in the straight
+        """
         raw_data = [line.split() for line in open(filename)]
         element_classes = {cls(None).get_type(): cls
                            for cls in Element.__subclasses__()}
@@ -138,7 +164,14 @@ class Layout(object):
         return path
 
     def get_elements(self, which):
-        """Return list of elements of a particular type from the straight."""
+        """Return list of elements of a particular type from the straight.
+
+        Args:
+            which (str): name of element in the straight
+
+        Returns:
+            list: elements in the straight with name given by the arg
+        """
         return [x for x in self.path if x.get_type() == which]
 
     def generate_beams(self):
@@ -148,6 +181,10 @@ class Layout(object):
         Takes electron vector and sends it through the straight, generating
         complete electron beam from list of vectors at positions along straight.
         Photon beams are initialised at the two insertion devices.
+
+        Returns:
+            e_beam (numpy array): list of electron vectors
+            p_beam (list): list of photon vectors
         """
         e_vector = np.array([0, 0])
         e_beam = np.zeros((len(self.path), 2))
@@ -165,10 +202,19 @@ class Layout(object):
         return e_beam, p_beam
 
     def create_photon_beam(self, vector):
-        """Take initialised photon beams and extend them to the detector."""
+        """
+        Take initialised photon beams and extend them to the detector.
+
+        Args:
+            vector (list): initialised photon beams
+        Returns:
+            vector (list): extended photon beams
+        """
         for i in range(len(self.ids)):
             self.travel[i].set_length(self.photon_coordinates[i][1]
                                       - self.photon_coordinates[i][0])
             vector[i].extend(self.travel[i].increment(vector[i]))
 
         return vector
+
+

@@ -56,6 +56,7 @@ class Gui(QMainWindow):
     HIGHLIGHT_COLOR = QtGui.QColor(235, 235, 235) # Light grey
 
     class Columns(object):
+        """Column names of the table."""
         MAX = 0
         HIGH = 1
         OFFSET = 2
@@ -260,19 +261,19 @@ class Gui(QMainWindow):
             self.update_cache(self.pv_monitor.get_cache(), index)
 
     def update_float(self, var, row, col):
-        """Updates a table widget populated with a float."""
+        """Update a table widget populated with a float."""
         item = self.ui.table_widget.item(row, col)
         item.setText(QtCore.QString('%.3f' % var))
 
     def update_alarm(self, var, row, col):
-        """Updates an alarm sensitive table widget."""
+        """Update an alarm sensitive table widget."""
         item = self.ui.table_widget.item(row, col)
         item.setForeground(QtGui.QBrush(ALARM_COLORS[var.severity]))
         item.setBackground(QtGui.QBrush(ALARM_BACKGROUND))
         item.setText(QtCore.QString(var))
 
     def update_cache(self, cache, index):
-        """Updates cached values of offsets and scales for the table."""
+        """Update cached values of offsets and scales for the table."""
         high = (cache['%02d' % index][controls.Arrays.OFFSETS] +
                 cache['%02d' % index][controls.Arrays.SCALES])
         low = (cache['%02d' % index][controls.Arrays.OFFSETS] -

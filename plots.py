@@ -32,6 +32,7 @@ class Simulation(BaseFigureCanvas):
     """Plot the simulation of the I10 fast chicane."""
 
     def __init__(self, straight):
+        """Initialise the straight, axes, animation and graph shading."""
         BaseFigureCanvas.__init__(self)
         self.straight = straight
         self.fill1 = None
@@ -270,7 +271,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             return data1, data2
 
     def gaussian(self, a, sigma):
-        """Plot a theoretical gaussian for comparison with the x-ray peaks."""
+        """Plot a theoretical Gaussian for comparison with the x-ray peaks."""
         l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
         gauss = self.ax2.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
@@ -278,6 +279,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.draw()
 
     def clear_gaussian(self):
+        """Remove the Gaussian."""
         self.ax2.lines.pop(-1)
         self.ax2.relim()
         self.ax2.autoscale_view()
