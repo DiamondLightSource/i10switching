@@ -1,5 +1,6 @@
 #!/usr/bin/env dls-python2.7
-"""A simulation of the I10 fast chicane straight.
+"""
+A simulation of the I10 fast chicane straight.
 
 Simulates the effect of the chicane magnets on the electron beam, and the
 resultant photon beams.
@@ -19,6 +20,8 @@ import controls
 class RealModeController(object):
 
     """
+    Controller that connects simulation to the I10 chicane.
+
     Control simulation using the camonitored offsets/scales from PvMonitors.
     """
 
@@ -49,7 +52,11 @@ class RealModeController(object):
 
 class SimModeController(object):
 
-    """Control simulation using the simulated values from SimWriter."""
+    """
+    Controller for the simulation-only mode.
+
+    Control simulation using the simulated values from SimWriter.
+    """
 
     def __init__(self):
 
@@ -58,7 +65,13 @@ class SimModeController(object):
         self.scales = controls.PvMonitors.get_instance().get_scales()
 
     def update_sim(self, key, values):
-        """Update simulated scales and offsets whenever they change."""
+        """
+        Call update_scales or update_offsets whenever the PVs change.
+
+        Args:
+            key (str): dictionary key for relevant PV
+            values (list): list of jogs to be applied
+        """
         if key == controls.Arrays.SCALES:
             self.scales = values
             self.update_scales()
@@ -68,19 +81,32 @@ class SimModeController(object):
             self.update_offsets()
 
     def register_straight(self, straight):
-        """Register the straight with controller linked to the simulation."""
+        """
+        Register the straight with controller linked to the simulation.
+
+        Args:
+            straight (class): class describing the I10 straight
+        """
         self.straights.append(straight)
         self.update_sim(controls.Arrays.SCALES, self.scales)
         self.update_sim(controls.Arrays.OFFSETS, self.offsets)
 
     def deregister_straight(self, straight):
+        """
+        Deregister the straight.
+
+        Args:
+            straight (class): class describing the I10 straight
+        """
         self.straights.remove(straight)
 
     def update_scales(self):
+        """Update scale values for the simulation."""
         for straight in self.straights:
             straight.set_scales(self.scales)
 
     def update_offsets(self):
+        """Update offset values for the simulation."""
         for straight in self.straights:
             straight.set_offsets(self.offsets)
 
@@ -100,8 +126,13 @@ class Straight(object):
         0.034796/23, -0.044809/23, 0.011786/12, -0.045012/23, 0.035174/23])
 
     def __init__(self):
-        """Get layout of straight, initialise values of PVs and link them
-        up to listen to the monitored PV values."""
+        """
+        Initialise the straight.
+
+        Get layout of straight, initialise values of PVs and link them
+        up to listen to the monitored PV values.
+        """
+
         self.data = simulation.Layout('config.txt')
         self.scales = controls.PvMonitors.get_instance().get_scales()
         self.offsets = controls.PvMonitors.get_instance().get_offsets()
@@ -113,7 +144,14 @@ class Straight(object):
         self.offsets = offsets
 
     def amps_to_radians(self, current):
-        """Convert currents (Amps) to fields (Tesla) to kick strength (rads)."""
+        """
+        Convert currents (Amps) to fields (Tesla) to kick strength (rads).
+
+        Args:
+            current (numpy array): array of magnet current values
+        Returns:
+            kick (numpy array): array of strengths
+        """
         field = current * self.AMP_TO_TESLA
         kick = np.array([2.0 * np.arcsin(x / (2.0 * self.BEAM_RIGIDITY))
                             for x in field])
@@ -132,10 +170,10 @@ class Straight(object):
                 np.sin(t * np.pi / 100) + 1,
                 2,
                 -np.sin(t * np.pi / 100) + 1,
-                -np.sin(t * np.pi / 100) + 1])
+                -np.sin(t * np.pi / 100) + 1]) * 0.5
         return self.amps_to_radians(self.scales * waves + self.offsets)
 
-    def strength_setup(self, strength_values): # put underscore at start
+    def _strength_setup(self, strength_values):
         """Apply strengths to kickers."""
         for kicker, strength in zip(self.data.kickers, strength_values):
             kicker.set_strength(strength)
@@ -147,7 +185,7 @@ class Straight(object):
         Return positions and velocities of electron and photon beams at
         positions along the straight at time t.
         """
-        self.strength_setup(self.calculate_strengths(t))
+        self._strength_setup(self.calculate_strengths(t))
         e_beam, p_beam = self.data.generate_beams()
 
         return e_beam, p_beam
@@ -159,7 +197,7 @@ class Straight(object):
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
         """
-        self.strength_setup(self.amps_to_radians(
+        self._strength_setup(self.amps_to_radians(
             self.scales * strength_values + self.offsets))
 
         p_beam = self.data.generate_beams()[1]
@@ -173,8 +211,12 @@ class Straight(object):
         Calculate the photon beam produced by magnets at their maximum
         strength settings.
         """
-        kick_limits = self.amps_to_radians(currents)
-        self.strength_setup(kick_limits)
+
+        kick_limits = (self.amps_to_radians(currents)
+                      * np.array([1, -1, 1, -1, 1]))
+        # multiply by +1 and -1 to point magnets in right directions
+        self._strength_setup(kick_limits)
         p_beam = self.data.generate_beams()[1]
 
         return p_beam
+
