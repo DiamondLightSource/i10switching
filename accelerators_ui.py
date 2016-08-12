@@ -41,7 +41,7 @@ ALARM_COLORS = [
         ]
 
 
-class Gui(QMainWindow):
+class AccelGui(QMainWindow):
 
     """
     GUI for the accelerator physicists.
@@ -321,7 +321,7 @@ class Gui(QMainWindow):
 
 def main():
     cothread.iqt()
-    the_ui = Gui()
+    the_ui = AccelGui()
     the_ui.ui.show()
     cothread.WaitForQuit()
 
