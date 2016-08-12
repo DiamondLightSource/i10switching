@@ -11,6 +11,12 @@ from cothread.catools import caget, camonitor, FORMAT_TIME
 
 
 class PvReferences(object):
+    """
+    Names of PVs.
+
+    These names, with the appropriate suffices, are used by cothread to
+    monitor and update the PVs controlling the magnets.
+    """
     NAMES = [
         'SR09A-PC-FCHIC-01',
         'SR09A-PC-FCHIC-02',
@@ -35,6 +41,7 @@ class PvReferences(object):
 
 
 class Arrays(object):
+    """Keys for the dictionary of monitored PVs: PvMonitors().arrays."""
     OFFSETS = 'offsets'
     SCALES = 'scales'
     SET_SCALES = 'set_scales'
@@ -61,6 +68,7 @@ class PvMonitors(object):
 
     @classmethod
     def get_instance(cls):
+        """Makes PvMonitors a singleton - only one instance of this class."""
         if cls.__instance is None:
             cls.__guard = False
             cls.__instance = PvMonitors()
@@ -123,10 +131,11 @@ class PvMonitors(object):
         cothread.Yield()  # Ensure monitored values are connected
 
     def register_straight_listener(self, l):
-        """Add new listener function to the list."""
+        """Add new listener function to the list for updating the simulation."""
         self.listeners['straight'].append(l)
 
     def register_trace_listener(self, l):
+        """Add new listener function to the list for updating the plots."""
         self.listeners['trace'].append(l)
 
     def update_values(self, val, key, index, listener_key):

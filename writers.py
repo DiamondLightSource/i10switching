@@ -25,7 +25,7 @@ class AbstractWriter(object):
 
     def write(self, move, factor):
         """
-        Applies the requested move.
+        Apply the requested move.
 
         Args:
             move (magnet_jogs.Move): which move to perform.
@@ -36,9 +36,7 @@ class AbstractWriter(object):
 
 class PvWriter(AbstractWriter):
 
-    """
-    Write coordinated magnets moves to PV's on the machine.
-    """
+    """Write coordinated magnets moves to PV's on the machine."""
 
     def __init__(self):
 
@@ -61,17 +59,22 @@ class PvWriter(AbstractWriter):
             self.write_to_pvs(self.offset_pvs, offset_jog_values)
 
     def write_to_pvs(self, pvs, jog_values):
-            caput(pvs, jog_values)
+        caput(pvs, jog_values)
 
 
 class SimWriter(AbstractWriter):
 
-    """
-    Write coordinated magnets moves to the manual simulation controller.
-    """
+    """Write coordinated magnets moves to the manual simulation controller."""
 
     def __init__(self, controller):
+        """
+        Class initialised with instance of the simulation controller.
 
+        Args:
+
+        controller (straight.SimModeController): write to the controller's
+        stored /scales and offsets
+        """
         AbstractWriter.__init__(self)
         self.controller = controller
 
@@ -86,19 +89,21 @@ class SimWriter(AbstractWriter):
         self.update_sim_values(move, jog_values)
 
     def update_sim_values(self, key, jog_values):
+        """Pass jog values to the controller."""
         if key == magnet_jogs.Moves.SCALE:
             self.controller.update_sim(Arrays.SCALES, jog_values)
         else:
             self.controller.update_sim(Arrays.OFFSETS, jog_values)
 
     def reset(self):
-        simulated_scales =  PvMonitors.get_instance().get_scales()
+        """Reset simulation with the PVs to reflect the real chicane."""
+        simulated_scales = PvMonitors.get_instance().get_scales()
         self.controller.update_sim(Arrays.SCALES, simulated_scales)
         simulated_offsets = PvMonitors.get_instance().get_offsets()
         self.controller.update_sim(Arrays.OFFSETS, simulated_offsets)
 
     def check_bounds(self, key, jog_values):
-        """Raises exception if new value exceeds magnet current limit."""
+        """Raise exception if new value exceeds magnet current limit."""
         pvm = PvMonitors.get_instance()
         scales = self.controller.scales
         offsets = self.controller.offsets
