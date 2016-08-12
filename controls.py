@@ -11,12 +11,14 @@ from cothread.catools import caget, camonitor, FORMAT_TIME
 
 
 class PvReferences(object):
+
     """
     Names of PVs.
 
     These names, with the appropriate suffices, are used by cothread to
     monitor and update the PVs controlling the magnets.
     """
+
     NAMES = [
         'SR09A-PC-FCHIC-01',
         'SR09A-PC-FCHIC-02',
@@ -41,7 +43,9 @@ class PvReferences(object):
 
 
 class Arrays(object):
+
     """Keys for the dictionary of monitored PVs: PvMonitors().arrays."""
+
     OFFSETS = 'offsets'
     SCALES = 'scales'
     SET_SCALES = 'set_scales'
@@ -68,7 +72,7 @@ class PvMonitors(object):
 
     @classmethod
     def get_instance(cls):
-        """Makes PvMonitors a singleton - only one instance of this class."""
+        """Make PvMonitors a singleton - only one instance of this class."""
         if cls.__instance is None:
             cls.__guard = False
             cls.__instance = PvMonitors()
@@ -139,7 +143,16 @@ class PvMonitors(object):
         self.listeners['trace'].append(l)
 
     def update_values(self, val, key, index, listener_key):
-        """Update arrays and tell listeners when a value has changed."""
+        """
+        Update arrays and tell listeners when a value has changed.
+
+        Args:
+            val (float): monitored value
+            key (): key to relevant stored PV list (arrays)
+            index (): index for value in stored PV list
+            listener_key (str): key pointing to list of listeners to whom
+                this variable is relevant
+        """
         self.arrays[key][index] = val
         for l in self.listeners[listener_key]:
             l(key, index)
@@ -166,7 +179,11 @@ class PvMonitors(object):
         return self._get_array_value(Arrays.ERRORS)
 
     def get_cache(self):
+        """Cache values of offsets and scales.
 
+        Puts offset and scale PVs into a dictionary that can be read by
+        the table.
+        """
         cache = {}
         for i in range(5):
             cache['%02d' % i] = {

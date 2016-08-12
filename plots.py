@@ -20,6 +20,13 @@ class BaseFigureCanvas(FigureCanvas):
     """Initialise the figures for plotting."""
 
     def __init__(self):
+        """
+        Set up plot.
+
+        Initialise figure canvas, set plot background to be blue and
+        transparent (goes blue for simulation mode), get instance of PvMonitors
+        to receive updated PV values.
+        """
         self.figure = plt.figure()
         FigureCanvas.__init__(self, self.figure)
         self.figure.patch.set_facecolor('blue')
@@ -79,7 +86,17 @@ class Simulation(BaseFigureCanvas):
         return self.beams
 
     def beam_plot(self, t):
-        """Extract electron and photon beam positions for plotting."""
+        """
+        Extract electron and photon beam positions from data for plotting.
+
+        Args:
+            t (int): time counter for the animation
+        Returns:
+            e_positions (numpy array): electron beam data without duplicated
+            values for plotting
+            p_positions (numpy array): photon position data (remove velocity
+            data as not needed for plotting)
+        """
         e_positions = np.array(self.straight.step(t)[0])[:, 0].tolist()
         # Remove duplicates in data.
         for i in range(len(self.straight.data.get_elements('drift'))):
@@ -91,7 +108,16 @@ class Simulation(BaseFigureCanvas):
         return e_positions, p_positions
 
     def animate(self, t):
-        """Animation function."""
+        """
+        Animation function.
+
+        Set data for animation frame at time t.
+
+        Args:
+            t (int): time counter for the animation
+        Returns:
+            beams (list): list of lines to be plotted
+        """
         data = self.beam_plot(t)
         e_data = data[0]
         p_data = data[1]
@@ -159,8 +185,9 @@ class OverlaidWaveforms(BaseFigureCanvas):
     """
     Overlay the two intensity peaks of the x-ray beams.
 
-    Calculate areas under peaks and display as a legend, plot gaussian
-    for visual comparison of peak shapes.
+    'Cuts out' two peaks from X-ray intensity trace corresponding to the two
+    X-ray beams and displays them overlaid. Calculates areas under peaks and
+    displays as a legend, plots Gaussian for visual comparison of peak shapes.
     """
 
     def __init__(self, ctrls):
@@ -204,7 +231,7 @@ class OverlaidWaveforms(BaseFigureCanvas):
             self.draw()
 
     def update_overlaid_plot(self, key, _):
-        """Update plot data whenever it changes, calculate areas."""
+        """Update overlaid plot data whenever it changes, calculate areas."""
         if key == self.controls.ARRAYS.WAVEFORMS:
 
             trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
