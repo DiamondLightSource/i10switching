@@ -199,8 +199,8 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.pv_monitor.register_trace_listener(self.update_waveforms)
         self.pv_monitor.register_trace_listener(self.update_overlaid_plot)
 
-        trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-        trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+        trigger = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][0]
+        trace = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][1]
 
         traces_x_axis = range(len(trace))
         self.trace_lines = [
@@ -225,17 +225,17 @@ class OverlaidWaveforms(BaseFigureCanvas):
 
     def update_waveforms(self, key, _):
         """Update plot data whenever it changes."""
-        if key == self.controls.ARRAYS.WAVEFORMS:
+        if key == self.controls.Arrays.WAVEFORMS:
             self.trace_lines[0].set_ydata(self.pv_monitor.arrays[key][0])
             self.trace_lines[1].set_ydata(self.pv_monitor.arrays[key][1])
             self.draw()
 
     def update_overlaid_plot(self, key, _):
         """Update overlaid plot data whenever it changes, calculate areas."""
-        if key == self.controls.ARRAYS.WAVEFORMS:
+        if key == self.controls.Arrays.WAVEFORMS:
 
-            trigger = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][0]
-            trace = self.pv_monitor.arrays[self.controls.ARRAYS.WAVEFORMS][1]
+            trigger = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][0]
+            trace = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][1]
             waveforms = [trigger, trace]
 
             data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
@@ -301,6 +301,8 @@ class OverlaidWaveforms(BaseFigureCanvas):
         """Plot a theoretical Gaussian for comparison with the x-ray peaks."""
         l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
+        x = np.linspace(0, 1000, 1000) - 500
+        print x
         gauss = self.ax2.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
         self.overlaid_lines.append(gauss)
         self.draw()

@@ -132,7 +132,6 @@ class Straight(object):
         Get layout of straight, initialise values of PVs and link them
         up to listen to the monitored PV values.
         """
-
         self.data = simulation.Layout('config.txt')
         self.scales = controls.PvMonitors.get_instance().get_scales()
         self.offsets = controls.PvMonitors.get_instance().get_offsets()
@@ -192,7 +191,7 @@ class Straight(object):
 
     def p_beam_range(self, strength_values):
         """
-        Edges of photon beam range.
+        Find edges of photon beam range.
 
         Calculate beams defining maximum range through which the
         photon beams sweep during a cycle.
@@ -206,12 +205,11 @@ class Straight(object):
 
     def p_beam_lim(self, currents):
         """
-        Limits on the photon beams due to magnet strengths.
+        Plot limits on the photon beams due to magnet strengths.
 
         Calculate the photon beam produced by magnets at their maximum
         strength settings.
         """
-
         kick_limits = (self.amps_to_radians(currents)
                       * np.array([1, -1, 1, -1, 1]))
         # multiply by +1 and -1 to point magnets in right directions
