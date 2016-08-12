@@ -43,7 +43,7 @@ ALARM_COLORS = [
         ]
 
 
-class KnobsUi(QMainWindow):
+class BeamlineGui(QMainWindow):
 
     """
     GUI for the beamline users.
@@ -70,9 +70,9 @@ class KnobsUi(QMainWindow):
         self.jog_scale = 1.0
         self.gauss_scale = 1.0
 
-        # Initialise amplitude and standard deviation of gaussian.
-        self.amp = 1
-        self.sig = 100 # not useful place really # measure this?
+        # Initialise adjustment of Gaussian amplitude and standard deviation.
+        self.amp_step = 0
+        self.sig_step = 0
 
         self.graph = plots.OverlaidWaveforms(controls)
         self.toolbar = NavigationToolbar(self.graph, self)
@@ -130,7 +130,7 @@ class KnobsUi(QMainWindow):
         self.ui.sigmaplusButton.setEnabled(enabled)
         self.ui.sigmaminusButton.setEnabled(enabled)
         if enabled:
-            self.graph.gaussian(self.amp, self.sig)
+            self.graph.gaussian(self.amp_step, self.sig_step)
         else:
             self.graph.clear_gaussian()
 
@@ -142,27 +142,27 @@ class KnobsUi(QMainWindow):
     # Methods controlling the theoretical gaussian.
     def amp_plus(self):
         """Increase amplitude."""
-        self.amp += self.gauss_scale
+        self.amp_step += self.gauss_scale
         self.graph.clear_gaussian()
-        self.graph.gaussian(self.amp, self.sig)
+        self.graph.gaussian(self.amp_step, self.sig_step)
 
     def amp_minus(self):
         """Decrease amplitude."""
-        self.amp -= self.gauss_scale
+        self.amp_step -= self.gauss_scale
         self.graph.clear_gaussian()
-        self.graph.gaussian(self.amp, self.sig)
+        self.graph.gaussian(self.amp_step, self.sig_step)
 
     def sig_plus(self):
         """Increase standard deviation."""
-        self.sig += 10*self.gauss_scale
+        self.sig_step += 10*self.gauss_scale
         self.graph.clear_gaussian()
-        self.graph.gaussian(self.amp, self.sig)
+        self.graph.gaussian(self.amp_step, self.sig_step)
 
     def sig_minus(self):
         """Decrease standard deviation."""
-        self.sig -= 10*self.gauss_scale
+        self.sig_step -= 10*self.gauss_scale
         self.graph.clear_gaussian()
-        self.graph.gaussian(self.amp, self.sig)
+        self.graph.gaussian(self.amp_step, self.sig_step)
 
     def set_gauss_scaling(self):
         """Change the scaling applied to magnet corrections."""
@@ -210,6 +210,6 @@ class KnobsUi(QMainWindow):
 if __name__ == '__main__':
     # ui business
     cothread.iqt()
-    kui = KnobsUi()
-    kui.ui.show()
+    b_gui = BeamlineGui()
+    b_gui.ui.show()
     cothread.WaitForQuit()

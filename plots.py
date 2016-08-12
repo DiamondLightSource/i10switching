@@ -212,11 +212,11 @@ class OverlaidWaveforms(BaseFigureCanvas):
         self.ax.set_title('Square wave trigger signal and beam intensity trace')
 
         self.ax2 = self.figure.add_subplot(2, 1, 2)
-        data1, data2 = self.get_windowed_data(trigger, trace)
-        self.overlaid_x_axis = range(len(data1))
+        first_peak, second_peak = self.get_windowed_data(trigger, trace)
+        self.overlaid_x_axis = range(len(first_peak))
         self.overlaid_lines = [
-                     self.ax2.plot(self.overlaid_x_axis, data1, 'b')[0],
-                     self.ax2.plot(self.overlaid_x_axis, data2, 'g')[0]
+                     self.ax2.plot(self.overlaid_x_axis, first_peak, 'b')[0],
+                     self.ax2.plot(self.overlaid_x_axis, second_peak, 'g')[0]
                      ]
         self.ax2.set_xlabel('Time samples')
         self.ax2.set_ylabel('Voltage/V')
@@ -238,13 +238,13 @@ class OverlaidWaveforms(BaseFigureCanvas):
             trace = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][1]
             waveforms = [trigger, trace]
 
-            data1, data2 = self.get_windowed_data(waveforms[0], waveforms[1])
-            self.overlaid_lines[0].set_ydata(data1)
-            self.overlaid_lines[0].set_xdata(range(len(data1)))
-            self.overlaid_lines[1].set_ydata(data2)
-            self.overlaid_lines[1].set_xdata(range(len(data2)))
+            first_peak, second_peak = self.get_windowed_data(waveforms[0], waveforms[1])
+            self.overlaid_lines[0].set_ydata(first_peak)
+            self.overlaid_lines[0].set_xdata(range(len(first_peak)))
+            self.overlaid_lines[1].set_ydata(second_peak)
+            self.overlaid_lines[1].set_xdata(range(len(second_peak)))
 
-            areas = [integ.simps(data1), integ.simps(data2)]
+            areas = [integ.simps(first_peak), integ.simps(second_peak)]
             labels = ['%.1f' % areas[0], '%.1f' % areas[1]]
 
 #            for area in areas:
@@ -279,31 +279,61 @@ class OverlaidWaveforms(BaseFigureCanvas):
             if length < trigger_length:
                 raise RangeError
             if edges[1] > edges[0]:  # So that colours don't swap around
-                data1 = np.roll(trace[:trigger_length], - edges[0]
+                first_peak = np.roll(trace[:trigger_length], - edges[0]
                                 - trigger_length/4)[:trigger_length/2]
-                data2 = np.roll(trace[:trigger_length], - edges[1]
+                second_peak = np.roll(trace[:trigger_length], - edges[1]
                                 - trigger_length/4)[:trigger_length/2]
             else:
-                data1 = np.roll(trace[:trigger_length], - edges[1]
+                first_peak = np.roll(trace[:trigger_length], - edges[1]
                                 - trigger_length/4)[:trigger_length/2]
-                data2 = np.roll(trace[:trigger_length], - edges[0]
+                second_peak = np.roll(trace[:trigger_length], - edges[0]
                                 - trigger_length/4)[:trigger_length/2]
 
-            return data1, data2  # TODO: rename variable 'data'
+            return first_peak, second_peak
 
         except RangeError:
             print 'Trace is partially cut off' # status bar? callback?
-            data1 = [float('nan'), float('nan')]
-            data2 = [float('nan'), float('nan')]
-            return data1, data2
+            first_peak = [float('nan'), float('nan')]
+            second_peak = [float('nan'), float('nan')]
+            return first_peak, second_peak
 
-    def gaussian(self, a, sigma):
-        """Plot a theoretical Gaussian for comparison with the x-ray peaks."""
+    def gaussian(self, amp_step, sigma_step):
+        """
+        Plot a theoretical Gaussian for comparison with the x-ray peaks.
+
+        Initialise the amplitude and standard deviation from a caget of the
+        trigger and trace. Amplitude is the maximum value of the trace plus
+        amp_step; sigma is 1/8th of the length of a full trigger cycle plus
+        sigma_step.
+    
+        Args:
+            amp_step (int): amount by which the amplitude is increased or
+            decreased from the default value
+            sigma_step (int): as above but for sigma, the standard deviation
+        """
         l = len(self.overlaid_x_axis)
         x = np.linspace(0, l, l) - l/2 # centre of data
-        x = np.linspace(0, 1000, 1000) - 500
-        print x
-        gauss = self.ax2.plot(a * np.exp(-x**2 / (2 * sigma**2)), 'r')
+
+        # This is new code to 'guess' the size of the Gaussian from the
+        # existing data rather than from hard-coded numbers.
+        # TODO: test this! Possibly link up to the get_windowed_data function
+        # as it uses a lot of the same functionality
+        trigger = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][0]
+        trace = self.pv_monitor.arrays[self.controls.Arrays.WAVEFORMS][1]
+        amplitude = max(trace) + amp_step
+        diff = np.diff(trigger)
+        stepvalue = 0.5
+        if min(diff) > -1 * stepvalue or max(diff) < stepvalue:
+            raise RangeError
+        else:
+            maxtrig = next(x for x in diff if x > stepvalue)
+            mintrig = next(x for x in diff if x < -1 * stepvalue)
+            edges = [np.where(diff == maxtrig)[0][0],
+                     np.where(diff == mintrig)[0][0]]
+            half_trigger_length = (edges[1]-edges[0])
+            sigma = half_trigger_length/4 + sigma_step
+
+        gauss = self.ax2.plot(amplitude * np.exp(-x**2 / (2 * sigma**2)), 'r')
         self.overlaid_lines.append(gauss)
         self.draw()
 
