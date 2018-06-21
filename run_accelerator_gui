@@ -1,0 +1,2 @@
+#!/bin/bash dls-python
+dls-python i10/accelerators_ui.py
