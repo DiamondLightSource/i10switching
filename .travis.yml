@@ -8,8 +8,8 @@ cache:
     - $HOME/.cache/pip
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/lib/python$TRAVIS_PYTHON_VERSION/site-packages
     - $HOME/virtualenv/python$TRAVIS_PYTHON_VERSION/bin
-    - $HOME/build/dls-controls/PyQt-*
-    - $HOME/build/dls-controls/sip-*
+    - $HOME/build/DiamondLightSource/PyQt-*
+    - $HOME/build/DiamondLightSource/sip-*
 
 before_install:
   - sudo apt-get build-dep python-scipy
